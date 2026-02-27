@@ -158,6 +158,7 @@
 
     /* ── Pills ── */
     .pill { font-family: 'DM Mono', monospace; font-size: .63rem; font-weight: 600; letter-spacing: .04em; border-radius: 99px; padding: 3px 9px; border: 1px solid transparent; white-space: nowrap; }
+    .s-sin-asignar{ background: rgba(148,163,184,.12); border-color: rgba(148,163,184,.35); color: #94a3b8; }
     .s-pendiente  { background: rgba(245,166,35,.13); border-color: rgba(245,166,35,.4);  color: #f5a623; }
     .s-visita     { background: rgba(59,125,216,.13);  border-color: rgba(59,125,216,.4);  color: #63a8f8; }
     .s-seguimiento{ background: rgba(139,92,246,.13);  border-color: rgba(139,92,246,.4);  color: #a78bfa; }
@@ -390,26 +391,24 @@
           </div>
           <form id="form-lead" novalidate>
             <div class="form-2col">
-              <div><label class="field-label" for="f-nombre">Nombre cliente</label><input id="f-nombre" type="text" placeholder="Ej: Carmen Rivas" class="field"/></div>
-              <div><label class="field-label" for="f-tel">Teléfono</label><input id="f-tel" type="text" placeholder="6XX XXX XXX" class="field"/></div>
-              <div><label class="field-label" for="f-email">Email</label><input id="f-email" type="email" placeholder="cliente@email.com" class="field"/></div>
-              <div><label class="field-label" for="f-pobl">Población</label><input id="f-pobl" type="text" placeholder="Ciudad o municipio" class="field"/></div>
+              <div><label class="field-label" for="f-nombre">Nombre cliente <span style="color:#f87171">*</span></label><input id="f-nombre" type="text" placeholder="Ej: Carmen Rivas" class="field" required/></div>
+              <div><label class="field-label" for="f-tel">Teléfono <span style="color:#f87171">*</span></label><input id="f-tel" type="text" placeholder="6XX XXX XXX" class="field" required/></div>
+              <div><label class="field-label" for="f-email">Email <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(opcional)</span></label><input id="f-email" type="email" placeholder="cliente@email.com" class="field"/></div>
+              <div><label class="field-label" for="f-pobl">Población <span style="color:#f87171">*</span></label><input id="f-pobl" type="text" placeholder="Ciudad o municipio" class="field" required/></div>
               <div>
-                <label class="field-label" for="f-sector">Sector</label>
-                <!-- Bloqueado automáticamente si el usuario solo tiene un sector -->
-                <select id="f-sector" class="field">
+                <label class="field-label" for="f-sector">Sector <span style="color:#f87171">*</span></label>
+                <select id="f-sector" class="field" required>
                   <option value="">— Seleccionar —</option>
                 </select>
               </div>
               <div>
-                <label class="field-label" for="f-reforma">Subservicio</label>
-                <!-- Se puebla dinámicamente según el sector elegido -->
-                <select id="f-reforma" class="field" disabled>
+                <label class="field-label" for="f-reforma">Subservicio <span style="color:#f87171">*</span></label>
+                <select id="f-reforma" class="field" disabled required>
                   <option value="">— Elige un sector primero —</option>
                 </select>
               </div>
-              <div><label class="field-label" for="f-marca">Marca</label><select id="f-marca" class="field"><option value="">— Seleccionar —</option></select></div>
-              <div class="col-span-2"><label class="field-label" for="f-empresa">Empresa</label><select id="f-empresa" class="field"><option value="">— Seleccionar —</option></select></div>
+              <div><label class="field-label" for="f-marca">Marca <span style="color:#f87171">*</span></label><select id="f-marca" class="field" disabled required><option value="">— Elige un sector primero —</option></select></div>
+              <div class="col-span-2"><label class="field-label" for="f-empresa">Empresa <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(opcional · sin empresa → PENDIENTE DE ASIGNAR)</span></label><select id="f-empresa" class="field" disabled><option value="">— Elige un sector primero —</option></select></div>
             </div>
             <div style="margin-top:16px">
               <label class="field-label" for="f-extra">
@@ -424,7 +423,7 @@
             </div>
             <hr class="sec-divider"/>
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-              <p style="font-size:.75rem;color:var(--muted)">Estado inicial: <span class="pill s-pendiente" style="margin-left:4px">PENDIENTE DE LLAMAR</span></p>
+              <p style="font-size:.75rem;color:var(--muted)">Estado inicial: <span id="estado-inicial-lbl" class="pill s-sin-asignar" style="margin-left:4px">PENDIENTE DE ASIGNAR</span></p>
               <button id="btn-lead-submit" type="submit" class="btn-primary">Registrar lead</button>
             </div>
           </form>
@@ -437,14 +436,27 @@
       <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
         <button id="btn-refresh" class="btn-ghost">↻ Actualizar datos</button>
       </div>
-      <div id="kpi-row" class="kpi-row"><div class="kpi"><p class="kpi-lbl">Cargando…</p></div></div>
-      <div class="pcard" style="margin-bottom:24px">
-        <div class="pcard-head">
-          <div class="pcard-title" id="stats-card-title">Rendimiento por Empresa</div>
-          <span style="font-size:.72rem;color:var(--muted)">Distribución de estados</span>
-        </div>
-        <div class="pcard-body"><div id="emp-grid" class="emp-grid"><div class="empty">Cargando…</div></div></div>
+
+      <!-- KPIs y stats: solo gestor -->
+      <div id="dash-gestor-only">
+        <div id="kpi-row" class="kpi-row"><div class="kpi"><p class="kpi-lbl">Cargando…</p></div></div>
       </div>
+
+      <!-- Filtros cruzados + buscador -->
+      <div style="margin-bottom:20px;display:flex;flex-direction:column;gap:10px">
+        <!-- Buscador universal -->
+        <div style="display:flex;align-items:center;gap:8px">
+          <input id="search-lead" type="text" placeholder="Buscar lead… (nombre, teléfono, población, marca)"
+            style="flex:1;max-width:420px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;
+                   color:var(--txt);font-family:'DM Sans',sans-serif;font-size:.82rem;padding:7px 12px;outline:none;
+                   transition:border-color .18s"
+            onfocus="this.style.borderColor='rgba(59,125,216,.55)'"
+            onblur="this.style.borderColor=''"/>
+        </div>
+        <div id="filter-estado-row"  style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"></div>
+        <div id="filter-empresa-row" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"></div>
+      </div>
+
       <div class="pcard">
         <div class="pcard-head">
           <div class="pcard-title">Seguimiento de Leads</div>
@@ -458,7 +470,7 @@
               <tr>
                 <th>Cliente</th><th>Teléfono</th><th>Población</th>
                 <th>Tipo reforma</th><th>Empresa</th><th>Marca</th>
-                <th>Estado</th><th>Próxima Acción</th><th></th>
+                <th>Estado</th><th>Próxima Acción</th><th></th><th id="th-delete"></th>
               </tr>
             </thead>
             <tbody id="tbl-body"></tbody>
@@ -504,6 +516,7 @@
         <!-- Subline: Teléfono | Email | Población | Marca -->
         <div id="modal-subline"></div>
       </div>
+      <button id="btn-delete-lead" class="btn-ghost" style="color:#f87171;border-color:rgba(248,113,113,.25);padding:6px 11px;font-size:.8rem" title="Eliminar lead">🗑</button>
       <button class="modal-close" id="modal-close-btn">✕</button>
     </div>
 
@@ -603,20 +616,24 @@
   // Estados como strings — coinciden con los values del ENUM en Postgres
   // Al llegar al cliente vía Supabase JS, los ENUMs se representan como strings
   const ESTADOS = [
+    'PENDIENTE DE ASIGNAR',
     'PENDIENTE DE LLAMAR', 'VISITA PROGRAMADA', 'SEGUIMIENTO',
     'PRESUPUESTO ENVIADO', 'OBRA ACEPTADA', 'TRABAJANDO', 'RECHAZADO',
+    'BORRADO',
   ];
   const ESTADO_CLS = {
-    'PENDIENTE DE LLAMAR': 's-pendiente', 'VISITA PROGRAMADA':   's-visita',
-    'SEGUIMIENTO':         's-seguimiento','PRESUPUESTO ENVIADO': 's-presupuesto',
-    'OBRA ACEPTADA':       's-aceptada',  'TRABAJANDO':          's-trabajando',
-    'RECHAZADO':           's-rechazado',
+    'PENDIENTE DE ASIGNAR':  's-sin-asignar',
+    'PENDIENTE DE LLAMAR':   's-pendiente',  'VISITA PROGRAMADA':   's-visita',
+    'SEGUIMIENTO':           's-seguimiento','PRESUPUESTO ENVIADO':  's-presupuesto',
+    'OBRA ACEPTADA':         's-aceptada',   'TRABAJANDO':          's-trabajando',
+    'RECHAZADO':             's-rechazado',  'BORRADO':             's-rechazado',
   };
   const ESTADO_DOT = {
-    'PENDIENTE DE LLAMAR': '#f5a623', 'VISITA PROGRAMADA':   '#63a8f8',
-    'SEGUIMIENTO':         '#a78bfa', 'PRESUPUESTO ENVIADO': '#fb923c',
-    'OBRA ACEPTADA':       '#4ade80', 'TRABAJANDO':          '#2dd4bf',
-    'RECHAZADO':           '#f87171',
+    'PENDIENTE DE ASIGNAR':  '#94a3b8',
+    'PENDIENTE DE LLAMAR':   '#f5a623', 'VISITA PROGRAMADA':   '#63a8f8',
+    'SEGUIMIENTO':           '#a78bfa', 'PRESUPUESTO ENVIADO': '#fb923c',
+    'OBRA ACEPTADA':         '#4ade80', 'TRABAJANDO':          '#2dd4bf',
+    'RECHAZADO':             '#f87171', 'BORRADO':             '#6b7280',
   };
 
   const { createClient } = supabase;
@@ -635,6 +652,7 @@
   let allLeads    = [];
   let marcasMap   = {};
   let empresasMap = {};
+  let empresaMarcasMap = {};  // { marca_id_norm: [empresa_id_norm, ...] } — para filtrar select de empresa en tabla
 
   let activeClienteId   = null;
   let activeClienteData = null;
@@ -761,7 +779,7 @@
       cliente.telefono,
       cliente.email,
       cliente.poblacion,
-      cliente.marca_id ? (marcasMap[cliente.marca_id] || null) : null,
+      cliente.marca_id ? (marcasMap[cliente.marca_id]?.nombre || null) : null,
     ].filter(Boolean);
     $('modal-subline').innerHTML = subItems.map((v, i) =>
       (i > 0 ? '<span class="sep">|</span>' : '') + esc(v)
@@ -953,7 +971,6 @@
     row.style.background = 'rgba(59,125,216,.18)';
     setTimeout(() => { row.style.background = ''; }, 900);
     renderKPIs(allLeads);
-    renderEmpresaStats(allLeads);
   }
 
   // ───────────────────────────────────────────────────────────
@@ -1013,10 +1030,9 @@
     }
 
     applyRoleUI(user.email);
-    // Carga secuencial: empresasMap debe estar completo antes de que
-    // cualquier render intente leer nombres de empresa
     await loadEmpresas();
     await loadMarcas();
+    await loadEmpresaMarcas();  // carga relaciones marca↔empresa para filtrar select en tabla
     fillReformaSelector();
 
     // ── Realtime: cambios en clientes ────────────────────────
@@ -1063,7 +1079,10 @@
       $('tab-form').classList.add('active');
       $('tab-dash').classList.remove('active');
       $('tab-marcas').classList.remove('active');
-      $('stats-card-title').textContent  = 'Rendimiento por Empresa';
+      // Secciones exclusivas gestor: visibles
+      showEl('dash-gestor-only', 'block');
+      if ($('filter-empresa-row')) $('filter-empresa-row').style.display = 'flex';
+      if ($('th-delete')) $('th-delete').style.display = '';
     } else {
       $('topbar-role-lbl').textContent   = 'Panel Empresa';
       $('user-badge').className          = 'badge badge-empresa mono';
@@ -1073,7 +1092,11 @@
       $('tab-marcas').classList.remove('active');
       $('tab-btn-dash').classList.add('active');
       $('tab-dash').classList.add('active');
-      $('stats-card-title').textContent  = 'Actividad por Gestor';
+      // Ocultar KPIs, stats, columna empresa y delete para perfil empresa
+      hideEl('dash-gestor-only');
+      if ($('filter-empresa-row')) $('filter-empresa-row').style.display = 'none';
+      if ($('th-delete')) $('th-delete').style.display = 'none';
+      if ($('btn-delete-lead')) $('btn-delete-lead').style.display = 'none';
     }
   }
 
@@ -1144,28 +1167,83 @@
     selReforma.disabled = subs.length === 0;
   }
 
-  // Listener: cuando el usuario cambia el sector, actualizar subservicios
+  // Listener: cuando el usuario cambia el sector, actualizar subservicios Y filtrar marcas Y empresas
   $('f-sector').addEventListener('change', function () {
     if (this.value) {
       _poblarSubservicios(this.value);
+      _filtrarMarcasPorSector(this.value);
+      _filtrarEmpresasPorSector(this.value);   // ← filtra empresas por sector elegido
     } else {
       const selReforma = $('f-reforma');
       selReforma.innerHTML = '<option value="">— Elige un sector primero —</option>';
       selReforma.disabled  = true;
+      _filtrarMarcasPorSector('');
+      _filtrarEmpresasPorSector('');
     }
   });
 
   // ───────────────────────────────────────────────────────────
   //  DROPDOWNS
   // ───────────────────────────────────────────────────────────
+  let marcasData = [];   // copia completa para _filtrarMarcasPorSector
+
+  // Actualiza el indicador de estado inicial del formulario según empresa elegida
+  {
+    const fEmpresa = $('f-empresa');
+    const lbl      = $('estado-inicial-lbl');
+    if (fEmpresa && lbl) {
+      fEmpresa.addEventListener('change', () => {
+        if (fEmpresa.value) {
+          lbl.textContent = 'PENDIENTE DE LLAMAR';
+          lbl.className   = 'pill s-pendiente';
+        } else {
+          lbl.textContent = 'PENDIENTE DE ASIGNAR';
+          lbl.className   = 'pill s-sin-asignar';
+        }
+      });
+    }
+  }
+
   async function loadMarcas() {
-    const { data } = await sb.from('marcas').select('id, nombre').order('nombre');
-    marcasMap = {};
-    const sel = $('f-marca');
-    (data || []).forEach(({ id, nombre }) => {
-      marcasMap[id] = nombre;
-      if (sel) sel.add(new Option(nombre, id));
+    const { data } = await sb.from('marcas').select('id, nombre, descripcion').order('nombre');
+    marcasData = data || [];
+    marcasMap  = {};
+    // Solo construimos el mapa — el <select> f-marca se mantiene bloqueado
+    // hasta que el usuario elija un sector (_filtrarMarcasPorSector lo habilita)
+    marcasData.forEach(({ id, nombre, descripcion }) => {
+      marcasMap[id] = { nombre, descripcion: (descripcion || '').toUpperCase() };
     });
+  }
+
+  // Habilita f-marca y lo puebla con las marcas del sector dado.
+  // Sin sector → deshabilita con placeholder.
+  function _filtrarMarcasPorSector(sector) {
+    const sel = $('f-marca');
+    if (!sel) return;
+
+    sel.innerHTML = '';
+    if (!sector) {
+      sel.add(new Option('— Elige un sector primero —', ''));
+      sel.disabled = true;
+      return;
+    }
+
+    const kw = sector.toUpperCase().replace(/S$/, '');  // REFORMAS→REFORMA, LIMPIEZAS→LIMPIEZA
+    sel.add(new Option('— Seleccionar marca —', ''));
+    let count = 0;
+    marcasData.forEach(({ id, nombre, descripcion }) => {
+      const desc = (descripcion || '').toUpperCase();
+      if (desc.includes(kw)) {
+        const opt = new Option(nombre, id);
+        opt.dataset.sector = desc;
+        sel.add(opt);
+        count++;
+      }
+    });
+
+    if (count === 0) sel.add(new Option('Sin marcas para este sector', ''));
+    sel.disabled = count === 0;
+    sel.value    = '';
   }
 
   async function loadEmpresas() {
@@ -1191,13 +1269,64 @@
       const idStr = String(e.id).trim().toLowerCase();
       const nombre = e.nombre_comercial || e.nombre || e.contacto_nombre || 'Sin Nombre';
       empresasMap[idStr] = nombre;
-      if (sel) sel.add(new Option(nombre, e.id));
+      // NO añadimos al select f-empresa aquí — se puebla en _filtrarEmpresasPorSector
     });
 
     console.log('Mapa de empresas cargado:', empresasMap);
 
     if (allLeads.length > 0) renderTable(allLeads);
     if (rol === 'gestor') loadMisMarcas();
+  }
+
+  // Carga la tabla empresa_marcas completa en memoria
+  // empresaMarcasMap[marca_id_norm] = [empresa_id_norm, ...]
+  async function loadEmpresaMarcas() {
+    const { data, error } = await sb.from('empresa_marcas').select('marca_id, empresa_id');
+    if (error) { console.error('Error al cargar empresa_marcas:', error); return; }
+    empresaMarcasMap = {};
+    (data || []).forEach(r => {
+      const mId = String(r.marca_id).trim().toLowerCase();
+      const eId = String(r.empresa_id).trim().toLowerCase();
+      if (!empresaMarcasMap[mId]) empresaMarcasMap[mId] = [];
+      if (!empresaMarcasMap[mId].includes(eId)) empresaMarcasMap[mId].push(eId);
+    });
+  }
+
+  // Filtra f-empresa para mostrar solo empresas vinculadas al sector elegido
+  // Cruza: marcas del sector → empresa_marcas → empresasMap
+  function _filtrarEmpresasPorSector(sector) {
+    const sel = $('f-empresa');
+    if (!sel) return;
+
+    sel.innerHTML = '';
+    if (!sector) {
+      sel.add(new Option('— Elige un sector primero —', ''));
+      sel.disabled = true;
+      return;
+    }
+
+    const kw = sector.toUpperCase().replace(/S$/, '');  // REFORMAS→REFORMA
+    // IDs de marcas que pertenecen a este sector
+    const marcasDelSector = marcasData
+      .filter(m => (m.descripcion || '').toUpperCase().includes(kw))
+      .map(m => String(m.id).trim().toLowerCase());
+
+    // Empresas únicas vinculadas a alguna de esas marcas
+    const empresasIds = new Set();
+    marcasDelSector.forEach(mId => {
+      (empresaMarcasMap[mId] || []).forEach(eId => empresasIds.add(eId));
+    });
+
+    sel.add(new Option('— Seleccionar empresa —', ''));
+    let count = 0;
+    empresasIds.forEach(eId => {
+      const nombre = empresasMap[eId];
+      if (nombre) { sel.add(new Option(nombre, eId)); count++; }
+    });
+
+    if (count === 0) sel.add(new Option('Sin empresas para este sector', ''));
+    sel.disabled = count === 0;
+    sel.value    = '';
   }
 
   // ───────────────────────────────────────────────────────────
@@ -1283,7 +1412,7 @@
           : 'Sin empresa asignada';
 
         return `
-          <div class="marca-card" data-descripcion="${esc(rel.descripcion || '')}">
+          <div class="marca-card" data-descripcion="${esc(rel.descripcion || '')}" data-marca-id="${esc(rel.id)}">
             <div class="marca-nombre">${esc(rel.nombre)}</div>
             <div>${sectorPill(rel.descripcion)}</div>
             <div class="marca-empresa-row">
@@ -1306,10 +1435,7 @@
   }
 
   // Botón de refresco manual
-  document.addEventListener('DOMContentLoaded', () => {
-    const btnR = $('btn-refresh-marcas');
-    if (btnR) btnR.addEventListener('click', loadMisMarcas);
-  });
+  { const btnR = $('btn-refresh-marcas'); if (btnR) btnR.addEventListener('click', loadMisMarcas); }
 
   // ───────────────────────────────────────────────────────────
   //  FILTRO DE SECTOR EN MIS MARCAS
@@ -1325,15 +1451,18 @@
     const cards = document.querySelectorAll('#marcas-grid .marca-card');
     let visible = 0;
     cards.forEach(card => {
-      const desc  = (card.dataset.descripcion || '').toUpperCase();
+      // data-descripcion escrito en el render; fallback a marcasMap si es vacío
+      const marcaId = card.dataset.marcaId || '';
+      const fromMap = marcaId ? (marcasMap[marcaId]?.descripcion || '') : '';
+      const desc    = ((card.dataset.descripcion || fromMap) + '').toUpperCase();
+
       const match = sector === 'todas'
-        || (sector === 'reformas'  && !desc.includes('LIMPIEZA'))
+        || (sector === 'reformas'  && desc.includes('REFORMA')  && !desc.includes('LIMPIEZA'))
         || (sector === 'limpiezas' && desc.includes('LIMPIEZA'));
       card.style.display = match ? '' : 'none';
       if (match) visible++;
     });
 
-    // Mostrar "vacío" si ninguna tarjeta pasa el filtro
     const empty = $('marcas-empty');
     if (empty) empty.style.display = visible === 0 ? 'block' : 'none';
   }
@@ -1347,6 +1476,23 @@
     clearAlert('form-ok'); clearAlert('form-err');
 
     const btn = $('btn-lead-submit');
+
+    // ── Validación de campos obligatorios ──────────────────────
+    // Empresa es opcional: sin empresa → estado PENDIENTE DE ASIGNAR
+    const requiredFields = [
+      { id: 'f-nombre',  lbl: 'Nombre cliente' },
+      { id: 'f-tel',     lbl: 'Teléfono' },
+      { id: 'f-pobl',    lbl: 'Población' },
+      { id: 'f-sector',  lbl: 'Sector' },
+      { id: 'f-reforma', lbl: 'Subservicio' },
+      { id: 'f-marca',   lbl: 'Marca' },
+    ];
+    const missing = requiredFields.filter(f => !$(f.id).value.trim()).map(f => f.lbl);
+    if (missing.length) {
+      setAlert('form-err', 'form-err-txt', 'Campos obligatorios: ' + missing.join(', '));
+      return;
+    }
+
     btn.textContent = 'Guardando…'; btn.disabled = true;
 
     const str = id => { const v = $(id).value.trim(); return v || null; };
@@ -1355,6 +1501,10 @@
     const extra       = $('f-extra').value.trim();
 
     try {
+      // Estado inicial: sin empresa → PENDIENTE DE ASIGNAR; con empresa → PENDIENTE DE LLAMAR
+      const empresaIdForm = str('f-empresa');
+      const estadoInicial = empresaIdForm ? 'PENDIENTE DE LLAMAR' : 'PENDIENTE DE ASIGNAR';
+
       // PASO A: insertar cliente y recuperar UUID
       const { data: nuevoCliente, error: clienteErr } = await sb
         .from('clientes')
@@ -1363,11 +1513,11 @@
           telefono:       str('f-tel'),
           email:          str('f-email'),
           poblacion:      str('f-pobl'),
-          tipo_reforma:   tipoReforma,   // string → Postgres lo castea al ENUM automáticamente
+          tipo_reforma:   tipoReforma,
           marca_id:       str('f-marca'),
-          empresa_id:     str('f-empresa'),
+          empresa_id:     empresaIdForm,
           gestor_id:      userId,
-          estado:         'PENDIENTE DE LLAMAR',
+          estado:         estadoInicial,
         }])
         .select('id')
         .single();
@@ -1411,9 +1561,14 @@
   // ───────────────────────────────────────────────────────────
   async function loadDashboard() {
     showEl('tbl-loading', 'block'); hideEl('tbl-wrap'); hideEl('tbl-empty');
-    $('kpi-row').innerHTML  = '<div class="kpi"><p class="kpi-lbl">Cargando…</p></div>';
-    $('emp-grid').innerHTML = '<div class="empty">Cargando…</div>';
+    if ($('kpi-row')) $('kpi-row').innerHTML = '<div class="kpi"><p class="kpi-lbl">Cargando…</p></div>';
     clientesConNuevoComentario = new Set();
+    filtroEstado          = null;
+    filtroEmpresa         = null;
+    filtroMostrarBorrados = false;
+    filtroBusqueda        = '';
+    const srch = $('search-lead');
+    if (srch) srch.value = '';
 
     // ── Query de clientes según rol ──────────────────────────
     let leadsQuery = sb
@@ -1460,6 +1615,25 @@
 
     allLeads = leads;
 
+    // ── ORDEN FRÍO → CALIENTE ────────────────────────────────
+    const ORDEN_ESTADO = {
+      'PENDIENTE DE ASIGNAR':  0,   // sin empresa — máxima prioridad
+      'PENDIENTE DE LLAMAR':   1,
+      'VISITA PROGRAMADA':     2,
+      'SEGUIMIENTO':           2,
+      'PRESUPUESTO ENVIADO':   2,
+      'OBRA ACEPTADA':         3,
+      'TRABAJANDO':            3,
+      'RECHAZADO':             4,
+    };
+    allLeads.sort((a, b) => {
+      // Sin empresa_id o estado PENDIENTE DE ASIGNAR → prioridad 0
+      const prioA = (!a.empresa_id || a.estado === 'PENDIENTE DE ASIGNAR') ? 0 : (ORDEN_ESTADO[a.estado] ?? 2);
+      const prioB = (!b.empresa_id || b.estado === 'PENDIENTE DE ASIGNAR') ? 0 : (ORDEN_ESTADO[b.estado] ?? 2);
+      if (prioA !== prioB) return prioA - prioB;
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
+
     // ── LÓGICA DE NOTIFICACIONES ─────────────────────────────
     // Punto rojo si: el comentario más reciente tiene autor_id !== userId
     // (es decir, lo escribió otra persona)
@@ -1482,31 +1656,165 @@
     });
 
     renderKPIs(allLeads);
-    renderEmpresaStats(allLeads);
+    renderFilterPills();
     renderTable(allLeads);
   }
 
   // ───────────────────────────────────────────────────────────
   //  RENDERS
   // ───────────────────────────────────────────────────────────
-  function renderKPIs(data) {
-    const total    = data.length;
-    const ganados  = data.filter(c => ['OBRA ACEPTADA', 'TRABAJANDO'].includes(c.estado)).length;
-    const pendient = data.filter(c => c.estado === 'PENDIENTE DE LLAMAR').length;
-    const rechaz   = data.filter(c => c.estado === 'RECHAZADO').length;
-    const tasa     = total > 0 ? Math.round((ganados / total) * 100) : 0;
 
-    $('kpi-row').innerHTML = [
-      { lbl: 'Total Leads',     val: total,      color: '#e6f0ff' },
-      { lbl: 'Obras Aceptadas', val: ganados,    color: '#4ade80' },
-      { lbl: 'Pendientes',      val: pendient,   color: '#f5a623' },
-      { lbl: 'Rechazados',      val: rechaz,     color: '#f87171' },
-      { lbl: 'Tasa de Éxito',   val: tasa + '%', color: ganados > 0 ? '#4ade80' : '#3d5a78' },
-    ].map(k => `
+  // Estado del filtro cruzado (persiste entre renders)
+  let filtroEstado         = null;   // null = todos (excl. BORRADO)
+  let filtroEmpresa        = null;   // null = todas
+  let filtroBusqueda       = '';     // texto libre
+  let filtroMostrarBorrados = false; // true = solo BORRADO, false = excluir BORRADO
+
+  function _leadsVisibles() {
+    const q = filtroBusqueda.trim().toLowerCase();
+    return allLeads.filter(c => {
+      // ── Borrados: solo si filtroMostrarBorrados activo ───────
+      if (filtroMostrarBorrados) return c.estado === 'BORRADO';
+      if (c.estado === 'BORRADO') return false;
+
+      // ── Filtros cruzados estado + empresa ────────────────────
+      const okE = !filtroEstado  || c.estado === filtroEstado;
+      const okR = !filtroEmpresa || (c.empresa_id && String(c.empresa_id).trim().toLowerCase() === filtroEmpresa);
+
+      // ── Búsqueda universal ───────────────────────────────────
+      const okQ = !q || [
+        c.nombre_cliente,
+        c.telefono,
+        c.poblacion,
+        marcasMap[c.marca_id]?.nombre,
+      ].some(v => v && String(v).toLowerCase().includes(q));
+
+      return okE && okR && okQ;
+    });
+  }
+
+  function renderFilterPills() {
+    // ── Fila de estados ──────────────────────────────────────
+    const rowE = $('filter-estado-row');
+    if (rowE) {
+      const lbl    = `<span style="font-size:.68rem;font-weight:700;letter-spacing:.07em;color:var(--muted);margin-right:4px;text-transform:uppercase">Estado:</span>`;
+      const actTodos = (!filtroEstado && !filtroMostrarBorrados) ? ' active' : '';
+      const allBtn = `<button class="sf-btn${actTodos}" onclick="applyFiltroEstado(null)">Todos</button>`;
+
+      // Solo estados activos (excluir BORRADO de la fila normal)
+      const ESTADOS_ACTIVOS = ESTADOS.filter(e => e !== 'BORRADO');
+      const estadoBtns = ESTADOS_ACTIVOS.map(e => {
+        const n = allLeads.filter(c => c.estado === e).length;
+        if (!n) return '';
+        const act = (!filtroMostrarBorrados && filtroEstado === e) ? ' active' : '';
+        const cls = ESTADO_CLS[e] || '';
+        return `<button class="sf-btn${act}" onclick="applyFiltroEstado('${e.replace(/'/g,"\\'")}')">
+          <span class="pill ${cls}" style="font-size:.58rem;padding:1px 6px;margin-right:5px">${n}</span>${esc(e)}
+        </button>`;
+      }).join('');
+
+      // Botón papelera (solo gestor)
+      const nBorrados   = allLeads.filter(c => c.estado === 'BORRADO').length;
+      const papeleraBtn = rol === 'gestor'
+        ? `<button class="sf-btn${filtroMostrarBorrados ? ' active' : ''}" onclick="applyFiltroBorrados()"
+            style="margin-left:8px;border-color:rgba(107,114,128,.4);${filtroMostrarBorrados ? 'color:#9ca3af' : ''}">
+            🗑 Papelera${nBorrados ? ` <span style="opacity:.7;font-size:.7rem;margin-left:3px">${nBorrados}</span>` : ''}
+          </button>`
+        : '';
+
+      rowE.innerHTML = lbl + allBtn + estadoBtns + papeleraBtn;
+    }
+
+    // ── Fila de empresas (solo gestor, oculto si modo papelera) ─
+    const rowR = $('filter-empresa-row');
+    if (rowR && rol === 'gestor') {
+      if (filtroMostrarBorrados) { rowR.innerHTML = ''; return; }
+      const lbl    = `<span style="font-size:.68rem;font-weight:700;letter-spacing:.07em;color:var(--muted);margin-right:4px;text-transform:uppercase">Empresa:</span>`;
+      const allBtn = `<button class="sf-btn${!filtroEmpresa ? ' active' : ''}" onclick="applyFiltroEmpresa(null)">Todas</button>`;
+      const empMap = {};
+      allLeads.filter(c => c.estado !== 'BORRADO').forEach(c => {
+        if (!c.empresa_id) return;
+        const k = String(c.empresa_id).trim().toLowerCase();
+        empMap[k] = (empMap[k] || 0) + 1;
+      });
+      const empBtns = Object.entries(empMap).map(([eId, n]) => {
+        const nombre = empresasMap[eId] || eId;
+        const act    = filtroEmpresa === eId ? ' active' : '';
+        return `<button class="sf-btn${act}" onclick="applyFiltroEmpresa('${eId.replace(/'/g,"\\'")}')">
+          ${esc(nombre)} <span style="opacity:.6;margin-left:4px;font-size:.7rem">${n}</span>
+        </button>`;
+      }).join('');
+      rowR.innerHTML = lbl + allBtn + empBtns;
+    }
+  }
+
+  window.applyFiltroBorrados = function() {
+    filtroMostrarBorrados = !filtroMostrarBorrados;
+    filtroEstado  = null;
+    filtroEmpresa = null;
+    const vis = _leadsVisibles();
+    renderFilterPills();
+    renderKPIs(vis);
+    renderTable(vis);
+  };
+
+  window.applyFiltroEstado = function(estado) {
+    filtroEstado          = estado;
+    filtroMostrarBorrados = false;
+    const vis = _leadsVisibles();
+    renderFilterPills();
+    renderKPIs(vis);
+    renderTable(vis);
+  };
+  window.applyFiltroEmpresa = function(empId) {
+    filtroEmpresa         = empId;
+    filtroMostrarBorrados = false;
+    const vis = _leadsVisibles();
+    renderFilterPills();
+    renderKPIs(vis);
+    renderTable(vis);
+  };
+
+  // ── Buscador universal en tiempo real ────────────────────────
+  const _searchInp = $('search-lead');
+  if (_searchInp) {
+    _searchInp.addEventListener('input', () => {
+      filtroBusqueda = _searchInp.value;
+      const vis = _leadsVisibles();
+      renderKPIs(vis);
+      renderTable(vis);
+    });
+  }
+
+  function renderKPIs(data) {
+    const total   = data.length;
+    const ganados = data.filter(c => ['OBRA ACEPTADA', 'TRABAJANDO'].includes(c.estado)).length;
+    const sinAsig = data.filter(c => c.estado === 'PENDIENTE DE ASIGNAR').length;
+    const pend    = data.filter(c => c.estado === 'PENDIENTE DE LLAMAR').length;
+    const rechaz  = data.filter(c => c.estado === 'RECHAZADO').length;
+    const tasa    = total > 0 ? Math.round((ganados / total) * 100) : 0;
+
+    // Contadores por cada estado (solo los que tienen leads)
+    const estadoCounts = ESTADOS.map(e => {
+      const n = data.filter(c => c.estado === e).length;
+      if (!n) return '';
+      const cls = ESTADO_CLS[e] || '';
+      return `<div class="kpi" style="min-width:120px">
+        <p class="kpi-lbl">${esc(e)}</p>
+        <p class="kpi-val" style="color:${ESTADO_DOT[e] || '#e6f0ff'};font-size:1.7rem">${n}</p>
+      </div>`;
+    }).join('');
+
+    $('kpi-row').innerHTML = `
       <div class="kpi">
-        <p class="kpi-lbl">${esc(k.lbl)}</p>
-        <p class="kpi-val" style="color:${k.color}">${esc(String(k.val))}</p>
-      </div>`).join('');
+        <p class="kpi-lbl">Total</p>
+        <p class="kpi-val" style="color:#e6f0ff">${total}</p>
+      </div>
+      <div class="kpi">
+        <p class="kpi-lbl">Tasa de Éxito</p>
+        <p class="kpi-val" style="color:${ganados > 0 ? '#4ade80' : '#3d5a78'}">${tasa}%</p>
+      </div>
+      ${estadoCounts}`;
   }
 
   function renderEmpresaStats(data) {
@@ -1548,45 +1856,154 @@
     hideEl('tbl-empty'); showEl('tbl-wrap', 'block');
 
     $('tbl-body').innerHTML = data.map(c => {
-      const cls      = ESTADO_CLS[c.estado] || 's-pendiente';
-      const empNom   = c.empresa_id ? esc(empresasMap[c.empresa_id] || '—') : '<span style="color:var(--muted)">—</span>';
-      const marcaNom = c.marca_id   ? esc(marcasMap[c.marca_id]     || '—') : '<span style="color:var(--muted)">—</span>';
-      const hasNew   = clientesConNuevoComentario.has(c.id);
-      const notif    = hasNew
+      const cls     = ESTADO_CLS[c.estado] || 's-pendiente';
+      // Fix: para empresa marcasMap se carga igual → lookup correcto
+      const marcaNomTxt = marcasMap[c.marca_id]?.nombre || '';
+      const marcaNom    = marcaNomTxt
+        ? `<span style="font-size:.8rem">${esc(marcaNomTxt)}</span>`
+        : '<span style="color:var(--muted)">—</span>';
+      const hasNew  = clientesConNuevoComentario.has(c.id);
+      const notif   = hasNew
         ? '<span class="new-comment-dot">nuevo comentario</span>'
         : '<span class="row-hint">Ver ficha →</span>';
 
-      // Semáforo: usa solo fecha_proxima_accion
       const { txt: fechaTxt, cls: fechaCls } = semaforo(c.fecha_proxima_accion || null);
 
+      // ── Celda empresa: gestor → select; empresa → oculto ─────
+      let empCell = '';
+      if (rol === 'gestor') {
+        const marcaIdNorm     = c.marca_id ? String(c.marca_id).trim().toLowerCase() : null;
+        const empresasValidas = marcaIdNorm ? (empresaMarcasMap[marcaIdNorm] || []) : null;
+
+        if (!marcaIdNorm) {
+          empCell = `<span style="font-size:.72rem;color:var(--muted);font-style:italic">— Sin marca —</span>`;
+        } else if (!empresasValidas || empresasValidas.length === 0) {
+          empCell = `<span style="font-size:.72rem;color:var(--muted);font-style:italic">Sin empresas vinculadas</span>`;
+        } else {
+          const opts = empresasValidas.map(eIdNorm => {
+            const nombre   = empresasMap[eIdNorm] || eIdNorm;
+            const currNorm = c.empresa_id ? String(c.empresa_id).trim().toLowerCase() : '';
+            return `<option value="${esc(eIdNorm)}"${currNorm === eIdNorm ? ' selected' : ''}>${esc(nombre)}</option>`;
+          }).join('');
+          empCell = `<select class="inline-emp-select" data-cliente="${esc(c.id)}"
+            style="background:var(--s1);border:1px solid var(--bd2);color:var(--txt);
+                   font-size:.73rem;border-radius:6px;padding:3px 6px;cursor:pointer;max-width:140px"
+            onclick="event.stopPropagation()">
+            <option value=""${!c.empresa_id ? ' selected' : ''}>— Sin asignar —</option>
+            ${opts}
+          </select>`;
+        }
+      }
+
+      // ── Botón papelera: solo gestor ───────────────────────────
+      const deleteBtn = rol === 'gestor'
+        ? `<button class="btn-delete-row" data-id="${esc(c.id)}" title="Mover a papelera"
+            style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.85rem;padding:3px 6px;border-radius:5px;transition:color .15s"
+            onmouseover="this.style.color='#f87171'" onmouseout="this.style.color=''"
+            onclick="event.stopPropagation()">🗑</button>`
+        : '';
+
       return `
-        <tr data-id="${esc(c.id)}" title="Clic para abrir la ficha">
+        <tr data-id="${esc(c.id)}" style="cursor:pointer" title="Clic para abrir la ficha">
           <td style="font-weight:500;color:#dce8f8">${esc(c.nombre_cliente || '—')}</td>
           <td class="mono" style="font-size:.76rem;color:var(--muted)">${esc(c.telefono || '—')}</td>
           <td>${esc(c.poblacion || '—')}</td>
           <td>${c.tipo_reforma
             ? `<span style="font-size:.68rem;background:rgba(255,255,255,.05);border:1px solid var(--bd2);color:var(--txt);padding:2px 8px;border-radius:99px">${esc(String(c.tipo_reforma))}</span>`
             : '<span style="color:var(--muted)">—</span>'}</td>
-          <td style="font-size:.8rem">${empNom}</td>
-          <td style="font-size:.8rem">${marcaNom}</td>
+          <td>${empCell}</td>
+          <td>${marcaNom}</td>
           <td><span class="pill ${cls}">${esc(c.estado || '—')}</span></td>
           <td><span class="${fechaCls}" style="font-size:.78rem;white-space:nowrap">${esc(fechaTxt)}</span></td>
           <td>${notif}</td>
+          <td>${deleteBtn}</td>
         </tr>`;
     }).join('');
 
+    // ── Click en filas → abrir modal (ambos roles) ────────────
     $('tbl-body').querySelectorAll('tr').forEach(row => {
       row.addEventListener('click', () => {
         const id      = row.dataset.id;
         const cliente = allLeads.find(c => c.id === id);
         if (!cliente) return;
         clientesConNuevoComentario.delete(id);
-        const lastTd = row.querySelector('td:last-child');
-        if (lastTd) lastTd.innerHTML = '<span class="row-hint">Ver ficha →</span>';
+        const notifTd = row.querySelector('td:nth-child(9)');
+        if (notifTd) notifTd.innerHTML = '<span class="row-hint">Ver ficha →</span>';
         openModal(cliente);
       });
     });
+
+    // ── Papelera en filas (solo gestor) ───────────────────────
+    $('tbl-body').querySelectorAll('.btn-delete-row').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await deleteLead(btn.dataset.id);
+      });
+    });
+
+    // ── Asignación inline de empresa (solo gestor) ────────────
+    $('tbl-body').querySelectorAll('.inline-emp-select').forEach(sel => {
+      sel.addEventListener('change', async function () {
+        const clienteId = this.dataset.cliente;
+        const empresaId = this.value;
+        if (!empresaId) return;
+
+        this.disabled = true;
+        const { error } = await sb
+          .from('clientes')
+          .update({ empresa_id: empresaId, estado: 'PENDIENTE DE LLAMAR' })
+          .eq('id', clienteId);
+
+        if (error) {
+          toast('Error al asignar empresa: ' + error.message, 'err');
+          this.disabled = false;
+          return;
+        }
+
+        const lead = allLeads.find(c => c.id === clienteId);
+        if (lead) { lead.empresa_id = empresaId; lead.estado = 'PENDIENTE DE LLAMAR'; }
+        toast('Empresa asignada — estado → PENDIENTE DE LLAMAR');
+        const vis = _leadsVisibles();
+        renderFilterPills();
+        renderKPIs(vis);
+        renderTable(vis);
+      });
+    });
   }
+
+  // ───────────────────────────────────────────────────────────
+  //  BORRADO LÓGICO (solo gestor)
+  // ───────────────────────────────────────────────────────────
+  async function deleteLead(id) {
+    const cliente = allLeads.find(c => c.id === id);
+    const nombre  = cliente?.nombre_cliente || 'este lead';
+
+    // Pedir motivo con prompt — cancelar = no borrar
+    const motivo = prompt(`Motivo de borrado para "${nombre}":\n(Dejar vacío para omitir motivo)`);
+    if (motivo === null) return;  // usuario canceló
+
+    const updatePayload = { estado: 'BORRADO' };
+    if (motivo.trim()) updatePayload.notas_internas = motivo.trim();
+
+    const { error } = await sb.from('clientes').update(updatePayload).eq('id', id);
+    if (error) { toast('Error al borrar: ' + error.message, 'err'); return; }
+
+    // Actualizar en memoria (mantenemos el lead como BORRADO)
+    const lead = allLeads.find(c => c.id === id);
+    if (lead) { lead.estado = 'BORRADO'; if (motivo.trim()) lead.notas_internas = motivo.trim(); }
+
+    closeModal();
+    const vis = _leadsVisibles();
+    renderFilterPills();
+    renderKPIs(vis);
+    renderTable(vis);
+    toast('Lead movido a papelera');
+  }
+
+  // Listener del botón papelera en el modal (solo gestor — oculto para empresa via applyRoleUI)
+  $('btn-delete-lead').addEventListener('click', async () => {
+    if (!activeClienteId || rol !== 'gestor') return;
+    await deleteLead(activeClienteId);
+  });
 
   // ───────────────────────────────────────────────────────────
   //  COMENTARIOS
