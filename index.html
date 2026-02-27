@@ -36,7 +36,7 @@
 
     /* ── Topbar ── */
     .topbar { background: rgba(6,9,17,.9); border-bottom: 1px solid var(--bd); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 50; }
-    .topbar-inner { max-width: 1300px; margin: 0 auto; padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .topbar-inner { width: 94%; max-width: 100%; margin: 0 auto; padding: 0 20px; height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .tab-bar { display: flex; gap: 3px; background: var(--s1); border: 1px solid var(--bd); border-radius: 10px; padding: 4px; }
     .tab { font-family: 'DM Sans', sans-serif; font-size: .78rem; font-weight: 500; color: var(--muted); background: none; border: none; border-radius: 7px; padding: 7px 18px; cursor: pointer; transition: all .18s; white-space: nowrap; }
     .tab:hover { color: var(--txt); background: rgba(255,255,255,.04); }
@@ -47,7 +47,8 @@
     .btn-ghost { font-family: 'DM Sans', sans-serif; font-size: .75rem; font-weight: 500; background: rgba(255,255,255,.04); border: 1px solid var(--bd); color: var(--muted); border-radius: 8px; padding: 6px 13px; cursor: pointer; transition: color .18s, border-color .18s; }
     .btn-ghost:hover { color: #f87171; border-color: rgba(248,113,113,.3); }
 
-    .main { max-width: 1300px; margin: 0 auto; padding: 28px 24px 52px; }
+    .main { width: 94%; max-width: 100%; margin: 0 auto; padding: 28px 20px 52px; }
+    @media(max-width:768px) { .main { width: 100%; padding: 16px 12px 40px; } }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; animation: fadein .28s ease both; }
     @keyframes fadein { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } }
@@ -83,14 +84,14 @@
     .alert.show { display: flex; align-items: flex-start; gap: 8px; }
 
     /* ── KPIs ── */
-    .kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
     .kpi { background: var(--s3); border: 1px solid var(--bd); border-radius: 14px; padding: 20px 18px; transition: border-color .18s, transform .18s; }
     .kpi:hover { border-color: var(--bd2); transform: translateY(-1px); }
     .kpi-lbl { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 10px; }
     .kpi-val { font-family: 'Syne', sans-serif; font-size: 2.1rem; font-weight: 800; line-height: 1; }
 
     /* ── Stats cards ── */
-    .emp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+    .emp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
     .emp-card { background: var(--s3); border: 1px solid var(--bd); border-radius: 13px; padding: 16px 18px; transition: border-color .18s; }
     .emp-card:hover { border-color: var(--bd2); }
     .emp-name { font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 700; color: var(--hi); margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -98,42 +99,61 @@
     .emp-row:last-child { margin-bottom: 0; }
     .estat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; display: inline-block; margin-right: 6px; }
 
-    /* ── Marca cards (Mis Empresas) ── */
+    /* ── Marca cards (Mis Marcas) ── */
     #marcas-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important; gap: 10px; }
     .marca-card {
-      background: var(--s3);
-      border: 1px solid var(--bd2);
-      border-radius: 13px;
-      padding: 14px 16px;
+      background: #101929;
+      border: 1px solid #1d2e47;
+      border-radius: 11px;
+      padding: 13px 15px;
       display: flex; flex-direction: column; gap: 9px;
-      transition: border-color .18s, background .18s, transform .15s, box-shadow .18s;
+      transition: background .22s, border-color .22s;
     }
     .marca-card:hover {
-      border-color: rgba(59,125,216,.55);
-      background: rgba(59,125,216,.06);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0,0,0,.35);
+      background: #0d1f38;
+      border-color: #2a4a6e;
     }
     .marca-nombre {
       font-family: 'Syne', sans-serif;
-      font-size: .95rem; font-weight: 800;
-      color: #63a8f8;
+      font-size: .92rem; font-weight: 800;
+      color: #7eb4f8;
       line-height: 1.3;
       word-break: break-word;
       white-space: normal;
     }
     .marca-empresa-row {
       display: flex; align-items: flex-start; gap: 6px;
-      border-top: 1px solid var(--bd); padding-top: 8px; margin-top: 2px;
+      border-top: 1px solid #1d2e47; padding-top: 8px; margin-top: 1px;
     }
     .marca-empresa-lbl {
-      font-size: .62rem; font-weight: 700; text-transform: uppercase;
+      font-size: .61rem; font-weight: 700; text-transform: uppercase;
       letter-spacing: .08em; color: var(--muted);
       white-space: nowrap; padding-top: 2px; flex-shrink: 0;
     }
     .marca-empresa-val {
-      font-size: .82rem; color: var(--hi); font-weight: 500;
+      font-size: .81rem; color: var(--txt); font-weight: 400;
       word-break: break-word; line-height: 1.35;
+    }
+
+    /* ── Filtros de sector en Mis Marcas ── */
+    .sector-filter {
+      display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px;
+    }
+    .sf-btn {
+      font-family: 'DM Sans', sans-serif; font-size: .75rem; font-weight: 500;
+      padding: 5px 14px; border-radius: 99px; cursor: pointer;
+      border: 1px solid var(--bd); background: rgba(255,255,255,.03);
+      color: var(--muted); transition: all .16s;
+    }
+    .sf-btn:hover { color: var(--txt); border-color: var(--bd2); }
+    .sf-btn.active {
+      background: rgba(59,125,216,.18); border-color: rgba(59,125,216,.5);
+      color: #7eb4f8;
+    }
+    @media(max-width:768px) {
+      #marcas-grid { grid-template-columns: 1fr !important; }
+      .emp-grid    { grid-template-columns: 1fr; }
+      .kpi-row     { grid-template-columns: repeat(2, 1fr); }
     }
 
     /* ── Pills ── */
@@ -337,7 +357,7 @@
         <div class="tab-bar">
           <button id="tab-btn-form"   class="tab active" data-tab="tab-form"><span style="margin-right:5px">✦</span>Registrar Lead</button>
           <button id="tab-btn-dash"   class="tab" data-tab="tab-dash"><span style="margin-right:5px">◈</span>Dashboard</button>
-          <button id="tab-btn-marcas" class="tab" data-tab="tab-marcas" style="display:none"><span style="margin-right:5px">🏢</span>Mis Empresas</button>
+          <button id="tab-btn-marcas" class="tab" data-tab="tab-marcas" style="display:none"><span style="margin-right:5px">🏷️</span>Mis Marcas</button>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
@@ -447,14 +467,20 @@
       </div>
     </div><!-- /tab-dash -->
 
-    <!-- ══ TAB 3: MIS EMPRESAS (solo gestores) ══ -->
+    <!-- ══ TAB 3: MIS MARCAS (solo gestores) ══ -->
     <div id="tab-marcas" class="tab-panel">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
         <div>
-          <p class="pcard-title" style="font-size:1.05rem">🏢 Mis Empresas por Marca</p>
+          <p class="pcard-title" style="font-size:1.05rem">🏷️ Mis Marcas</p>
           <p style="font-size:.76rem;color:var(--muted);margin-top:3px">Marcas asignadas y empresa instaladora vinculada</p>
         </div>
         <button id="btn-refresh-marcas" class="btn-ghost">↻ Actualizar</button>
+      </div>
+      <!-- Filtros de sector -->
+      <div class="sector-filter" id="sector-filter">
+        <button class="sf-btn active" data-sector="todas"    onclick="filterMarcas('todas')">Todas</button>
+        <button class="sf-btn"        data-sector="reformas" onclick="filterMarcas('reformas')">Reformas</button>
+        <button class="sf-btn"        data-sector="limpiezas" onclick="filterMarcas('limpiezas')">Limpiezas</button>
       </div>
       <div id="marcas-loading"><div class="spin"></div></div>
       <div id="marcas-empty" class="empty" style="display:none">No tienes marcas asignadas aún.</div>
@@ -958,27 +984,25 @@
   //  DETECCIÓN DE ROL
   // ───────────────────────────────────────────────────────────
   async function enterApp(user) {
-    // PASO 1 — buscar en gestores
-    // servicios es text[] → Supabase JS lo devuelve como Array<string> | null
+    // PASO 1 — buscar en gestores (.maybeSingle evita error 406 si no hay fila)
     const { data: gestor, error: gErr } = await sb
       .from('gestores')
       .select('id, nombre, servicios')
       .eq('auth_user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (!gErr && gestor) {
       rol       = 'gestor';
       userId    = gestor.id;
       userName  = gestor.nombre || user.email.split('@')[0];
-      // Normalizar: null → [], asegurar que cada elemento es string
       servicios = Array.isArray(gestor.servicios) ? gestor.servicios.map(String) : [];
     } else {
-      // PASO 2 — buscar en empresas
+      // PASO 2 — buscar en empresas (.maybeSingle por consistencia)
       const { data: empresa, error: eErr } = await sb
         .from('empresas')
         .select('id, nombre_comercial, servicios')
         .eq('auth_user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (eErr || !empresa) throw new Error('No se encontró ningún gestor ni empresa para este usuario.');
 
@@ -989,8 +1013,11 @@
     }
 
     applyRoleUI(user.email);
-    await Promise.all([loadMarcas(), loadEmpresas()]);
-    fillReformaSelector();   // poblar con servicios[] del usuario
+    // Carga secuencial: empresasMap debe estar completo antes de que
+    // cualquier render intente leer nombres de empresa
+    await loadEmpresas();
+    await loadMarcas();
+    fillReformaSelector();
 
     // ── Realtime: cambios en clientes ────────────────────────
     if (rtClientes) { sb.removeChannel(rtClientes); rtClientes = null; }
@@ -1142,22 +1169,44 @@
   }
 
   async function loadEmpresas() {
-    const { data } = await sb.from('empresas').select('id, nombre_comercial').order('nombre_comercial');
+    const eRes = await sb.from('empresas').select('*').order('nombre_comercial');
+
+    if (eRes.error) console.error('Error al cargar empresas:', eRes.error);
+
+    // Aviso visual si la tabla no devuelve filas (RLS o tabla vacía)
+    if (!eRes.data || eRes.data.length === 0) {
+      const grid = $('marcas-grid');
+      if (grid) grid.innerHTML = `<div style="grid-column:1/-1;padding:14px;
+        background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);
+        border-radius:10px;color:#fca5a5;font-size:.83rem">
+        <strong>empresasMap vacío</strong> — la tabla <code>empresas</code> no devolvió filas.
+        Revisa las políticas RLS en Supabase para el rol autenticado.
+      </div>`;
+    }
+
     empresasMap = {};
     const sel = $('f-empresa');
-    (data || []).forEach(({ id, nombre_comercial }) => {
-      empresasMap[id] = nombre_comercial;
-      if (sel) sel.add(new Option(nombre_comercial, id));
+    (eRes.data || []).forEach(e => {
+      console.log('Fila recibida de Supabase:', e);
+      const idStr = String(e.id).trim().toLowerCase();
+      const nombre = e.nombre_comercial || e.nombre || e.contacto_nombre || 'Sin Nombre';
+      empresasMap[idStr] = nombre;
+      if (sel) sel.add(new Option(nombre, e.id));
     });
+
+    console.log('Mapa de empresas cargado:', empresasMap);
+
+    if (allLeads.length > 0) renderTable(allLeads);
+    if (rol === 'gestor') loadMisMarcas();
   }
 
   // ───────────────────────────────────────────────────────────
-  //  MIS EMPRESAS (solo gestores)
-  //  Flujo de queries:
-  //    1. gestor_marcas  → marcas del gestor logueado
-  //    2. marcas         → nombre + descripcion (sector)
-  //    3. empresa_marcas → empresa vinculada a cada marca
-  //    4. empresas       → nombre_comercial de cada empresa
+  //  MIS MARCAS (solo gestores)
+  //  Flujo en 4 pasos (schema real — marcas NO tiene empresa_id):
+  //    Paso 1: gestor_marcas  → marca_ids del gestor
+  //    Paso 2: marcas         → nombre + descripcion (sector)
+  //    Paso 3: empresa_marcas → empresa_id de cada marca (tabla intermedia)
+  //    Paso 4: render         → empresasMap[empresa_id] = nombre_comercial (string, en memoria)
   // ───────────────────────────────────────────────────────────
   async function loadMisMarcas() {
     if (rol !== 'gestor') return;
@@ -1169,7 +1218,7 @@
     $('marcas-grid').innerHTML = '';
 
     try {
-      // ── 1. Marcas asignadas a este gestor ────────────────────
+      // ── Paso 1: IDs de marcas del gestor ─────────────────────
       const { data: gm, error: gmErr } = await sb
         .from('gestor_marcas')
         .select('marca_id')
@@ -1181,7 +1230,8 @@
       }
       const marcaIds = gm.map(r => r.marca_id);
 
-      // ── 2. Datos de las marcas (nombre + descripcion/sector) ──
+      // ── Paso 2: datos de las marcas ───────────────────────────
+      // Solo nombre + descripcion — marcas NO tiene columna empresa_id
       const { data: marcas, error: mErr } = await sb
         .from('marcas')
         .select('id, nombre, descripcion')
@@ -1189,36 +1239,23 @@
         .order('nombre');
       if (mErr) throw mErr;
 
-      // ── 3. Relación marca → empresa ───────────────────────────
+      // ── Paso 3: relación marca → empresa (tabla intermedia) ───
+      // empresa_marcas: { marca_id, empresa_id }
       const { data: em, error: emErr } = await sb
         .from('empresa_marcas')
         .select('marca_id, empresa_id')
         .in('marca_id', marcaIds);
       if (emErr) throw emErr;
 
-      // ── 4. Nombres de empresa desde la DB (fuente de verdad) ──
-      // Siempre recargamos aquí para garantizar que empresa_ids de
-      // empresa_marcas estén en el mapa, independientemente de qué
-      // cargó loadEmpresas() al inicio de sesión.
-      const empresaIds = [...new Set((em || []).map(r => r.empresa_id).filter(Boolean))];
-      const localEmpresaMap = { ...empresasMap }; // copia del mapa en sesión como base
-
-      if (empresaIds.length > 0) {
-        const { data: emps } = await sb
-          .from('empresas')
-          .select('id, nombre_comercial')
-          .in('id', empresaIds);
-        (emps || []).forEach(e => { localEmpresaMap[e.id] = e.nombre_comercial; });
-      }
-
-      // ── 5. Cruce: marca_id → nombre_comercial ─────────────────
-      // localEmpresaMap[empresa_id] → nombre_comercial garantizado
-      const marcaEmpresa = {};
+      // Construir mapa: marca_id (normalizado) → empresa_id (normalizado)
+      const marcaToEmpresaId = {};
       (em || []).forEach(r => {
-        marcaEmpresa[r.marca_id] = localEmpresaMap[r.empresa_id] || 'Sin empresa asignada';
+        const mId = String(r.marca_id).trim().toLowerCase();
+        const eId = String(r.empresa_id).trim().toLowerCase();
+        marcaToEmpresaId[mId] = eId;
       });
 
-      // ── RENDER ────────────────────────────────────────────────
+      // ── Paso 4: render — empresasMap[empresa_id normalizado] ──
       hideEl('marcas-loading');
       if (!marcas || marcas.length === 0) { showEl('marcas-empty', 'block'); return; }
 
@@ -1229,13 +1266,26 @@
           : `<span class="pill s-visita">REFORMA</span>`;
       }
 
-      $('marcas-grid').innerHTML = marcas.map(m => {
-        // empresaNombre: lookup explícito — nunca muestra un ID ni un guion
-        const empresaNombre = marcaEmpresa[m.id] || 'Sin empresa asignada';
+      $('marcas-grid').innerHTML = marcas.map(rel => {
+        // Normalizar la clave de búsqueda exactamente igual que al escribir el mapa
+        const marcaIdNorm  = String(rel.id).trim().toLowerCase();
+        const empresaId    = marcaToEmpresaId[marcaIdNorm];
+        const empresaIdNorm = empresaId ? String(empresaId).trim().toLowerCase() : null;
+
+        console.log('Marca:', rel.nombre,
+                    '| marca_id norm:', marcaIdNorm,
+                    '| empresa_id norm:', empresaIdNorm,
+                    '| resultado mapa:', empresasMap[empresaIdNorm]);
+
+        // Sin ⚠ si se encuentra — texto de diagnóstico solo cuando falla
+        const empresaNombre = empresaIdNorm
+          ? (empresasMap[empresaIdNorm] || 'Error: Columna nombre_comercial no existe en los datos recibidos')
+          : 'Sin empresa asignada';
+
         return `
-          <div class="marca-card">
-            <div class="marca-nombre">${esc(m.nombre)}</div>
-            <div>${sectorPill(m.descripcion)}</div>
+          <div class="marca-card" data-descripcion="${esc(rel.descripcion || '')}">
+            <div class="marca-nombre">${esc(rel.nombre)}</div>
+            <div>${sectorPill(rel.descripcion)}</div>
             <div class="marca-empresa-row">
               <span class="marca-empresa-lbl">Empresa</span>
               <span class="marca-empresa-val">${esc(empresaNombre)}</span>
@@ -1244,6 +1294,8 @@
       }).join('');
 
       showEl('marcas-grid', 'grid');
+      // Resetear filtro a "Todas" tras cada recarga
+      filterMarcas('todas');
 
     } catch (err) {
       console.error('loadMisMarcas:', err);
@@ -1258,6 +1310,33 @@
     const btnR = $('btn-refresh-marcas');
     if (btnR) btnR.addEventListener('click', loadMisMarcas);
   });
+
+  // ───────────────────────────────────────────────────────────
+  //  FILTRO DE SECTOR EN MIS MARCAS
+  //  filterMarcas('todas'|'reformas'|'limpiezas')
+  //  Lee data-sector de cada .marca-card y oculta/muestra con CSS
+  // ───────────────────────────────────────────────────────────
+  function filterMarcas(sector) {
+    // Actualizar botones activos
+    document.querySelectorAll('#sector-filter .sf-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.sector === sector);
+    });
+
+    const cards = document.querySelectorAll('#marcas-grid .marca-card');
+    let visible = 0;
+    cards.forEach(card => {
+      const desc  = (card.dataset.descripcion || '').toUpperCase();
+      const match = sector === 'todas'
+        || (sector === 'reformas'  && !desc.includes('LIMPIEZA'))
+        || (sector === 'limpiezas' && desc.includes('LIMPIEZA'));
+      card.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+
+    // Mostrar "vacío" si ninguna tarjeta pasa el filtro
+    const empty = $('marcas-empty');
+    if (empty) empty.style.display = visible === 0 ? 'block' : 'none';
+  }
 
   // ───────────────────────────────────────────────────────────
   //  SUBMIT LEAD (solo gestores)
