@@ -151,76 +151,66 @@
     .tel-cell:hover { color:var(--txt); }
 
     /* ── Cards móvil (< 768px) ── */
+    /* Desktop: mostrar tabla, ocultar cards */
+    #cards-body { display: none; }
+
     @media (max-width: 767px) {
       .main { padding: 16px 14px 52px; }
       .topbar-inner { padding: 0 14px; }
-
-      /* Ocultar tabla entera, mostrar cards */
-      .tbl-wrap table, .tbl-wrap thead { display: none; }
       .tbl-wrap { overflow-x: unset; }
 
-      /* Cada <tr> se convierte en card */
-      #tbl-body { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; }
-      #tbl-body tr {
-        display: flex; flex-direction: column;
-        background: var(--s3); border: 1px solid var(--bd);
-        border-radius: 13px; padding: 14px 16px;
+      /* Ocultar tabla, mostrar cards */
+      #leads-table { display: none; }
+      #cards-body  { display: flex; flex-direction: column; gap: 10px; padding: 14px; }
+
+      /* Card individual */
+      .lead-card {
+        background: #151b23; border: 1px solid var(--bd);
+        border-radius: 13px; padding: 16px;
         cursor: pointer; transition: border-color .18s, background .14s;
-        border-bottom: 1px solid var(--bd) !important;
-        gap: 8px;
+        display: flex; flex-direction: column; gap: 10px;
+        width: 100%;
       }
-      #tbl-body tr:hover { border-color: var(--bd2); background: rgba(59,125,216,.07); }
+      .lead-card:hover { border-color: var(--bd2); background: rgba(59,125,216,.07); }
+      .lead-card:active { background: rgba(59,125,216,.12); }
 
-      /* Ocultar TDs secundarios — solo mostrar los relevantes */
-      #tbl-body td { display: none; padding: 0; font-size: .83rem; }
-
-      /* TD 1: Nombre — siempre visible, título de la card */
-      #tbl-body td:nth-child(1) {
-        display: block;
-        font-weight: 600; color: var(--hi); font-size: .9rem;
+      /* Nombre — título de la card */
+      .lc-nombre {
+        font-weight: 700; color: var(--hi); font-size: .95rem;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
 
-      /* TD de Estado (clase .td-estado) — siempre visible */
-      #tbl-body td.td-estado { display: flex; align-items: center; }
+      /* Fila de datos con etiqueta */
+      .lc-row {
+        display: flex; align-items: center; gap: 8px;
+      }
+      .lc-lbl {
+        font-size: .58rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .09em; color: var(--muted); min-width: 44px; flex-shrink: 0;
+      }
+      .lc-val { font-size: .82rem; color: var(--txt); }
 
-      /* TD de Marca — visible */
-      #tbl-body td.td-marca { display: flex; align-items: center; gap: 6px; }
-      #tbl-body td.td-marca::before {
-        content: 'Marca'; font-size: .6rem; font-weight: 700;
-        text-transform: uppercase; letter-spacing: .08em;
-        color: var(--muted); min-width: 46px;
+      /* Estado select en card — ancho completo */
+      .lead-card .estado-select {
+        width: 100%; border-radius: 8px; padding: 7px 28px 7px 12px;
+        font-size: .75rem;
       }
 
-      /* TD Teléfono — visible */
-      #tbl-body td.td-tel { display: flex; align-items: center; gap: 6px; }
-      #tbl-body td.td-tel::before {
-        content: 'Tel'; font-size: .6rem; font-weight: 700;
-        text-transform: uppercase; letter-spacing: .08em;
-        color: var(--muted); min-width: 46px;
+      /* Footer de la card: tel + notif */
+      .lc-footer {
+        display: flex; align-items: center; justify-content: space-between;
+        padding-top: 6px; border-top: 1px solid rgba(29,46,71,.4);
+        margin-top: 2px;
       }
 
-      /* TD Próxima Acción — visible */
-      #tbl-body td.td-fecha { display: flex; align-items: center; gap: 6px; }
-      #tbl-body td.td-fecha::before {
-        content: 'Acción'; font-size: .6rem; font-weight: 700;
-        text-transform: uppercase; letter-spacing: .08em;
-        color: var(--muted); min-width: 46px;
-      }
-
-      /* TD notif/acciones — fila inferior */
-      #tbl-body td.td-notif { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
-      #tbl-body td.td-del   { display: none; } /* el borrado se hace desde el modal en móvil */
-
-      /* Select estado dentro de card */
-      #tbl-body .estado-select { width: 100%; border-radius: 8px; padding: 6px 28px 6px 10px; }
-
-      /* Ajustes cards de filtros */
-      .filtros-bar { gap: 6px; }
+      /* Ajustes filtros / buscador */
+      .filtros-bar { gap: 6px; flex-wrap: wrap; }
       #search-lead { width: 100%; }
       .kpi-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .tab-bar .tab { padding: 7px 10px; font-size: .7rem; }
 
-      /* Topbar en móvil */
-      .tab-bar .tab { padding: 7px 12px; font-size: .72rem; }
+      /* Quitar scroll horizontal global */
+      body { overflow-x: hidden; }
     }
 
     /* ── Select estado inline (empresa) ── */
@@ -531,6 +521,7 @@
         <div id="tbl-loading"><div class="spin"></div></div>
         <div id="tbl-empty" class="empty" style="display:none">No hay leads registrados.</div>
         <div id="tbl-wrap" class="tbl-wrap" style="display:none">
+          <!-- Tabla desktop -->
           <table id="leads-table">
             <thead>
               <tr id="tbl-head">
@@ -544,6 +535,8 @@
             </thead>
             <tbody id="tbl-body"></tbody>
           </table>
+          <!-- Cards móvil — renderizado en paralelo por renderTable() -->
+          <div id="cards-body"></div>
         </div>
       </div>
     </div>
@@ -1022,22 +1015,35 @@
   });
 
   function patchTableRow(id, nuevoEstado) {
-    const row=document.querySelector(`#tbl-body tr[data-id="${id}"]`);
-    if(!row) return;
     const cls=ESTADO_CLS[nuevoEstado]||'s-pendiente';
-    // Actualiza select (empresa) o pill span (gestor) en la celda de estado
-    const sel=row.querySelector('.estado-select');
-    if(sel) {
-      sel.value=nuevoEstado;
-      sel.className='estado-select '+cls;
-    } else {
-      // Columna 7 para gestor (con col empresa), 6 para empresa (sin col empresa)
-      const idx=rol==='empresa'?6:7;
-      const cell=row.querySelector(`td:nth-child(${idx})`);
-      if(cell) cell.innerHTML=`<span class="pill ${cls}">${esc(nuevoEstado)}</span>`;
+
+    // Parchear fila de tabla (desktop)
+    const row=document.querySelector(`#tbl-body tr[data-id="${id}"]`);
+    if(row) {
+      const sel=row.querySelector('.estado-select');
+      if(sel) { sel.value=nuevoEstado; sel.className='estado-select '+cls; }
+      else {
+        const idx=rol==='empresa'?6:7;
+        const cell=row.querySelector(`td:nth-child(${idx})`);
+        if(cell) cell.innerHTML=`<span class="pill ${cls}">${esc(nuevoEstado)}</span>`;
+      }
+      row.style.transition='background .1s'; row.style.background='rgba(59,125,216,.18)';
+      setTimeout(()=>{ row.style.background=''; },900);
     }
-    row.style.transition='background .1s'; row.style.background='rgba(59,125,216,.18)';
-    setTimeout(()=>{ row.style.background=''; },900);
+
+    // Parchear card móvil
+    const card=document.querySelector(`#cards-body .lead-card[data-id="${id}"]`);
+    if(card) {
+      const sel=card.querySelector('.estado-select');
+      if(sel) { sel.value=nuevoEstado; sel.className='estado-select '+cls; }
+      else {
+        const pill=card.querySelector('.pill');
+        if(pill) { pill.textContent=nuevoEstado; pill.className='pill '+cls; }
+      }
+      card.style.transition='background .1s'; card.style.background='rgba(59,125,216,.18)';
+      setTimeout(()=>{ card.style.background=''; },900);
+    }
+
     renderKPIs(leadsVisibles());
   }
 
@@ -1420,9 +1426,14 @@
     if(!data.length) { showEl('tbl-empty','block'); hideEl('tbl-wrap'); return; }
     hideEl('tbl-empty'); showEl('tbl-wrap','block');
 
-    $('tbl-body').innerHTML=data.map(c=>{
+    // ── Generar HTML para tabla (desktop) Y cards (móvil) en paralelo ──
+    const rowsHTML   = [];
+    const cardsHTML  = [];
+
+    data.forEach(c=>{
       const cls=ESTADO_CLS[c.estado]||'s-pendiente';
-      const marcaNomTxt=getMarcaNombre(c.marca_id);
+      // Marca: usar join directo si existe (empresa), sino lookup en marcasMap (gestor)
+      const marcaNomTxt = (c.marcas?.nombre) || getMarcaNombre(c.marca_id) || '';
       const marcaNom=marcaNomTxt?`<span style="font-size:.8rem">${esc(marcaNomTxt)}</span>`:'<span style="color:var(--muted)">—</span>';
       const hasNew=clientesConNuevoComentario.has(c.id);
       const notif=hasNew?'<span class="new-comment-dot">nuevo comentario</span>':'<span class="row-hint">Ver ficha →</span>';
@@ -1452,7 +1463,8 @@
         ? `<select class="estado-select ${cls}" data-id="${c.id}" onchange="event.stopPropagation();window._updateEstado('${c.id}',this)" onclick="event.stopPropagation()" title="Cambiar estado">${estadosEmpresa.map(e=>`<option value="${e}"${e===c.estado?' selected':''}>${e}</option>`).join('')}</select>`
         : `<span class="pill ${cls}">${esc(c.estado||'—')}</span>`;
 
-      return `
+      // ── Fila tabla (desktop) ──
+      rowsHTML.push(`
         <tr data-id="${esc(c.id)}" title="Clic para abrir la ficha">
           <td>${esc(c.nombre_cliente||'—')}</td>
           <td class="td-tel">${telHtml}</td>
@@ -1464,11 +1476,36 @@
           <td class="td-fecha"><span class="${fechaCls}" style="font-size:.78rem;white-space:nowrap">${esc(fechaTxt)}</span></td>
           <td class="td-notif">${notif}</td>
           <td class="td-del">${delBtn}</td>
-        </tr>`;
-    }).join('');
+        </tr>`);
+
+      // ── Card móvil ──
+      const cardEstado = rol==='empresa'
+        ? `<select class="estado-select ${cls}" data-id="${c.id}"
+             onchange="event.stopPropagation();window._updateEstado('${c.id}',this)"
+             onclick="event.stopPropagation()">${
+               ESTADOS.filter(e=>!['BORRADO','PENDIENTE DE ASIGNAR'].includes(e))
+                 .map(e=>`<option value="${esc(e)}"${e===c.estado?' selected':''}>${esc(e)}</option>`).join('')
+             }</select>`
+        : `<span class="pill ${cls}">${esc(c.estado||'—')}</span>`;
+
+      cardsHTML.push(`
+        <div class="lead-card" data-id="${esc(c.id)}">
+          <div class="lc-nombre">${esc(c.nombre_cliente||'Sin nombre')}</div>
+          ${marcaNomTxt?`<div class="lc-row"><span class="lc-lbl">Marca</span><span class="lc-val">${esc(marcaNomTxt)}</span></div>`:''}
+          <div class="lc-row"><span class="lc-lbl">Estado</span>${cardEstado}</div>
+          ${c.poblacion?`<div class="lc-row"><span class="lc-lbl">Lugar</span><span class="lc-val">${esc(c.poblacion)}</span></div>`:''}
+          <div class="lc-footer">
+            ${telHtml}
+            ${notif}
+          </div>
+        </div>`);
+    });
+
+    $('tbl-body').innerHTML  = rowsHTML.join('');
+    $('cards-body').innerHTML = cardsHTML.join('');
 
     renderSortHeaders();
-    // Click en filas → abrir modal
+    // Click en filas tabla → abrir modal
     $('tbl-body').querySelectorAll('tr').forEach(row=>{
       row.addEventListener('click',e=>{
         if(e.target.closest('.tel-cell')||e.target.closest('.btn-row-del')) return;
@@ -1478,6 +1515,18 @@
         clientesConNuevoComentario.delete(id);
         const last=row.querySelector('td:last-child');
         if(last) last.innerHTML='<span class="row-hint">Ver ficha →</span>';
+        openModal(cliente);
+      });
+    });
+
+    // Click en cards móvil → abrir modal
+    $('cards-body').querySelectorAll('.lead-card').forEach(card=>{
+      card.addEventListener('click',e=>{
+        if(e.target.closest('.tel-cell')||e.target.closest('.estado-select')) return;
+        const id=card.dataset.id;
+        const cliente=allLeads.find(c=>c.id===id);
+        if(!cliente) return;
+        clientesConNuevoComentario.delete(id);
         openModal(cliente);
       });
     });
