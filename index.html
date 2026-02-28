@@ -859,7 +859,7 @@
     const fechaAccionVal=$('edit-proxima-accion').value||null;
     const editOpen=$('edit-panel').classList.contains('open');
 
-    const payload={ estado:nuevoEstado, importe_presupuesto:importeVal, fecha_proxima_accion:fechaAccionVal };
+    const payload={ estado:nuevoEstado, importe_presupuesto:importeVal, fecha_proxima_accion:fechaAccionVal, ultimo_editor_id:userId };
     if(editOpen) {
       const n=$('edit-nombre').value.trim(), t=$('edit-tel').value.trim();
       const em=$('edit-email').value.trim(), p=$('edit-pobl').value.trim();
@@ -932,7 +932,7 @@
 
   // ─── BORRADO LÓGICO ───────────────────────────────────────────
   async function softDeleteLead(id, motivo) {
-    const {error}=await sb.from('clientes').update({estado:'BORRADO',notas_internas:motivo}).eq('id',id);
+    const {error}=await sb.from('clientes').update({estado:'BORRADO',notas_internas:motivo,ultimo_editor_id:userId}).eq('id',id);
     if(error) { toast('Error al borrar: '+error.message,'err'); return; }
     const lead=allLeads.find(c=>c.id===id);
     if(lead) { lead.estado='BORRADO'; lead.notas_internas=motivo; }
@@ -1327,7 +1327,7 @@
     try {
       const { error } = await sb
         .from('clientes')
-        .update({ estado: nuevoEstado })
+        .update({ estado: nuevoEstado, ultimo_editor_id: userId })
         .eq('id', id)
         .select('id,estado');
 
