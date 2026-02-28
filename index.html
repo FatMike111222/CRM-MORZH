@@ -755,10 +755,7 @@
       $('btn-modal-del').style.display='none';
     }
 
-    // Empresa rol empresa: solo lectura del selector de estado
-    if(rol==='empresa') {
-      $('estado-selector').querySelectorAll('.estado-opt').forEach(b=>{ b.style.pointerEvents='none'; b.style.opacity='.45'; });
-    }
+    // Empresa: el selector de estado ya es interactivo vía autoSaveEstado
 
     // Save bar
     $('save-bar').classList.remove('visible');
@@ -826,19 +823,57 @@
       return `<button class="estado-opt${isSel?' selected '+cls:''}" data-estado="${esc(e)}">${esc(e)}</button>`;
     }).join('');
 
-    if(rol==='gestor') {
-      sel.querySelectorAll('.estado-opt').forEach(btn=>{
-        btn.addEventListener('click',()=>{
-          const nuevo=btn.dataset.estado;
-          if(nuevo===pendingEstado) return;
-          pendingEstado=nuevo;
-          sel.querySelectorAll('.estado-opt').forEach(b=>{
-            b.className='estado-opt'+(b.dataset.estado===nuevo?' selected '+(ESTADO_CLS[nuevo]||''):'');
-          });
-          markDirty();
+    // Ambos roles pueden cambiar estado — se guarda automáticamente al hacer clic
+    sel.querySelectorAll('.estado-opt').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const nuevo=btn.dataset.estado;
+        if(nuevo===pendingEstado) return;
+        pendingEstado=nuevo;
+        // Resaltar selección visual inmediatamente
+        sel.querySelectorAll('.estado-opt').forEach(b=>{
+          b.className='estado-opt'+(b.dataset.estado===nuevo?' selected '+(ESTADO_CLS[nuevo]||''):'');
         });
+        // Guardar en Supabase automáticamente
+        await autoSaveEstado(nuevo);
       });
-    }
+    });
+  }
+
+  // Guarda solo el estado (ambos roles) sin necesidad de botón Guardar
+  async function autoSaveEstado(nuevoEstado) {
+    if(!activeClienteId || !activeClienteData) return;
+    const estadoAnterior=String(activeClienteData.estado);
+    if(nuevoEstado===estadoAnterior) return;
+
+    const { data: sessionData } = await sb.auth.getSession();
+    const actualUserId = sessionData.session?.user?.id || authUserId;
+
+    const {error}=await sb.from('clientes')
+      .update({ estado: nuevoEstado, ultimo_editor_id: actualUserId })
+      .eq('id', activeClienteId)
+      .select('id,estado');
+
+    if(error){ toast('Error al guardar estado: '+error.message,'err'); return; }
+
+    // Actualizar memoria
+    activeClienteData.estado=nuevoEstado;
+    const idx=allLeads.findIndex(c=>c.id===activeClienteId);
+    if(idx!==-1) allLeads[idx].estado=nuevoEstado;
+
+    // Actualizar pill del header del modal
+    $('modal-estado-pill').textContent=nuevoEstado;
+    $('modal-estado-pill').className='pill '+(ESTADO_CLS[nuevoEstado]||'s-pendiente');
+
+    // Comentario automático de cambio de estado
+    await sb.from('comentarios_clientes').insert([{
+      cliente_id:activeClienteId, nombre_autor:'Sistema', autor_id:null,
+      texto:`Sistema: El estado ha cambiado a ${nuevoEstado}`,
+      created_at:new Date().toISOString(),
+    }]);
+
+    toast('Estado → '+nuevoEstado);
+    patchTableRow(activeClienteId, nuevoEstado);
+    renderFiltrosEstado();
   }
 
   $('modal-close-btn').addEventListener('click', closeModal);
@@ -852,8 +887,6 @@
     btn.disabled=true; btn.textContent='Guardando…';
     $('save-ok').style.display='none'; $('save-err').style.display='none';
 
-    const estadoAnterior=String(activeClienteData.estado);
-    const nuevoEstado=String(pendingEstado);
     const importeRaw=$('edit-importe').value.trim();
     const importeVal=importeRaw!==''?parseFloat(importeRaw):null;
     const fechaAccionVal=$('edit-proxima-accion').value||null;
@@ -862,11 +895,9 @@
     // ── Obtener UUID de auth.users en tiempo real ────────────────
     const { data: { session: _sess1 } } = await sb.auth.getSession();
     const _editorId1 = _sess1?.user?.id ?? authUserId ?? null;
-    console.log('═══ [GESTOR SAVE] ultimo_editor_id que se enviará:', _editorId1,
-      '| authUserId en memoria:', authUserId,
-      '| session.user.id:', _sess1?.user?.id ?? 'NO SESSION');
-    if (!_editorId1) console.error('⛔ _editorId1 es NULL — el campo llegará vacío a Supabase');
-    const payload={ estado:nuevoEstado, importe_presupuesto:importeVal, fecha_proxima_accion:fechaAccionVal, ultimo_editor_id:_editorId1 };
+
+    // Payload: importe, fecha y datos de cliente — el estado ya lo gestiona autoSaveEstado
+    const payload={ importe_presupuesto:importeVal, fecha_proxima_accion:fechaAccionVal, ultimo_editor_id:_editorId1 };
     if(editOpen) {
       const n=$('edit-nombre').value.trim(), t=$('edit-tel').value.trim();
       const em=$('edit-email').value.trim(), p=$('edit-pobl').value.trim();
@@ -877,41 +908,27 @@
     }
 
     try {
-      const {data:saveData,error}=await sb.from('clientes').update(payload).eq('id',activeClienteId).select('id,estado,ultimo_editor_id');
-      console.log('Respuesta Supabase [gestor-save]:', { saveData, error, authUserId });
-      if(saveData && saveData[0] && !saveData[0].ultimo_editor_id) console.warn('⚠ ultimo_editor_id NULL en respuesta gestor');
+      const {error}=await sb.from('clientes').update(payload).eq('id',activeClienteId);
       if(error) throw error;
 
       activeClienteData={...activeClienteData,...payload};
       const idx=allLeads.findIndex(c=>c.id===activeClienteId);
       if(idx!==-1) allLeads[idx]={...allLeads[idx],...payload};
 
-      $('modal-estado-pill').textContent=nuevoEstado;
-      $('modal-estado-pill').className='pill '+(ESTADO_CLS[nuevoEstado]||'s-pendiente');
       if(payload.nombre_cliente) $('modal-client-name').textContent=payload.nombre_cliente;
 
-      // Nota automática de edición
+      // Nota automática de edición de datos
       const ahora=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
       await sb.from('comentarios_clientes').insert([{
         cliente_id:activeClienteId, nombre_autor:'Sistema', autor_id:null,
         texto:`Cambio realizado por gestor el ${ahora}`, created_at:new Date().toISOString(),
       }]);
 
-      // Historial de estado si cambió
-      if(nuevoEstado!==estadoAnterior) {
-        await sb.from('comentarios_clientes').insert([{
-          cliente_id:activeClienteId, nombre_autor:'Sistema', autor_id:null,
-          texto:`Sistema: El estado ha cambiado a ${nuevoEstado}`, created_at:new Date().toISOString(),
-        }]);
-      }
-
       $('save-ok').style.display='inline';
       setTimeout(()=>{ $('save-ok').style.display='none'; },3000);
       $('save-bar').classList.remove('visible');
       $('edit-panel').classList.remove('open');
       toast('Cambios guardados');
-      patchTableRow(activeClienteId, nuevoEstado);
-      renderFiltrosEstado();
 
     } catch(err) {
       $('save-err').textContent='Error: '+err.message;
@@ -1005,6 +1022,8 @@
 
     hideEl('screen-login');
     showEl('screen-app','flex');
+    // Cargar dashboard automáticamente al entrar (evita el F5 en empresa)
+    await loadDashboard();
   }
 
   // ─── APPLY ROLE UI ────────────────────────────────────────────
@@ -1076,13 +1095,26 @@
 
   // ─── DROPDOWNS ────────────────────────────────────────────────
   async function loadMarcas() {
-    const {data}=await sb.from('marcas').select('id,nombre').order('nombre');
     marcasMap={}; const sel=$('f-marca');
-    (data||[]).forEach(({id,nombre})=>{
-      marcasMap[id]=nombre;
-      marcasMap[String(id).trim().toLowerCase()]=nombre;
-      if(sel) sel.add(new Option(nombre,id));
-    });
+    if(rol==='empresa') {
+      // Empresa: cargar solo las marcas vinculadas a través de empresa_marcas
+      const {data}=await sb.from('empresa_marcas')
+        .select('marca_id, marcas(id, nombre)')
+        .eq('empresa_id', userId);
+      (data||[]).forEach(row=>{
+        const m=row.marcas; if(!m) return;
+        marcasMap[m.id]=m.nombre;
+        marcasMap[String(m.id).trim().toLowerCase()]=m.nombre;
+      });
+    } else {
+      // Gestor: todas las marcas
+      const {data}=await sb.from('marcas').select('id,nombre').order('nombre');
+      (data||[]).forEach(({id,nombre})=>{
+        marcasMap[id]=nombre;
+        marcasMap[String(id).trim().toLowerCase()]=nombre;
+        if(sel) sel.add(new Option(nombre,id));
+      });
+    }
   }
 
   async function loadEmpresas() {
