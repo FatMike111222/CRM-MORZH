@@ -1503,9 +1503,6 @@
     if(!valid.length) return;
 
     // ── Obtener editor en tiempo real (misma lógica que _editorId) ──
-    const { data: { session: _sessDocs } } = await sb.auth.getSession();
-    const _editorIdDocs = _sessDocs?.user?.id ?? authUserId ?? null;
-
     const bar=$('upload-progress-bar'), lbl=$('upload-progress-label');
     showEl('upload-progress-wrap','block');
     for(let i=0;i<valid.length;i++) {
@@ -1517,14 +1514,19 @@
       } else {
         toast(`${f.name} subido`);
         // ── Registrar subida en comentarios_clientes ──────────────
-        const { error: cErr } = await sb.from('comentarios_clientes').insert([{
-          cliente_id:   activeClienteId,
-          autor_id:     _editorIdDocs,
-          nombre_autor: userName,
-          texto:        `Ha subido un nuevo archivo: ${f.name}`,
-          created_at:   new Date().toISOString(),
-        }]);
-        if(cErr) console.error('Error al registrar subida en comentarios:', cErr.message);
+        const { data: sessionData } = await sb.auth.getSession();
+        const actualUserId = sessionData.session?.user?.id || authUserId;
+        if(actualUserId) {
+          const { error: cErr } = await sb.from('comentarios_clientes').insert({
+            cliente_id:   activeClienteId,
+            autor_id:     actualUserId,
+            nombre_autor: userName,
+            texto:        `Ha subido un nuevo archivo: ${f.name}`,
+          });
+          if(cErr) console.error('Error al registrar subida en comentarios:', cErr.message);
+        } else {
+          console.error('⛔ actualUserId es null — comentario de subida no registrado');
+        }
         // Refrescar comentarios si la pestaña está activa
         const tabComments = document.querySelector('[data-mpanel="mp-comments"]');
         if(tabComments?.classList.contains('active')) loadComments(activeClienteId);
