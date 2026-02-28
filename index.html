@@ -29,14 +29,12 @@
     #screen-login { display: flex; }
     #screen-app   { display: none; flex-direction: column; min-height: 100vh; }
 
-    /* ── Login ── */
     .login-box { background: var(--s2); border: 1px solid var(--bd); border-radius: 18px; padding: 40px 36px; box-shadow: 0 40px 80px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.025) inset; }
     .accent-bar { height: 3px; background: linear-gradient(90deg, var(--blue), var(--blue2), transparent); border-radius: 18px 18px 0 0; }
     .logo-sq { width: 38px; height: 38px; border-radius: 9px; background: linear-gradient(135deg, var(--blue), var(--blue2)); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(59,125,216,.4); }
 
-    /* ── Topbar ── */
     .topbar { background: rgba(6,9,17,.9); border-bottom: 1px solid var(--bd); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 50; }
-    .topbar-inner { width: 94%; max-width: 100%; margin: 0 auto; padding: 0 20px; height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .topbar-inner { max-width: 1300px; margin: 0 auto; padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .tab-bar { display: flex; gap: 3px; background: var(--s1); border: 1px solid var(--bd); border-radius: 10px; padding: 4px; }
     .tab { font-family: 'DM Sans', sans-serif; font-size: .78rem; font-weight: 500; color: var(--muted); background: none; border: none; border-radius: 7px; padding: 7px 18px; cursor: pointer; transition: all .18s; white-space: nowrap; }
     .tab:hover { color: var(--txt); background: rgba(255,255,255,.04); }
@@ -47,8 +45,7 @@
     .btn-ghost { font-family: 'DM Sans', sans-serif; font-size: .75rem; font-weight: 500; background: rgba(255,255,255,.04); border: 1px solid var(--bd); color: var(--muted); border-radius: 8px; padding: 6px 13px; cursor: pointer; transition: color .18s, border-color .18s; }
     .btn-ghost:hover { color: #f87171; border-color: rgba(248,113,113,.3); }
 
-    .main { width: 94%; max-width: 100%; margin: 0 auto; padding: 28px 20px 52px; }
-    @media(max-width:768px) { .main { width: 100%; padding: 16px 12px 40px; } }
+    .main { max-width: 1300px; margin: 0 auto; padding: 28px 24px 52px; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; animation: fadein .28s ease both; }
     @keyframes fadein { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } }
@@ -58,7 +55,6 @@
     .pcard-title { font-family: 'Syne', sans-serif; font-size: .92rem; font-weight: 700; color: var(--hi); }
     .pcard-body { padding: 22px; }
 
-    /* ── Fields ── */
     .field-label { display: block; font-size: .7rem; font-weight: 600; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
     .field { width: 100%; background: rgba(255,255,255,.03); border: 1px solid var(--bd); border-radius: 9px; color: var(--txt); font-family: 'DM Sans', sans-serif; font-size: .875rem; padding: 10px 13px; outline: none; transition: border-color .18s, box-shadow .18s; appearance: none; -webkit-appearance: none; }
     .field::placeholder { color: var(--muted); }
@@ -66,13 +62,17 @@
     .field option { background: var(--s1); }
     select.field { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%233d5a78'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; }
 
-    /* ── Buttons ── */
     .btn-primary { background: linear-gradient(135deg, var(--blue), var(--blue2)); border: none; border-radius: 9px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: .875rem; font-weight: 600; padding: 11px 24px; cursor: pointer; transition: transform .15s, box-shadow .18s, opacity .18s; }
     .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(91,110,240,.4); }
     .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
     .btn-sm { font-family: 'DM Sans', sans-serif; font-size: .78rem; font-weight: 600; border: none; border-radius: 7px; padding: 7px 14px; cursor: pointer; transition: all .15s; }
     .btn-sm-green { background: rgba(34,197,94,.15); color: #4ade80; border: 1px solid rgba(34,197,94,.3); }
     .btn-sm-green:hover { background: rgba(34,197,94,.25); }
+    /* Botones modal acción */
+    .btn-modal-edit   { font-family:'DM Sans',sans-serif; font-size:.74rem; font-weight:600; background:rgba(59,125,216,.1); border:1px solid rgba(59,125,216,.28); color:#7eb4f8; border-radius:7px; padding:5px 12px; cursor:pointer; transition:all .15s; }
+    .btn-modal-edit:hover { background:rgba(59,125,216,.2); }
+    .btn-modal-del    { font-family:'DM Sans',sans-serif; font-size:.74rem; font-weight:600; background:rgba(239,68,68,.09); border:1px solid rgba(239,68,68,.22); color:#f87171; border-radius:7px; padding:5px 12px; cursor:pointer; transition:all .15s; }
+    .btn-modal-del:hover  { background:rgba(239,68,68,.18); }
 
     .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     @media(max-width:600px) { .form-2col { grid-template-columns: 1fr; } }
@@ -83,15 +83,32 @@
     .alert.err { background: rgba(239,68,68,.1);  border: 1px solid rgba(239,68,68,.3);  color: #fca5a5; }
     .alert.show { display: flex; align-items: flex-start; gap: 8px; }
 
+    /* ── Filtros ── */
+    .filtros-bar { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+    .sf-btn { font-family:'DM Mono',monospace; font-size:.63rem; font-weight:600; letter-spacing:.05em; padding:4px 11px; border-radius:99px; border:1px solid var(--bd); background:rgba(255,255,255,.03); color:var(--muted); cursor:pointer; transition:all .15s; white-space:nowrap; }
+    .sf-btn:hover { color:var(--txt); border-color:var(--bd2); }
+    .sf-btn.active { background:var(--s3); color:var(--hi); border-color:var(--bd2); }
+    .sf-btn.papelera { border-color:rgba(239,68,68,.28); color:#f87171; }
+    .sf-btn.papelera.active { background:rgba(239,68,68,.11); border-color:rgba(239,68,68,.45); }
+    /* Buscador */
+    #search-lead { background:rgba(255,255,255,.03); border:1px solid var(--bd); border-radius:8px; color:var(--txt); font-family:'DM Sans',sans-serif; font-size:.82rem; padding:5px 12px; outline:none; transition:border-color .18s; width:260px; }
+    #search-lead::placeholder { color:var(--muted); }
+    #search-lead:focus { border-color:rgba(59,125,216,.45); }
+
+    /* ── Tel popup ── */
+    #tel-popup { position:fixed; background:var(--s1); border:1px solid var(--bd2); border-radius:10px; box-shadow:0 10px 28px rgba(0,0,0,.55); padding:6px 0; z-index:500; min-width:155px; display:none; }
+    #tel-popup.open { display:block; animation:fadein .14s ease both; }
+    #tel-popup a { display:flex; align-items:center; gap:9px; padding:9px 14px; font-size:.8rem; color:var(--txt); text-decoration:none; transition:background .12s; }
+    #tel-popup a:hover { background:rgba(255,255,255,.06); }
+
     /* ── KPIs ── */
-    .kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; margin-bottom: 24px; }
     .kpi { background: var(--s3); border: 1px solid var(--bd); border-radius: 14px; padding: 20px 18px; transition: border-color .18s, transform .18s; }
     .kpi:hover { border-color: var(--bd2); transform: translateY(-1px); }
     .kpi-lbl { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 10px; }
     .kpi-val { font-family: 'Syne', sans-serif; font-size: 2.1rem; font-weight: 800; line-height: 1; }
 
-    /* ── Stats cards ── */
-    .emp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .emp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
     .emp-card { background: var(--s3); border: 1px solid var(--bd); border-radius: 13px; padding: 16px 18px; transition: border-color .18s; }
     .emp-card:hover { border-color: var(--bd2); }
     .emp-name { font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 700; color: var(--hi); margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -99,66 +116,9 @@
     .emp-row:last-child { margin-bottom: 0; }
     .estat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; display: inline-block; margin-right: 6px; }
 
-    /* ── Marca cards (Mis Marcas) ── */
-    #marcas-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important; gap: 10px; }
-    .marca-card {
-      background: #101929;
-      border: 1px solid #1d2e47;
-      border-radius: 11px;
-      padding: 13px 15px;
-      display: flex; flex-direction: column; gap: 9px;
-      transition: background .22s, border-color .22s;
-    }
-    .marca-card:hover {
-      background: #0d1f38;
-      border-color: #2a4a6e;
-    }
-    .marca-nombre {
-      font-family: 'Syne', sans-serif;
-      font-size: .92rem; font-weight: 800;
-      color: #7eb4f8;
-      line-height: 1.3;
-      word-break: break-word;
-      white-space: normal;
-    }
-    .marca-empresa-row {
-      display: flex; align-items: flex-start; gap: 6px;
-      border-top: 1px solid #1d2e47; padding-top: 8px; margin-top: 1px;
-    }
-    .marca-empresa-lbl {
-      font-size: .61rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .08em; color: var(--muted);
-      white-space: nowrap; padding-top: 2px; flex-shrink: 0;
-    }
-    .marca-empresa-val {
-      font-size: .81rem; color: var(--txt); font-weight: 400;
-      word-break: break-word; line-height: 1.35;
-    }
-
-    /* ── Filtros de sector en Mis Marcas ── */
-    .sector-filter {
-      display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px;
-    }
-    .sf-btn {
-      font-family: 'DM Sans', sans-serif; font-size: .75rem; font-weight: 500;
-      padding: 5px 14px; border-radius: 99px; cursor: pointer;
-      border: 1px solid var(--bd); background: rgba(255,255,255,.03);
-      color: var(--muted); transition: all .16s;
-    }
-    .sf-btn:hover { color: var(--txt); border-color: var(--bd2); }
-    .sf-btn.active {
-      background: rgba(59,125,216,.18); border-color: rgba(59,125,216,.5);
-      color: #7eb4f8;
-    }
-    @media(max-width:768px) {
-      #marcas-grid { grid-template-columns: 1fr !important; }
-      .emp-grid    { grid-template-columns: 1fr; }
-      .kpi-row     { grid-template-columns: repeat(2, 1fr); }
-    }
-
     /* ── Pills ── */
     .pill { font-family: 'DM Mono', monospace; font-size: .63rem; font-weight: 600; letter-spacing: .04em; border-radius: 99px; padding: 3px 9px; border: 1px solid transparent; white-space: nowrap; }
-    .s-sin-asignar{ background: rgba(148,163,184,.12); border-color: rgba(148,163,184,.35); color: #94a3b8; }
+    .s-sin-asignar{ background:rgba(148,163,184,.1);  border-color:rgba(148,163,184,.35); color:#94a3b8; }
     .s-pendiente  { background: rgba(245,166,35,.13); border-color: rgba(245,166,35,.4);  color: #f5a623; }
     .s-visita     { background: rgba(59,125,216,.13);  border-color: rgba(59,125,216,.4);  color: #63a8f8; }
     .s-seguimiento{ background: rgba(139,92,246,.13);  border-color: rgba(139,92,246,.4);  color: #a78bfa; }
@@ -166,6 +126,7 @@
     .s-aceptada   { background: rgba(34,197,94,.13);   border-color: rgba(34,197,94,.4);   color: #4ade80; }
     .s-trabajando { background: rgba(20,184,166,.13);  border-color: rgba(20,184,166,.4);  color: #2dd4bf; }
     .s-rechazado  { background: rgba(239,68,68,.13);   border-color: rgba(239,68,68,.4);   color: #f87171; }
+    .s-borrado    { background: rgba(107,114,128,.1);  border-color: rgba(107,114,128,.28);color: #6b7280; }
 
     /* ── Table ── */
     .tbl-wrap { overflow-x: auto; }
@@ -176,18 +137,19 @@
     tbody tr:hover { background: rgba(59,125,216,.07); }
     tbody td { padding: 11px 16px; font-size: .83rem; vertical-align: middle; }
     .row-hint { font-size: .65rem; color: var(--muted); white-space: nowrap; }
+    .btn-row-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:.95rem; padding:2px 5px; border-radius:5px; line-height:1; transition:color .14s; }
+    .btn-row-del:hover { color:#f87171; }
+    .tel-cell { cursor:pointer; color:var(--muted); font-family:'DM Mono',monospace; font-size:.76rem; text-decoration:underline dotted; text-underline-offset:3px; transition:color .14s; }
+    .tel-cell:hover { color:var(--txt); }
 
-    /* ── Realtime dot ── */
     .rt-live { display: inline-flex; align-items: center; gap: 5px; font-family: 'DM Mono', monospace; font-size: .6rem; color: #4ade80; letter-spacing: .06em; }
     .rt-live::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #4ade80; animation: rt-blink 1.8s ease-in-out infinite; }
     @keyframes rt-blink { 0%,100% { opacity: 1; box-shadow: 0 0 4px #4ade80; } 50% { opacity: .4; box-shadow: none; } }
 
-    /* ── Notif badge ── */
     .new-comment-dot { display: inline-flex; align-items: center; gap: 5px; background: rgba(239,68,68,.13); border: 1px solid rgba(239,68,68,.35); color: #f87171; font-size: .62rem; font-weight: 700; letter-spacing: .04em; padding: 2px 7px; border-radius: 99px; animation: pulse-red 2s ease-in-out infinite; white-space: nowrap; }
     .new-comment-dot::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,.8); }
     @keyframes pulse-red { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } 50% { box-shadow: 0 0 0 3px rgba(239,68,68,.15); } }
 
-    /* ── Spinners ── */
     .spin    { width: 20px; height: 20px; border: 2px solid rgba(59,125,216,.2); border-top-color: var(--blue); border-radius: 50%; animation: spin .65s linear infinite; margin: 40px auto; }
     .spin-sm { width: 14px; height: 14px; border: 2px solid rgba(59,125,216,.2); border-top-color: var(--blue); border-radius: 50%; animation: spin .65s linear infinite; display: inline-block; vertical-align: middle; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -196,7 +158,6 @@
     @keyframes dpulse { 0%,100% { box-shadow: 0 0 6px var(--blue); } 50% { box-shadow: 0 0 16px var(--blue), 0 0 28px rgba(59,125,216,.25); } }
     .sec-divider { border: none; border-top: 1px solid var(--bd); margin: 24px 0; }
 
-    /* ── Toast ── */
     #toast { position: fixed; bottom: 22px; right: 22px; z-index: 200; padding: 10px 16px; border-radius: 10px; font-size: .82rem; font-weight: 500; display: none; align-items: center; gap: 7px; backdrop-filter: blur(12px); box-shadow: 0 8px 24px rgba(0,0,0,.45); }
     #toast.ok  { background: rgba(34,197,94,.14); border: 1px solid rgba(34,197,94,.3); color: #86efac; }
     #toast.err { background: rgba(239,68,68,.14); border: 1px solid rgba(239,68,68,.3); color: #fca5a5; }
@@ -218,23 +179,28 @@
     .mpanel { display: none; padding: 22px 24px; }
     .mpanel.active { display: block; animation: fadein .2s ease both; }
 
-    /* ── Info grid ── */
     .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
     @media(max-width:520px) { .info-grid { grid-template-columns: 1fr; } }
     .info-item { background: var(--s3); border: 1px solid var(--bd); border-radius: 9px; padding: 11px 14px; }
     .info-item-lbl { font-size: .63rem; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); margin-bottom: 4px; }
     .info-item-val { font-size: .85rem; color: var(--hi); word-break: break-word; }
-
-    /* ── Editable inputs dentro de info-item ── */
     .info-item-input { width: 100%; background: rgba(255,255,255,.04); border: 1px solid var(--bd2); border-radius: 6px; color: var(--hi); font-family: 'DM Sans', sans-serif; font-size: .85rem; padding: 5px 8px; outline: none; transition: border-color .18s; margin-top: 2px; }
     .info-item-input:focus { border-color: rgba(59,125,216,.55); box-shadow: 0 0 0 2px rgba(59,125,216,.1); }
     .info-item-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
 
-    /* ── Selector de estado en la ficha ── */
+    /* ── Panel edición datos cliente (gestor) ── */
+    #edit-panel { display:none; margin-top:14px; padding:16px; background:rgba(255,255,255,.02); border:1px solid var(--bd); border-radius:12px; }
+    #edit-panel.open { display:block; animation:fadein .18s ease both; }
+    .edit-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    @media(max-width:540px){ .edit-grid { grid-template-columns:1fr; } }
+    .edit-field { width:100%; background:rgba(255,255,255,.04); border:1px solid var(--bd2); border-radius:7px; color:var(--hi); font-family:'DM Sans',sans-serif; font-size:.84rem; padding:8px 10px; outline:none; transition:border-color .18s; }
+    .edit-field:focus { border-color:rgba(59,125,216,.5); }
+
     .estado-selector { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
     .estado-opt { font-family: 'DM Mono', monospace; font-size: .62rem; font-weight: 600; letter-spacing: .04em; border-radius: 99px; padding: 4px 11px; border: 1px solid var(--bd); cursor: pointer; background: rgba(255,255,255,.03); color: var(--muted); transition: all .15s; }
     .estado-opt:hover { color: var(--txt); border-color: var(--bd2); }
     .estado-opt.selected { color: #fff; border-color: transparent; }
+    .estado-opt.selected.s-sin-asignar { background: rgba(148,163,184,.4); }
     .estado-opt.selected.s-pendiente   { background: rgba(245,166,35,.55); }
     .estado-opt.selected.s-visita      { background: rgba(59,125,216,.55); }
     .estado-opt.selected.s-seguimiento { background: rgba(139,92,246,.55); }
@@ -242,12 +208,11 @@
     .estado-opt.selected.s-aceptada    { background: rgba(34,197,94,.55); }
     .estado-opt.selected.s-trabajando  { background: rgba(20,184,166,.55); }
     .estado-opt.selected.s-rechazado   { background: rgba(239,68,68,.55); }
+    .estado-opt.selected.s-borrado     { background: rgba(107,114,128,.4); }
 
-    /* ── Save bar ── */
     .save-bar { display: none; align-items: center; gap: 10px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--bd); }
     .save-bar.visible { display: flex; }
 
-    /* ── Comments ── */
     #comments-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; max-height: 340px; overflow-y: auto; padding-right: 4px; }
     #comments-list::-webkit-scrollbar { width: 4px; }
     #comments-list::-webkit-scrollbar-track { background: transparent; }
@@ -264,7 +229,6 @@
     .comment-composer textarea:focus { border-color: rgba(59,125,216,.5); }
     .comment-composer textarea::placeholder { color: var(--muted); }
 
-    /* ── Documents ── */
     .drop-zone { border: 2px dashed var(--bd2); border-radius: 12px; padding: 28px 20px; text-align: center; margin-bottom: 20px; cursor: pointer; transition: border-color .2s, background .2s; position: relative; }
     .drop-zone:hover, .drop-zone.dragover { border-color: var(--blue); background: rgba(59,125,216,.06); }
     .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
@@ -280,26 +244,19 @@
     .upload-progress { height: 3px; background: var(--bd); border-radius: 99px; margin-top: 6px; overflow: hidden; }
     .upload-progress-bar { height: 100%; background: linear-gradient(90deg, var(--blue), var(--blue2)); border-radius: 99px; transition: width .3s ease; }
 
-    /* ── Semáforo de fechas ── */
-    .fecha-ok  { color: #4ade80; font-weight: 600; }   /* a tiempo / futura */
-    .fecha-bad { color: #f87171; font-weight: 600; }   /* atrasada */
-    .fecha-nil { color: var(--muted); }                /* sin fecha */
+    .fecha-ok  { color: #4ade80; font-weight: 600; }
+    .fecha-bad { color: #f87171; font-weight: 600; }
+    .fecha-nil { color: var(--muted); }
 
-    /* ── Bloque destacado en el modal (Próxima Acción + Importe) ── */
     .destaque-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
     @media(max-width:480px){ .destaque-row { grid-template-columns: 1fr; } }
-    .destaque-card {
-      border-radius: 13px; padding: 16px 18px;
-      border: 1px solid var(--bd2);
-      display: flex; flex-direction: column; gap: 4px;
-    }
+    .destaque-card { border-radius: 13px; padding: 16px 18px; border: 1px solid var(--bd2); display: flex; flex-direction: column; gap: 4px; }
     .destaque-card.accion  { background: rgba(59,125,216,.08); border-color: rgba(59,125,216,.3); }
     .destaque-card.importe { background: rgba(34,197,94,.07);  border-color: rgba(34,197,94,.25); }
     .destaque-lbl  { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
     .destaque-val  { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; line-height: 1.15; color: var(--hi); }
     .destaque-sub  { font-size: .72rem; color: var(--muted); margin-top: 2px; }
 
-    /* ── Subline de datos en header del modal ── */
     #modal-subline { font-size: .75rem; color: var(--muted); margin-top: 5px; display: flex; flex-wrap: wrap; gap: 0; align-items: center; }
     #modal-subline .sep { margin: 0 6px; opacity: .35; }
   </style>
@@ -356,9 +313,8 @@
         </div>
         <div style="width:1px;height:20px;background:var(--bd);margin:0 4px"></div>
         <div class="tab-bar">
-          <button id="tab-btn-form"   class="tab active" data-tab="tab-form"><span style="margin-right:5px">✦</span>Registrar Lead</button>
-          <button id="tab-btn-dash"   class="tab" data-tab="tab-dash"><span style="margin-right:5px">◈</span>Dashboard</button>
-          <button id="tab-btn-marcas" class="tab" data-tab="tab-marcas" style="display:none"><span style="margin-right:5px">🏷️</span>Mis Marcas</button>
+          <button id="tab-btn-form" class="tab" data-tab="tab-form" style="display:none"><span style="margin-right:5px">✦</span>Registrar Lead</button>
+          <button id="tab-btn-dash" class="tab" data-tab="tab-dash"><span style="margin-right:5px">◈</span>Dashboard</button>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
@@ -371,7 +327,7 @@
   <div class="main">
 
     <!-- ══ TAB 1: FORMULARIO (solo gestores) ══ -->
-    <div id="tab-form" class="tab-panel active">
+    <div id="tab-form" class="tab-panel">
       <div class="pcard" style="max-width:720px;margin:0 auto">
         <div class="pcard-head">
           <div>
@@ -391,24 +347,20 @@
           </div>
           <form id="form-lead" novalidate>
             <div class="form-2col">
-              <div><label class="field-label" for="f-nombre">Nombre cliente <span style="color:#f87171">*</span></label><input id="f-nombre" type="text" placeholder="Ej: Carmen Rivas" class="field" required/></div>
-              <div><label class="field-label" for="f-tel">Teléfono <span style="color:#f87171">*</span></label><input id="f-tel" type="text" placeholder="6XX XXX XXX" class="field" required/></div>
-              <div><label class="field-label" for="f-email">Email <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(opcional)</span></label><input id="f-email" type="email" placeholder="cliente@email.com" class="field"/></div>
-              <div><label class="field-label" for="f-pobl">Población <span style="color:#f87171">*</span></label><input id="f-pobl" type="text" placeholder="Ciudad o municipio" class="field" required/></div>
+              <div><label class="field-label" for="f-nombre">Nombre cliente</label><input id="f-nombre" type="text" placeholder="Ej: Carmen Rivas" class="field"/></div>
+              <div><label class="field-label" for="f-tel">Teléfono</label><input id="f-tel" type="text" placeholder="6XX XXX XXX" class="field"/></div>
+              <div><label class="field-label" for="f-email">Email</label><input id="f-email" type="email" placeholder="cliente@email.com" class="field"/></div>
+              <div><label class="field-label" for="f-pobl">Población</label><input id="f-pobl" type="text" placeholder="Ciudad o municipio" class="field"/></div>
               <div>
-                <label class="field-label" for="f-sector">Sector <span style="color:#f87171">*</span></label>
-                <select id="f-sector" class="field" required>
-                  <option value="">— Seleccionar —</option>
-                </select>
+                <label class="field-label" for="f-sector">Sector</label>
+                <select id="f-sector" class="field"><option value="">— Seleccionar —</option></select>
               </div>
               <div>
-                <label class="field-label" for="f-reforma">Subservicio <span style="color:#f87171">*</span></label>
-                <select id="f-reforma" class="field" disabled required>
-                  <option value="">— Elige un sector primero —</option>
-                </select>
+                <label class="field-label" for="f-reforma">Subservicio</label>
+                <select id="f-reforma" class="field" disabled><option value="">— Elige un sector primero —</option></select>
               </div>
-              <div><label class="field-label" for="f-marca">Marca <span style="color:#f87171">*</span></label><select id="f-marca" class="field" disabled required><option value="">— Elige un sector primero —</option></select></div>
-              <div class="col-span-2"><label class="field-label" for="f-empresa">Empresa <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(opcional · sin empresa → PENDIENTE DE ASIGNAR)</span></label><select id="f-empresa" class="field" disabled><option value="">— Elige un sector primero —</option></select></div>
+              <div><label class="field-label" for="f-marca">Marca</label><select id="f-marca" class="field"><option value="">— Seleccionar —</option></select></div>
+              <div class="col-span-2"><label class="field-label" for="f-empresa">Empresa</label><select id="f-empresa" class="field"><option value="">— Seleccionar —</option></select></div>
             </div>
             <div style="margin-top:16px">
               <label class="field-label" for="f-extra">
@@ -437,24 +389,29 @@
         <button id="btn-refresh" class="btn-ghost">↻ Actualizar datos</button>
       </div>
 
-      <!-- KPIs y stats: solo gestor -->
-      <div id="dash-gestor-only">
+      <!-- KPIs: solo gestor -->
+      <div id="kpi-wrap" style="display:none">
         <div id="kpi-row" class="kpi-row"><div class="kpi"><p class="kpi-lbl">Cargando…</p></div></div>
       </div>
 
-      <!-- Filtros cruzados + buscador -->
-      <div style="margin-bottom:20px;display:flex;flex-direction:column;gap:10px">
-        <!-- Buscador universal -->
-        <div style="display:flex;align-items:center;gap:8px">
-          <input id="search-lead" type="text" placeholder="Buscar lead… (nombre, teléfono, población, marca)"
-            style="flex:1;max-width:420px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;
-                   color:var(--txt);font-family:'DM Sans',sans-serif;font-size:.82rem;padding:7px 12px;outline:none;
-                   transition:border-color .18s"
-            onfocus="this.style.borderColor='rgba(59,125,216,.55)'"
-            onblur="this.style.borderColor=''"/>
+      <!-- Stats card: solo gestor -->
+      <div id="stats-wrap" class="pcard" style="margin-bottom:24px;display:none">
+        <div class="pcard-head">
+          <div class="pcard-title" id="stats-card-title">Rendimiento por Empresa</div>
+          <span style="font-size:.72rem;color:var(--muted)">Distribución de estados</span>
         </div>
-        <div id="filter-estado-row"  style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"></div>
-        <div id="filter-empresa-row" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"></div>
+        <div class="pcard-body"><div id="emp-grid" class="emp-grid"><div class="empty">Cargando…</div></div></div>
+      </div>
+
+      <!-- Filtros + buscador -->
+      <div style="margin-bottom:14px;display:flex;flex-direction:column;gap:8px">
+        <!-- Fila estados + papelera -->
+        <div class="filtros-bar" id="filtros-estado-row"></div>
+        <!-- Fila sector (gestor) + buscador -->
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+          <div class="filtros-bar" id="filtros-sector-row" style="flex:1;min-width:0"></div>
+          <input id="search-lead" type="text" placeholder="Buscar: nombre, tel, población, marca…"/>
+        </div>
       </div>
 
       <div class="pcard">
@@ -463,61 +420,44 @@
           <span style="font-size:.72rem;color:var(--muted)">Haz clic en una fila para abrir la ficha</span>
         </div>
         <div id="tbl-loading"><div class="spin"></div></div>
-        <div id="tbl-empty" class="empty" style="display:none">No hay leads registrados aún.</div>
+        <div id="tbl-empty" class="empty" style="display:none">No hay leads registrados.</div>
         <div id="tbl-wrap" class="tbl-wrap" style="display:none">
-          <table>
+          <table id="leads-table">
             <thead>
-              <tr>
+              <tr id="tbl-head">
                 <th>Cliente</th><th>Teléfono</th><th>Población</th>
-                <th>Tipo reforma</th><th>Empresa</th><th>Marca</th>
-                <th>Estado</th><th>Próxima Acción</th><th></th><th id="th-delete"></th>
+                <th>Fecha entrada</th><th class="th-empresa">Empresa</th><th>Marca</th>
+                <th>Estado</th><th>Próxima Acción</th><th></th><th class="th-acciones"></th>
               </tr>
             </thead>
             <tbody id="tbl-body"></tbody>
           </table>
         </div>
       </div>
-    </div><!-- /tab-dash -->
-
-    <!-- ══ TAB 3: MIS MARCAS (solo gestores) ══ -->
-    <div id="tab-marcas" class="tab-panel">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
-        <div>
-          <p class="pcard-title" style="font-size:1.05rem">🏷️ Mis Marcas</p>
-          <p style="font-size:.76rem;color:var(--muted);margin-top:3px">Marcas asignadas y empresa instaladora vinculada</p>
-        </div>
-        <button id="btn-refresh-marcas" class="btn-ghost">↻ Actualizar</button>
-      </div>
-      <!-- Filtros de sector -->
-      <div class="sector-filter" id="sector-filter">
-        <button class="sf-btn active" data-sector="todas"    onclick="filterMarcas('todas')">Todas</button>
-        <button class="sf-btn"        data-sector="reformas" onclick="filterMarcas('reformas')">Reformas</button>
-        <button class="sf-btn"        data-sector="limpiezas" onclick="filterMarcas('limpiezas')">Limpiezas</button>
-      </div>
-      <div id="marcas-loading"><div class="spin"></div></div>
-      <div id="marcas-empty" class="empty" style="display:none">No tienes marcas asignadas aún.</div>
-      <div id="marcas-err"   style="display:none;padding:16px;color:#f87171;font-size:.85rem;text-align:center"></div>
-      <div id="marcas-grid"  class="emp-grid" style="display:none"></div>
     </div>
 
-  </div><!-- /main -->
-</div><!-- /screen-app -->
+  </div>
+</div>
+
+<!-- ════════════════════════ MODAL ════════════════════════ -->
 <div id="modal-backdrop">
   <div id="modal-box">
     <div class="modal-header">
       <div style="flex:1;min-width:0">
         <p class="mono" style="font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Ficha de cliente</p>
         <h2 id="modal-client-name" style="font-size:1.1rem;font-weight:700;color:var(--hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</h2>
-        <!-- Línea compacta: Estado + datos clave separados por | -->
         <div style="display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap">
           <span id="modal-estado-pill" class="pill s-pendiente">—</span>
           <span id="modal-empresa-lbl" style="font-size:.75rem;color:var(--muted)"></span>
         </div>
-        <!-- Subline: Teléfono | Email | Población | Marca -->
         <div id="modal-subline"></div>
       </div>
-      <button id="btn-delete-lead" class="btn-ghost" style="color:#f87171;border-color:rgba(248,113,113,.25);padding:6px 11px;font-size:.8rem" title="Eliminar lead">🗑</button>
-      <button class="modal-close" id="modal-close-btn">✕</button>
+      <!-- Acciones gestor -->
+      <div style="display:flex;gap:6px;align-items:flex-start;flex-shrink:0">
+        <button id="btn-modal-edit" class="btn-modal-edit" style="display:none">✎ Editar</button>
+        <button id="btn-modal-del"  class="btn-modal-del"  style="display:none">🗑</button>
+        <button class="modal-close" id="modal-close-btn">✕</button>
+      </div>
     </div>
 
     <div class="modal-tabs">
@@ -531,7 +471,6 @@
       <!-- ── Panel: Información ── -->
       <div id="mp-info" class="mpanel active">
 
-        <!-- Bloques destacados: Próxima Acción + Importe -->
         <div class="destaque-row">
           <div class="destaque-card accion">
             <span class="destaque-lbl">📅 Próxima Acción</span>
@@ -547,13 +486,34 @@
           </div>
         </div>
 
-        <!-- Selector de estado -->
-        <div style="margin-bottom:4px">
+        <!-- Panel edición datos cliente (solo gestor, toggle) -->
+        <div id="edit-panel">
+          <p style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:10px">✎ Datos del cliente</p>
+          <div class="edit-grid">
+            <div>
+              <label class="field-label" style="font-size:.6rem">Nombre</label>
+              <input id="edit-nombre" type="text" class="edit-field" placeholder="Nombre cliente"/>
+            </div>
+            <div>
+              <label class="field-label" style="font-size:.6rem">Teléfono</label>
+              <input id="edit-tel" type="text" class="edit-field" placeholder="6XX XXX XXX"/>
+            </div>
+            <div>
+              <label class="field-label" style="font-size:.6rem">Email</label>
+              <input id="edit-email" type="email" class="edit-field" placeholder="email@ejemplo.com"/>
+            </div>
+            <div>
+              <label class="field-label" style="font-size:.6rem">Población</label>
+              <input id="edit-pobl" type="text" class="edit-field" placeholder="Ciudad"/>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;margin-bottom:4px">
           <p class="field-label" style="margin-bottom:8px">Estado del lead</p>
           <div class="estado-selector" id="estado-selector"></div>
         </div>
 
-        <!-- Barra de guardado -->
         <div class="save-bar" id="save-bar">
           <button id="btn-save-info" class="btn-primary" style="font-size:.82rem;padding:9px 20px">Guardar cambios</button>
           <span id="save-ok"  style="font-size:.78rem;color:#4ade80;display:none">✓ Guardado</span>
@@ -599,22 +559,24 @@
   </div><!-- /modal-box -->
 </div><!-- /modal-backdrop -->
 
+<!-- Popup teléfono -->
+<div id="tel-popup">
+  <a id="tel-call" href="#"><span>📞</span> Llamar</a>
+  <a id="tel-wa"   href="#" target="_blank" rel="noopener"><span>💬</span> WhatsApp</a>
+</div>
+
 <div id="toast"></div>
 
 <!-- ════════════════════════ JAVASCRIPT ════════════════════════ -->
 <script>
 (() => {
-  // ───────────────────────────────────────────────────────────
-  //  CONSTANTES
-  // ───────────────────────────────────────────────────────────
+  // ─── CONSTANTES ───────────────────────────────────────────────
   const SB_URL      = 'https://uzmlyawikzqvdoeubrwy.supabase.co';
   const SB_KEY      = 'sb_publishable_-mdEhWbnK-ampAx3EoxrYQ_n7Bu4Dr1';
   const BUCKET      = 'documentos_clientes';
   const MAX_SIZE    = 5 * 1024 * 1024;
   const ALLOWED_EXT = ['.pdf', '.jpg', '.jpeg', '.png'];
 
-  // Estados como strings — coinciden con los values del ENUM en Postgres
-  // Al llegar al cliente vía Supabase JS, los ENUMs se representan como strings
   const ESTADOS = [
     'PENDIENTE DE ASIGNAR',
     'PENDIENTE DE LLAMAR', 'VISITA PROGRAMADA', 'SEGUIMIENTO',
@@ -626,7 +588,7 @@
     'PENDIENTE DE LLAMAR':   's-pendiente',  'VISITA PROGRAMADA':   's-visita',
     'SEGUIMIENTO':           's-seguimiento','PRESUPUESTO ENVIADO':  's-presupuesto',
     'OBRA ACEPTADA':         's-aceptada',   'TRABAJANDO':          's-trabajando',
-    'RECHAZADO':             's-rechazado',  'BORRADO':             's-rechazado',
+    'RECHAZADO':             's-rechazado',  'BORRADO':             's-borrado',
   };
   const ESTADO_DOT = {
     'PENDIENTE DE ASIGNAR':  '#94a3b8',
@@ -635,1552 +597,826 @@
     'OBRA ACEPTADA':         '#4ade80', 'TRABAJANDO':          '#2dd4bf',
     'RECHAZADO':             '#f87171', 'BORRADO':             '#6b7280',
   };
-
-  const { createClient } = supabase;
-  const sb = createClient(SB_URL, SB_KEY);
-
-  // ───────────────────────────────────────────────────────────
-  //  ESTADO DE SESIÓN
-  // ───────────────────────────────────────────────────────────
-  let rol       = null;    // 'gestor' | 'empresa'
-  let userId    = null;    // UUID del registro en gestores o empresas
-  let userName  = '';
-  // servicios: texto plano de text[] en Postgres → llega como Array<string> en JS
-  // Si la columna aún no existe devuelve null; lo normalizamos a []
-  let servicios = [];
-
-  let allLeads    = [];
-  let marcasMap   = {};
-  let empresasMap = {};
-  let empresaMarcasMap = {};  // { marca_id_norm: [empresa_id_norm, ...] } — para filtrar select de empresa en tabla
-
-  let activeClienteId   = null;
-  let activeClienteData = null;
-  let pendingEstado     = null;
-
-  let clientesConNuevoComentario = new Set();
-
-  let rtComments = null;
-  let rtClientes = null;
-
-  // ───────────────────────────────────────────────────────────
-  //  HELPERS
-  // ───────────────────────────────────────────────────────────
-  const $          = id => document.getElementById(id);
-  const showEl     = (id, m = 'flex') => $(id).style.display = m;
-  const hideEl     = id => $(id).style.display = 'none';
-  const setAlert   = (id, txtId, msg) => { if (txtId) $(txtId).textContent = msg; $(id).classList.add('show'); };
-  const clearAlert = id => $(id).classList.remove('show');
-
-  let toastTimer;
-  function toast(msg, type = 'ok') {
-    const t = $('toast');
-    t.textContent = (type === 'ok' ? '✓ ' : '✕ ') + msg;
-    t.className = 'toast show ' + type;
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.className = 'toast', 3500);
-  }
-
-  function esc(s) {
-    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  function fmtDate(iso, full = false) {
-    if (!iso) return '—';
-    const d = new Date(iso);
-    if (full) return d.toLocaleString('es-ES', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
-    return d.toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
-  }
-
-  function fmtBytes(b) {
-    if (b < 1024) return b + ' B';
-    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
-    return (b / (1024 * 1024)).toFixed(1) + ' MB';
-  }
-
-  function docIcon(name) {
-    const ext = (name || '').split('.').pop().toLowerCase();
-    if (ext === 'pdf') return '📄';
-    if (['jpg','jpeg','png'].includes(ext)) return '🖼️';
-    return '📎';
-  }
-
-  // ───────────────────────────────────────────────────────────
-  //  SEMÁFORO DE FECHAS
-  //  Recibe una fecha 'YYYY-MM-DD' o null.
-  //  Devuelve { txt, cls, sub } para mostrar en tabla y modal.
-  //  Lógica estilo Asana:
-  //    · Sin fecha        → gris  '—'
-  //    · Hoy o futura     → verde (fecha + "A tiempo")
-  //    · Anterior a hoy   → rojo  (fecha + "Atrasado")
-  //  Comparación 100 % en local (sin hora): se trunca a 'YYYY-MM-DD'.
-  // ───────────────────────────────────────────────────────────
-  function semaforo(valorFecha) {
-    if (!valorFecha) return { txt: '—', cls: 'fecha-nil', sub: 'Sin fecha' };
-
-    // Truncar hoy a 'YYYY-MM-DD' para comparación sin zona horaria
-    const hoyStr   = new Date().toISOString().slice(0, 10);
-    const atrasado = valorFecha < hoyStr;   // comparación lexicográfica válida para ISO
-
-    // Formato legible: 'DD MMM YYYY'
-    const [y, m, d] = valorFecha.split('-');
-    const legible   = new Date(+y, +m - 1, +d)
-      .toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-
-    return atrasado
-      ? { txt: legible, cls: 'fecha-bad', sub: '⚠ Atrasado' }
-      : { txt: legible, cls: 'fecha-ok',  sub: '✓ A tiempo'  };
-  }
-
-  // ───────────────────────────────────────────────────────────
-  //  TABS PRINCIPALES
-  // ───────────────────────────────────────────────────────────
-  document.querySelectorAll('.tab').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      $(btn.dataset.tab).classList.add('active');
-      if (btn.dataset.tab === 'tab-dash')   loadDashboard();
-      if (btn.dataset.tab === 'tab-marcas') loadMisMarcas();
-    });
-  });
-
-  // ───────────────────────────────────────────────────────────
-  //  TABS DEL MODAL
-  // ───────────────────────────────────────────────────────────
-  document.querySelectorAll('.mtab').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.mtab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.mpanel').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      $(btn.dataset.mpanel).classList.add('active');
-      if (btn.dataset.mpanel === 'mp-comments' && activeClienteId) loadComments(activeClienteId);
-      if (btn.dataset.mpanel === 'mp-docs'     && activeClienteId) loadDocs(activeClienteId);
-    });
-  });
-
-  // ───────────────────────────────────────────────────────────
-  //  MODAL: ABRIR / CERRAR
-  // ───────────────────────────────────────────────────────────
-  function openModal(cliente) {
-    activeClienteId   = cliente.id;
-    activeClienteData = { ...cliente };
-    pendingEstado     = cliente.estado;
-
-    // ── Header ────────────────────────────────────────────────
-    $('modal-client-name').textContent = cliente.nombre_cliente || 'Sin nombre';
-    $('modal-estado-pill').textContent = cliente.estado || '—';
-    $('modal-estado-pill').className   = 'pill ' + (ESTADO_CLS[cliente.estado] || 's-pendiente');
-    $('modal-empresa-lbl').textContent = '';  // limpiamos; se rellena tras suscripción realtime
-
-    // Subline: Teléfono | Email | Población | Marca  (solo los que tienen valor)
-    const subItems = [
-      cliente.telefono,
-      cliente.email,
-      cliente.poblacion,
-      cliente.marca_id ? (marcasMap[cliente.marca_id]?.nombre || null) : null,
-    ].filter(Boolean);
-    $('modal-subline').innerHTML = subItems.map((v, i) =>
-      (i > 0 ? '<span class="sep">|</span>' : '') + esc(v)
-    ).join('');
-
-    // ── Bloque Próxima Acción ─────────────────────────────────
-    const fechaVal = cliente.fecha_proxima_accion || null;
-    const { txt: fechaTxt, cls: fechaCls, sub: fechaSub } = semaforo(fechaVal);
-    $('destaque-fecha').textContent     = fechaTxt;
-    $('destaque-fecha').className       = 'destaque-val ' + fechaCls;
-    $('destaque-fecha-sub').textContent = fechaSub;
-    $('edit-proxima-accion').value      = fechaVal || '';
-
-    // ── Bloque Importe ────────────────────────────────────────
-    const imp = cliente.importe_presupuesto;
-    $('destaque-importe').textContent = (imp !== null && imp !== undefined)
-      ? Number(imp).toLocaleString('es-ES', { minimumFractionDigits: 2 })
-      : '—';
-    $('edit-importe').value = (imp !== null && imp !== undefined) ? imp : '';
-
-    // ── Selector de estado ────────────────────────────────────
-    renderEstadoSelector(cliente.estado);
-
-    // ── Reset save bar ────────────────────────────────────────
-    $('save-bar').classList.remove('visible');
-    $('save-ok').style.display  = 'none';
-    $('save-err').style.display = 'none';
-
-    // Mostrar save bar al modificar cualquier campo editable
-    ['edit-importe', 'edit-proxima-accion'].forEach(id => {
-      $(id).addEventListener('input', markDirty, { once: true });
-    });
-
-    // ── Reset tab → info ──────────────────────────────────────
-    document.querySelectorAll('.mtab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.mpanel').forEach(p => p.classList.remove('active'));
-    document.querySelector('[data-mpanel="mp-info"]').classList.add('active');
-    $('mp-info').classList.add('active');
-    $('comment-input').value = '';
-    clearAlert('comment-err');
-
-    // ── Realtime: comentarios ─────────────────────────────────
-    if (rtComments) { sb.removeChannel(rtComments); rtComments = null; }
-    rtComments = sb
-      .channel(`comments:${cliente.id}`)
-      .on('postgres_changes', {
-        event: 'INSERT', schema: 'public',
-        table: 'comentarios_clientes',
-        filter: `cliente_id=eq.${cliente.id}`,
-      }, payload => {
-        if (activeClienteId !== cliente.id) return;
-        const commentsActive = document.querySelector('[data-mpanel="mp-comments"]')?.classList.contains('active');
-        if (commentsActive) loadComments(activeClienteId);
-        else toast(`Nuevo comentario de ${payload.new?.nombre_autor || 'alguien'}`);
-      })
-      .subscribe(status => {
-        if (status === 'SUBSCRIBED') {
-          $('modal-empresa-lbl').innerHTML =
-            (cliente.empresa_id ? esc(empresasMap[cliente.empresa_id] || '') + ' &nbsp;' : '') +
-            '<span class="rt-live">EN VIVO</span>';
-        }
-      });
-
-    $('modal-backdrop').classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeModal() {
-    if (rtComments) { sb.removeChannel(rtComments); rtComments = null; }
-    $('modal-backdrop').classList.remove('open');
-    document.body.style.overflow = '';
-    activeClienteId   = null;
-    activeClienteData = null;
-    pendingEstado     = null;
-  }
-
-  function markDirty() { $('save-bar').classList.add('visible'); }
-
-  // ── Renderiza los botones de estado ─────────────────────────
-  function renderEstadoSelector(estadoActual) {
-    const sel = $('estado-selector');
-    // estadoActual es string (ENUM value); comparamos con === para evitar coerción
-    sel.innerHTML = ESTADOS.map(e => {
-      const cls  = ESTADO_CLS[e] || '';
-      const isSelected = String(e) === String(estadoActual);
-      return `<button class="estado-opt${isSelected ? ' selected ' + cls : ''}"
-                      data-estado="${esc(e)}">${esc(e)}</button>`;
-    }).join('');
-
-    sel.querySelectorAll('.estado-opt').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const nuevo = btn.dataset.estado;
-        if (nuevo === pendingEstado) return;
-        pendingEstado = nuevo;
-        // Actualizar visual
-        sel.querySelectorAll('.estado-opt').forEach(b => {
-          b.className = 'estado-opt' + (b.dataset.estado === nuevo ? ' selected ' + (ESTADO_CLS[nuevo] || '') : '');
-        });
-        markDirty();
-      });
-    });
-  }
-
-  $('modal-close-btn').addEventListener('click', closeModal);
-  $('modal-backdrop').addEventListener('click', e => { if (e.target === $('modal-backdrop')) closeModal(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-
-  // ───────────────────────────────────────────────────────────
-  //  GUARDAR CAMBIOS DESDE LA FICHA
-  // ───────────────────────────────────────────────────────────
-  $('btn-save-info').addEventListener('click', async () => {
-    if (!activeClienteId || !activeClienteData) return;
-    const btn = $('btn-save-info');
-    btn.disabled = true; btn.textContent = 'Guardando…';
-    $('save-ok').style.display  = 'none';
-    $('save-err').style.display = 'none';
-
-    const estadoAnterior = String(activeClienteData.estado);
-    const nuevoEstado    = String(pendingEstado);
-
-    // importe_presupuesto: numeric — vacío → null
-    const importeRaw = $('edit-importe').value.trim();
-    const importeVal = importeRaw !== '' ? parseFloat(importeRaw) : null;
-
-    // fecha_proxima_accion: date 'YYYY-MM-DD' → Postgres acepta directamente; vacío → null
-    const fechaAccionVal = $('edit-proxima-accion').value || null;
-
-    const payload = {
-      estado:               nuevoEstado,
-      importe_presupuesto:  importeVal,
-      fecha_proxima_accion: fechaAccionVal,
-    };
-
-    try {
-      const { error } = await sb
-        .from('clientes')
-        .update(payload)
-        .eq('id', activeClienteId);
-
-      if (error) throw error;
-
-      // Actualizar caché local
-      activeClienteData = { ...activeClienteData, ...payload };
-      const idx = allLeads.findIndex(c => c.id === activeClienteId);
-      if (idx !== -1) allLeads[idx] = { ...allLeads[idx], ...payload };
-
-      // Actualizar cabecera del modal
-      $('modal-estado-pill').textContent = nuevoEstado;
-      $('modal-estado-pill').className   = 'pill ' + (ESTADO_CLS[nuevoEstado] || 's-pendiente');
-
-      // ── HISTORIAL DE ESTADO ──────────────────────────────
-      // Si el estado cambió, insertar comentario automático de sistema
-      // autor_id = null → no pertenece a ningún usuario → nunca dispara punto rojo
-      if (nuevoEstado !== estadoAnterior) {
-        const { error: histErr } = await sb.from('comentarios_clientes').insert([{
-          cliente_id:   activeClienteId,
-          nombre_autor: 'Sistema',
-          autor_id:     null,
-          texto:        `Sistema: El estado ha cambiado a ${nuevoEstado}`,
-          created_at:   new Date().toISOString(),
-        }]);
-        if (histErr) console.error('Historial de estado:', histErr);
-      }
-
-      $('save-ok').style.display = 'inline';
-      setTimeout(() => { $('save-ok').style.display = 'none'; }, 3000);
-      $('save-bar').classList.remove('visible');
-      toast('Cambios guardados correctamente');
-
-      // Refrescar fila de la tabla sin recargar todo
-      patchTableRow(activeClienteId, nuevoEstado);
-
-    } catch (err) {
-      console.error('Save info:', err);
-      $('save-err').textContent  = 'Error: ' + err.message;
-      $('save-err').style.display = 'inline';
-    } finally {
-      btn.disabled = false; btn.textContent = 'Guardar cambios';
-    }
-  });
-
-  function patchTableRow(id, nuevoEstado) {
-    const row = document.querySelector(`#tbl-body tr[data-id="${id}"]`);
-    if (!row) return;
-    const cls  = ESTADO_CLS[nuevoEstado] || 's-pendiente';
-    const cell = row.querySelector('td:nth-child(7)');
-    if (cell) cell.innerHTML = `<span class="pill ${cls}">${esc(nuevoEstado)}</span>`;
-    row.style.transition = 'background .1s';
-    row.style.background = 'rgba(59,125,216,.18)';
-    setTimeout(() => { row.style.background = ''; }, 900);
-    renderKPIs(allLeads);
-  }
-
-  // ───────────────────────────────────────────────────────────
-  //  LOGIN — sin modificaciones (restricción)
-  // ───────────────────────────────────────────────────────────
-  async function init() {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) await enterApp(session.user);
-  }
-
-  $('form-login').addEventListener('submit', async e => {
-    e.preventDefault();
-    clearAlert('err-login');
-    const btn = $('btn-login');
-    btn.textContent = 'Verificando…'; btn.disabled = true;
-    try {
-      const { data: auth, error } = await sb.auth.signInWithPassword({
-        email: $('l-email').value.trim(), password: $('l-pass').value,
-      });
-      if (error) throw new Error(error.message);
-      await enterApp(auth.user);
-    } catch (err) {
-      setAlert('err-login', 'err-login-txt', err.message || 'Error al iniciar sesión.');
-    } finally { btn.textContent = 'Iniciar sesión'; btn.disabled = false; }
-  });
-
-  // ───────────────────────────────────────────────────────────
-  //  DETECCIÓN DE ROL
-  // ───────────────────────────────────────────────────────────
-  async function enterApp(user) {
-    // PASO 1 — buscar en gestores (.maybeSingle evita error 406 si no hay fila)
-    const { data: gestor, error: gErr } = await sb
-      .from('gestores')
-      .select('id, nombre, servicios')
-      .eq('auth_user_id', user.id)
-      .maybeSingle();
-
-    if (!gErr && gestor) {
-      rol       = 'gestor';
-      userId    = gestor.id;
-      userName  = gestor.nombre || user.email.split('@')[0];
-      servicios = Array.isArray(gestor.servicios) ? gestor.servicios.map(String) : [];
-    } else {
-      // PASO 2 — buscar en empresas (.maybeSingle por consistencia)
-      const { data: empresa, error: eErr } = await sb
-        .from('empresas')
-        .select('id, nombre_comercial, servicios')
-        .eq('auth_user_id', user.id)
-        .maybeSingle();
-
-      if (eErr || !empresa) throw new Error('No se encontró ningún gestor ni empresa para este usuario.');
-
-      rol       = 'empresa';
-      userId    = empresa.id;
-      userName  = empresa.nombre_comercial || user.email.split('@')[0];
-      servicios = Array.isArray(empresa.servicios) ? empresa.servicios.map(String) : [];
-    }
-
-    applyRoleUI(user.email);
-    await loadEmpresas();
-    await loadMarcas();
-    await loadEmpresaMarcas();  // carga relaciones marca↔empresa para filtrar select en tabla
-    fillReformaSelector();
-
-    // ── Realtime: cambios en clientes ────────────────────────
-    if (rtClientes) { sb.removeChannel(rtClientes); rtClientes = null; }
-    const rtFilter = rol === 'gestor'
-      ? `gestor_id=eq.${userId}`
-      : `empresa_id=eq.${userId}`;
-
-    rtClientes = sb
-      .channel(`clientes:${rol}:${userId}`)
-      .on('postgres_changes', {
-        event: 'UPDATE', schema: 'public', table: 'clientes',
-        filter: rtFilter,
-      }, payload => {
-        const updated = payload.new;
-        if (!updated?.id) return;
-        const idx = allLeads.findIndex(c => c.id === updated.id);
-        if (idx !== -1) {
-          allLeads[idx] = { ...allLeads[idx], ...updated };
-        } else {
-          allLeads.unshift(updated);
-        }
-        patchTableRow(updated.id, updated.estado);
-      })
-      .subscribe();
-
-    hideEl('screen-login');
-    showEl('screen-app', 'flex');
-  }
-
-  function applyRoleUI(email) {
-    $('user-display-name').textContent = userName;
-    $('user-badge').textContent        = email.split('@')[0];
-
-    if (rol === 'gestor') {
-      $('topbar-role-lbl').textContent   = 'Panel Gestor';
-      $('gestor-badge-form').textContent = userName;
-      $('user-badge').className          = 'badge mono';
-      showEl('tab-btn-form',   'block');
-      showEl('tab-btn-marcas', 'block');
-      $('tab-btn-form').classList.add('active');
-      $('tab-btn-dash').classList.remove('active');
-      $('tab-btn-marcas').classList.remove('active');
-      $('tab-form').classList.add('active');
-      $('tab-dash').classList.remove('active');
-      $('tab-marcas').classList.remove('active');
-      // Secciones exclusivas gestor: visibles
-      showEl('dash-gestor-only', 'block');
-      if ($('filter-empresa-row')) $('filter-empresa-row').style.display = 'flex';
-      if ($('th-delete')) $('th-delete').style.display = '';
-    } else {
-      $('topbar-role-lbl').textContent   = 'Panel Empresa';
-      $('user-badge').className          = 'badge badge-empresa mono';
-      hideEl('tab-btn-form');
-      hideEl('tab-btn-marcas');
-      $('tab-form').classList.remove('active');
-      $('tab-marcas').classList.remove('active');
-      $('tab-btn-dash').classList.add('active');
-      $('tab-dash').classList.add('active');
-      // Ocultar KPIs, stats, columna empresa y delete para perfil empresa
-      hideEl('dash-gestor-only');
-      if ($('filter-empresa-row')) $('filter-empresa-row').style.display = 'none';
-      if ($('th-delete')) $('th-delete').style.display = 'none';
-      if ($('btn-delete-lead')) $('btn-delete-lead').style.display = 'none';
-    }
-  }
-
-  // ───────────────────────────────────────────────────────────
-  //  MAPA SECTOR → SUBSERVICIOS
-  //  Sectores son los valores posibles de servicios[] en la DB.
-  //  Subservicios son los values del ENUM tipo_reforma en Postgres.
-  // ───────────────────────────────────────────────────────────
   const SECTOR_MAP = {
     'REFORMAS':  ['REFORMA INTEGRAL', 'REFORMA DE BAÑO', 'REFORMA DE COCINA'],
     'LIMPIEZAS': ['LIMPIEZA DOMÉSTICA', 'FINAL DE OBRA', 'LIMPIEZA DE LOCALES'],
   };
 
-  // Devuelve los sectores que el usuario tiene habilitados
-  // (solo los que aparecen en SECTOR_MAP para ignorar valores desconocidos)
-  function sectoresDelUsuario() {
-    return Object.keys(SECTOR_MAP).filter(s => servicios.includes(s));
+  const { createClient } = supabase;
+  const sb = createClient(SB_URL, SB_KEY);
+
+  // ─── SESIÓN ───────────────────────────────────────────────────
+  let rol = null, userId = null, userName = '', servicios = [];
+  let allLeads = [], marcasMap = {}, empresasMap = {};
+  let activeClienteId = null, activeClienteData = null, pendingEstado = null;
+  let clientesConNuevoComentario = new Set();
+  let rtComments = null, rtClientes = null;
+
+  // ─── FILTROS ──────────────────────────────────────────────────
+  let filtroEstado = null, filtroSector = null, filtroPapelera = false, filtroBusqueda = '';
+
+  // ─── HELPERS ──────────────────────────────────────────────────
+  const $      = id => document.getElementById(id);
+  const showEl = (id, m='flex') => { const e=$(id); if(e) e.style.display=m; };
+  const hideEl = id => { const e=$(id); if(e) e.style.display='none'; };
+  const setAlert   = (id,t,m) => { if(t) $(t).textContent=m; $(id).classList.add('show'); };
+  const clearAlert = id => $(id).classList.remove('show');
+
+  let toastTimer;
+  function toast(msg, type='ok') {
+    const t=$('toast'); t.textContent=(type==='ok'?'✓ ':'✕ ')+msg; t.className='toast show '+type;
+    clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.className='toast',3500);
+  }
+  function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function fmtDate(iso, full=false) {
+    if(!iso) return '—';
+    const d=new Date(iso);
+    if(full) return d.toLocaleString('es-ES',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    return d.toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'});
+  }
+  function fmtBytes(b) {
+    if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(1)+' KB';
+    return (b/1048576).toFixed(1)+' MB';
+  }
+  function docIcon(n) { const e=(n||'').split('.').pop().toLowerCase(); return e==='pdf'?'📄':['jpg','jpeg','png'].includes(e)?'🖼️':'📎'; }
+
+  function semaforo(v) {
+    if(!v) return {txt:'—',cls:'fecha-nil',sub:'Sin fecha'};
+    const h=new Date().toISOString().slice(0,10), atrasado=v<h;
+    const [y,m,d]=v.split('-');
+    const leg=new Date(+y,+m-1,+d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'});
+    return atrasado?{txt:leg,cls:'fecha-bad',sub:'⚠ Atrasado'}:{txt:leg,cls:'fecha-ok',sub:'✓ A tiempo'};
   }
 
-  // Devuelve todos los subservicios que el usuario puede ver/registrar
-  function subserviciosDelUsuario() {
-    return sectoresDelUsuario().flatMap(s => SECTOR_MAP[s]);
+  // Resolución de marca con normalización de ID
+  function getMarcaNombre(marcaId) {
+    if(!marcaId) return '';
+    if(marcasMap[marcaId]) return marcasMap[marcaId];
+    const norm=String(marcaId).trim().toLowerCase();
+    for(const [k,v] of Object.entries(marcasMap)) { if(String(k).trim().toLowerCase()===norm) return v; }
+    return '';
   }
 
-  // Inicializa f-sector y f-reforma según servicios[] del usuario.
-  // Si el usuario solo tiene UN sector: lo bloquea y puebla los subservicios directamente.
-  // Si tiene VARIOS: muestra el selector de sector y espera elección.
-  function fillReformaSelector() {
-    const selSector  = $('f-sector');
-    const selReforma = $('f-reforma');
-    if (!selSector || !selReforma) return;
-
-    const sectores = sectoresDelUsuario();
-
-    // ── Poblar selector de sector ──────────────────────────
-    while (selSector.options.length > 1) selSector.remove(1);
-    sectores.forEach(s => selSector.add(new Option(s, s)));
-
-    if (sectores.length === 0) {
-      // Sin sectores configurados — deshabilitar ambos
-      selSector.disabled  = true;
-      selReforma.disabled = true;
-      selReforma.innerHTML = '<option value="">— Sin sectores asignados —</option>';
-      return;
-    }
-
-    if (sectores.length === 1) {
-      // Un solo sector: bloquearlo y cargar sus subservicios automáticamente
-      selSector.value    = sectores[0];
-      selSector.disabled = true;
-      _poblarSubservicios(sectores[0]);
-    } else {
-      // Varios sectores: selector libre, subservicio espera
-      selSector.disabled   = false;
-      selSector.value      = '';
-      selReforma.disabled  = true;
-      selReforma.innerHTML = '<option value="">— Elige un sector primero —</option>';
-    }
+  // Sector de un tipo_reforma
+  function sectorDeReforma(tipo) {
+    if(!tipo) return null;
+    const t=String(tipo).toUpperCase();
+    for(const [s,subs] of Object.entries(SECTOR_MAP)) { if(subs.includes(t)) return s; }
+    return null;
   }
 
-  // Puebla f-reforma con los subservicios del sector dado y lo habilita
-  function _poblarSubservicios(sector) {
-    const selReforma = $('f-reforma');
-    if (!selReforma) return;
-    const subs = SECTOR_MAP[sector] || [];
-    selReforma.innerHTML = '<option value="">— Seleccionar subservicio —</option>';
-    subs.forEach(sub => selReforma.add(new Option(sub, sub)));
-    selReforma.disabled = subs.length === 0;
-  }
-
-  // Listener: cuando el usuario cambia el sector, actualizar subservicios Y filtrar marcas Y empresas
-  $('f-sector').addEventListener('change', function () {
-    if (this.value) {
-      _poblarSubservicios(this.value);
-      _filtrarMarcasPorSector(this.value);
-      _filtrarEmpresasPorSector(this.value);   // ← filtra empresas por sector elegido
-    } else {
-      const selReforma = $('f-reforma');
-      selReforma.innerHTML = '<option value="">— Elige un sector primero —</option>';
-      selReforma.disabled  = true;
-      _filtrarMarcasPorSector('');
-      _filtrarEmpresasPorSector('');
-    }
+  // ─── TABS ─────────────────────────────────────────────────────
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      $(btn.dataset.tab).classList.add('active');
+      if(btn.dataset.tab==='tab-dash') loadDashboard();
+    });
+  });
+  document.querySelectorAll('.mtab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.mpanel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      $(btn.dataset.mpanel).classList.add('active');
+      if(btn.dataset.mpanel==='mp-comments' && activeClienteId) loadComments(activeClienteId);
+      if(btn.dataset.mpanel==='mp-docs'     && activeClienteId) loadDocs(activeClienteId);
+    });
   });
 
-  // ───────────────────────────────────────────────────────────
-  //  DROPDOWNS
-  // ───────────────────────────────────────────────────────────
-  let marcasData = [];   // copia completa para _filtrarMarcasPorSector
+  // ─── MODAL ────────────────────────────────────────────────────
+  function openModal(cliente) {
+    activeClienteId=cliente.id; activeClienteData={...cliente}; pendingEstado=cliente.estado;
 
-  // Actualiza el indicador de estado inicial del formulario según empresa elegida
-  {
-    const fEmpresa = $('f-empresa');
-    const lbl      = $('estado-inicial-lbl');
-    if (fEmpresa && lbl) {
-      fEmpresa.addEventListener('change', () => {
-        if (fEmpresa.value) {
-          lbl.textContent = 'PENDIENTE DE LLAMAR';
-          lbl.className   = 'pill s-pendiente';
-        } else {
-          lbl.textContent = 'PENDIENTE DE ASIGNAR';
-          lbl.className   = 'pill s-sin-asignar';
+    $('modal-client-name').textContent = cliente.nombre_cliente||'Sin nombre';
+    $('modal-estado-pill').textContent = cliente.estado||'—';
+    $('modal-estado-pill').className   = 'pill '+(ESTADO_CLS[cliente.estado]||'s-pendiente');
+    $('modal-empresa-lbl').textContent = '';
+
+    // Subline: Tel | Email | Población | Marca
+    const marcaNomModal = getMarcaNombre(cliente.marca_id);
+    const subItems=[cliente.telefono,cliente.email,cliente.poblacion,marcaNomModal||null].filter(Boolean);
+    $('modal-subline').innerHTML=subItems.map((v,i)=>(i>0?'<span class="sep">|</span>':'')+esc(v)).join('');
+
+    // Próxima acción
+    const fv=cliente.fecha_proxima_accion||null, {txt,cls:fc,sub}=semaforo(fv);
+    $('destaque-fecha').textContent=txt; $('destaque-fecha').className='destaque-val '+fc;
+    $('destaque-fecha-sub').textContent=sub; $('edit-proxima-accion').value=fv||'';
+
+    // Importe
+    const imp=cliente.importe_presupuesto;
+    $('destaque-importe').textContent=(imp!==null&&imp!==undefined)?Number(imp).toLocaleString('es-ES',{minimumFractionDigits:2}):'—';
+    $('edit-importe').value=(imp!==null&&imp!==undefined)?imp:'';
+
+    // Selector de estado
+    renderEstadoSelector(cliente.estado);
+
+    // Panel edición (solo gestor)
+    $('edit-panel').classList.remove('open');
+    if(rol==='gestor') {
+      $('btn-modal-edit').style.display='';
+      $('btn-modal-del').style.display='';
+      $('edit-nombre').value=cliente.nombre_cliente||'';
+      $('edit-tel').value=cliente.telefono||'';
+      $('edit-email').value=cliente.email||'';
+      $('edit-pobl').value=cliente.poblacion||'';
+    } else {
+      $('btn-modal-edit').style.display='none';
+      $('btn-modal-del').style.display='none';
+    }
+
+    // Empresa rol empresa: solo lectura del selector de estado
+    if(rol==='empresa') {
+      $('estado-selector').querySelectorAll('.estado-opt').forEach(b=>{ b.style.pointerEvents='none'; b.style.opacity='.45'; });
+    }
+
+    // Save bar
+    $('save-bar').classList.remove('visible');
+    $('save-ok').style.display='none'; $('save-err').style.display='none';
+    ['edit-importe','edit-proxima-accion'].forEach(id=>$(id).addEventListener('input',markDirty,{once:true}));
+
+    // Reset tabs → info
+    document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.mpanel').forEach(p=>p.classList.remove('active'));
+    document.querySelector('[data-mpanel="mp-info"]').classList.add('active');
+    $('mp-info').classList.add('active');
+    $('comment-input').value=''; clearAlert('comment-err');
+
+    // Realtime comentarios
+    if(rtComments) { sb.removeChannel(rtComments); rtComments=null; }
+    rtComments=sb.channel(`comments:${cliente.id}`)
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'comentarios_clientes',filter:`cliente_id=eq.${cliente.id}`},payload=>{
+        if(activeClienteId!==cliente.id) return;
+        const active=document.querySelector('[data-mpanel="mp-comments"]')?.classList.contains('active');
+        if(active) loadComments(activeClienteId);
+        else toast(`Nuevo comentario de ${payload.new?.nombre_autor||'alguien'}`);
+      })
+      .subscribe(s=>{
+        if(s==='SUBSCRIBED') {
+          $('modal-empresa-lbl').innerHTML=(cliente.empresa_id?esc(empresasMap[cliente.empresa_id]||'')+' &nbsp;':'')+'<span class="rt-live">EN VIVO</span>';
         }
+      });
+
+    $('modal-backdrop').classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+
+  function closeModal() {
+    if(rtComments) { sb.removeChannel(rtComments); rtComments=null; }
+    $('modal-backdrop').classList.remove('open');
+    document.body.style.overflow='';
+    activeClienteId=null; activeClienteData=null; pendingEstado=null;
+  }
+  function markDirty() { $('save-bar').classList.add('visible'); }
+
+  // ── Botón Editar (toggle) ─────────────────────────────────
+  $('btn-modal-edit').addEventListener('click', () => {
+    $('edit-panel').classList.toggle('open');
+    if($('edit-panel').classList.contains('open')) markDirty();
+  });
+
+  // ── Botón Eliminar modal ──────────────────────────────────
+  $('btn-modal-del').addEventListener('click', async () => {
+    if(!activeClienteId || rol!=='gestor') return;
+    const motivo=prompt('Motivo de borrado (obligatorio):');
+    if(motivo===null || !motivo.trim()) { toast('Borrado cancelado: motivo obligatorio','err'); return; }
+    await softDeleteLead(activeClienteId, motivo.trim());
+  });
+
+  // ── Selector de estado ────────────────────────────────────
+  function renderEstadoSelector(estadoActual) {
+    const sel=$('estado-selector');
+    const visibles=rol==='gestor'
+      ? ESTADOS.filter(e=>e!=='BORRADO')
+      : ESTADOS.filter(e=>!['BORRADO','PENDIENTE DE ASIGNAR'].includes(e));
+
+    sel.innerHTML=visibles.map(e=>{
+      const cls=ESTADO_CLS[e]||'';
+      const isSel=String(e)===String(estadoActual);
+      return `<button class="estado-opt${isSel?' selected '+cls:''}" data-estado="${esc(e)}">${esc(e)}</button>`;
+    }).join('');
+
+    if(rol==='gestor') {
+      sel.querySelectorAll('.estado-opt').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          const nuevo=btn.dataset.estado;
+          if(nuevo===pendingEstado) return;
+          pendingEstado=nuevo;
+          sel.querySelectorAll('.estado-opt').forEach(b=>{
+            b.className='estado-opt'+(b.dataset.estado===nuevo?' selected '+(ESTADO_CLS[nuevo]||''):'');
+          });
+          markDirty();
+        });
       });
     }
   }
 
-  async function loadMarcas() {
-    const { data } = await sb.from('marcas').select('id, nombre, descripcion').order('nombre');
-    marcasData = data || [];
-    marcasMap  = {};
-    // Solo construimos el mapa — el <select> f-marca se mantiene bloqueado
-    // hasta que el usuario elija un sector (_filtrarMarcasPorSector lo habilita)
-    marcasData.forEach(({ id, nombre, descripcion }) => {
-      marcasMap[id] = { nombre, descripcion: (descripcion || '').toUpperCase() };
-    });
-  }
+  $('modal-close-btn').addEventListener('click', closeModal);
+  $('modal-backdrop').addEventListener('click', e=>{ if(e.target===$('modal-backdrop')) closeModal(); });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
 
-  // Habilita f-marca y lo puebla con las marcas del sector dado.
-  // Sin sector → deshabilita con placeholder.
-  function _filtrarMarcasPorSector(sector) {
-    const sel = $('f-marca');
-    if (!sel) return;
+  // ─── GUARDAR CAMBIOS (solo gestor) ────────────────────────────
+  $('btn-save-info').addEventListener('click', async () => {
+    if(!activeClienteId || !activeClienteData || rol!=='gestor') return;
+    const btn=$('btn-save-info');
+    btn.disabled=true; btn.textContent='Guardando…';
+    $('save-ok').style.display='none'; $('save-err').style.display='none';
 
-    sel.innerHTML = '';
-    if (!sector) {
-      sel.add(new Option('— Elige un sector primero —', ''));
-      sel.disabled = true;
-      return;
+    const estadoAnterior=String(activeClienteData.estado);
+    const nuevoEstado=String(pendingEstado);
+    const importeRaw=$('edit-importe').value.trim();
+    const importeVal=importeRaw!==''?parseFloat(importeRaw):null;
+    const fechaAccionVal=$('edit-proxima-accion').value||null;
+    const editOpen=$('edit-panel').classList.contains('open');
+
+    const payload={ estado:nuevoEstado, importe_presupuesto:importeVal, fecha_proxima_accion:fechaAccionVal };
+    if(editOpen) {
+      const n=$('edit-nombre').value.trim(), t=$('edit-tel').value.trim();
+      const em=$('edit-email').value.trim(), p=$('edit-pobl').value.trim();
+      if(n) payload.nombre_cliente=n;
+      if(t) payload.telefono=t;
+      if(em) payload.email=em;
+      if(p) payload.poblacion=p;
     }
 
-    const kw = sector.toUpperCase().replace(/S$/, '');  // REFORMAS→REFORMA, LIMPIEZAS→LIMPIEZA
-    sel.add(new Option('— Seleccionar marca —', ''));
-    let count = 0;
-    marcasData.forEach(({ id, nombre, descripcion }) => {
-      const desc = (descripcion || '').toUpperCase();
-      if (desc.includes(kw)) {
-        const opt = new Option(nombre, id);
-        opt.dataset.sector = desc;
-        sel.add(opt);
-        count++;
-      }
-    });
+    try {
+      const {error}=await sb.from('clientes').update(payload).eq('id',activeClienteId);
+      if(error) throw error;
 
-    if (count === 0) sel.add(new Option('Sin marcas para este sector', ''));
-    sel.disabled = count === 0;
-    sel.value    = '';
+      activeClienteData={...activeClienteData,...payload};
+      const idx=allLeads.findIndex(c=>c.id===activeClienteId);
+      if(idx!==-1) allLeads[idx]={...allLeads[idx],...payload};
+
+      $('modal-estado-pill').textContent=nuevoEstado;
+      $('modal-estado-pill').className='pill '+(ESTADO_CLS[nuevoEstado]||'s-pendiente');
+      if(payload.nombre_cliente) $('modal-client-name').textContent=payload.nombre_cliente;
+
+      // Nota automática de edición
+      const ahora=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      await sb.from('comentarios_clientes').insert([{
+        cliente_id:activeClienteId, nombre_autor:'Sistema', autor_id:null,
+        texto:`Cambio realizado por gestor el ${ahora}`, created_at:new Date().toISOString(),
+      }]);
+
+      // Historial de estado si cambió
+      if(nuevoEstado!==estadoAnterior) {
+        await sb.from('comentarios_clientes').insert([{
+          cliente_id:activeClienteId, nombre_autor:'Sistema', autor_id:null,
+          texto:`Sistema: El estado ha cambiado a ${nuevoEstado}`, created_at:new Date().toISOString(),
+        }]);
+      }
+
+      $('save-ok').style.display='inline';
+      setTimeout(()=>{ $('save-ok').style.display='none'; },3000);
+      $('save-bar').classList.remove('visible');
+      $('edit-panel').classList.remove('open');
+      toast('Cambios guardados');
+      patchTableRow(activeClienteId, nuevoEstado);
+      renderFiltrosEstado();
+
+    } catch(err) {
+      $('save-err').textContent='Error: '+err.message;
+      $('save-err').style.display='inline';
+    } finally { btn.disabled=false; btn.textContent='Guardar cambios'; }
+  });
+
+  function patchTableRow(id, nuevoEstado) {
+    const row=document.querySelector(`#tbl-body tr[data-id="${id}"]`);
+    if(!row) return;
+    const cls=ESTADO_CLS[nuevoEstado]||'s-pendiente';
+    const idx=rol==='empresa'?6:7;  // col estado depende de si hay col empresa
+    const cell=row.querySelector(`td:nth-child(${idx})`);
+    if(cell) cell.innerHTML=`<span class="pill ${cls}">${esc(nuevoEstado)}</span>`;
+    row.style.transition='background .1s'; row.style.background='rgba(59,125,216,.18)';
+    setTimeout(()=>{ row.style.background=''; },900);
+    renderKPIs(leadsVisibles());
+  }
+
+  // ─── BORRADO LÓGICO ───────────────────────────────────────────
+  async function softDeleteLead(id, motivo) {
+    const {error}=await sb.from('clientes').update({estado:'BORRADO',notas_internas:motivo}).eq('id',id);
+    if(error) { toast('Error al borrar: '+error.message,'err'); return; }
+    const lead=allLeads.find(c=>c.id===id);
+    if(lead) { lead.estado='BORRADO'; lead.notas_internas=motivo; }
+    closeModal();
+    renderDashboard();
+    toast('Lead movido a papelera');
+  }
+
+  // ─── LOGIN ────────────────────────────────────────────────────
+  async function init() {
+    const {data:{session}}=await sb.auth.getSession();
+    if(session) await enterApp(session.user);
+  }
+
+  $('form-login').addEventListener('submit', async e => {
+    e.preventDefault(); clearAlert('err-login');
+    const btn=$('btn-login'); btn.textContent='Verificando…'; btn.disabled=true;
+    try {
+      const {data:auth,error}=await sb.auth.signInWithPassword({email:$('l-email').value.trim(),password:$('l-pass').value});
+      if(error) throw new Error(error.message);
+      await enterApp(auth.user);
+    } catch(err) { setAlert('err-login','err-login-txt',err.message||'Error al iniciar sesión.'); }
+    finally { btn.textContent='Iniciar sesión'; btn.disabled=false; }
+  });
+
+  // ─── DETECCIÓN DE ROL ─────────────────────────────────────────
+  async function enterApp(user) {
+    const {data:gestor,error:gErr}=await sb.from('gestores').select('id,nombre,servicios').eq('auth_user_id',user.id).single();
+    if(!gErr && gestor) {
+      rol='gestor'; userId=gestor.id; userName=gestor.nombre||user.email.split('@')[0];
+      servicios=Array.isArray(gestor.servicios)?gestor.servicios.map(String):[];
+    } else {
+      const {data:empresa,error:eErr}=await sb.from('empresas').select('id,nombre_comercial,servicios').eq('auth_user_id',user.id).single();
+      if(eErr||!empresa) throw new Error('No se encontró gestor ni empresa para este usuario.');
+      rol='empresa'; userId=empresa.id; userName=empresa.nombre_comercial||user.email.split('@')[0];
+      servicios=Array.isArray(empresa.servicios)?empresa.servicios.map(String):[];
+    }
+
+    applyRoleUI(user.email);
+    await Promise.all([loadMarcas(),loadEmpresas()]);
+    fillReformaSelector();
+
+    if(rtClientes) { sb.removeChannel(rtClientes); rtClientes=null; }
+    const rtFilter=rol==='gestor'?`gestor_id=eq.${userId}`:`empresa_id=eq.${userId}`;
+    rtClientes=sb.channel(`clientes:${rol}:${userId}`)
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'clientes',filter:rtFilter},payload=>{
+        const u=payload.new; if(!u?.id) return;
+        const i=allLeads.findIndex(c=>c.id===u.id);
+        if(i!==-1) allLeads[i]={...allLeads[i],...u}; else allLeads.unshift(u);
+        patchTableRow(u.id,u.estado);
+      })
+      .subscribe();
+
+    hideEl('screen-login');
+    showEl('screen-app','flex');
+  }
+
+  // ─── APPLY ROLE UI ────────────────────────────────────────────
+  function applyRoleUI(email) {
+    $('user-display-name').textContent=userName;
+    $('user-badge').textContent=email.split('@')[0];
+
+    if(rol==='gestor') {
+      $('topbar-role-lbl').textContent='Panel Gestor';
+      $('gestor-badge-form').textContent=userName;
+      $('user-badge').className='badge mono';
+      showEl('tab-btn-form','block');
+      $('tab-btn-form').classList.add('active');
+      $('tab-btn-dash').classList.remove('active');
+      $('tab-form').classList.add('active');
+      $('tab-dash').classList.remove('active');
+      $('stats-card-title').textContent='Rendimiento por Empresa';
+      showEl('kpi-wrap','block');
+      showEl('stats-wrap','block');
+      // Mostrar col empresa
+      document.querySelectorAll('.th-empresa').forEach(th=>th.style.display='');
+    } else {
+      $('topbar-role-lbl').textContent='Panel Empresa';
+      $('user-badge').className='badge badge-empresa mono';
+      hideEl('tab-btn-form');
+      $('tab-form').classList.remove('active');
+      $('tab-btn-dash').classList.add('active');
+      $('tab-dash').classList.add('active');
+      $('stats-card-title').textContent='Actividad';
+      // Ocultar KPIs y stats para empresa
+      hideEl('kpi-wrap');
+      hideEl('stats-wrap');
+      // Ocultar col empresa
+      document.querySelectorAll('.th-empresa').forEach(th=>th.style.display='none');
+    }
+  }
+
+  // ─── SECTOR MAP ───────────────────────────────────────────────
+  function sectoresDelUsuario() { return Object.keys(SECTOR_MAP).filter(s=>servicios.includes(s)); }
+  function subserviciosDelUsuario() { return sectoresDelUsuario().flatMap(s=>SECTOR_MAP[s]); }
+
+  function fillReformaSelector() {
+    const ss=$('f-sector'), sr=$('f-reforma');
+    if(!ss||!sr) return;
+    const sectores=sectoresDelUsuario();
+    while(ss.options.length>1) ss.remove(1);
+    sectores.forEach(s=>ss.add(new Option(s,s)));
+    if(!sectores.length) { ss.disabled=true; sr.disabled=true; return; }
+    if(sectores.length===1) { ss.value=sectores[0]; ss.disabled=true; _poblarSubs(sectores[0]); }
+    else { ss.disabled=false; ss.value=''; sr.disabled=true; }
+  }
+
+  function _poblarSubs(sector) {
+    const sr=$('f-reforma'); if(!sr) return;
+    const subs=SECTOR_MAP[sector]||[];
+    sr.innerHTML='<option value="">— Seleccionar subservicio —</option>';
+    subs.forEach(s=>sr.add(new Option(s,s)));
+    sr.disabled=!subs.length;
+  }
+
+  $('f-sector').addEventListener('change',function(){ if(this.value) _poblarSubs(this.value); else { const r=$('f-reforma'); r.innerHTML='<option value="">— Elige un sector primero —</option>'; r.disabled=true; } });
+
+  // Estado inicial según empresa
+  $('f-empresa').addEventListener('change',function(){
+    const lbl=$('estado-inicial-lbl');
+    if(this.value) { lbl.textContent='PENDIENTE DE LLAMAR'; lbl.className='pill s-pendiente'; }
+    else { lbl.textContent='PENDIENTE DE ASIGNAR'; lbl.className='pill s-sin-asignar'; }
+  });
+
+  // ─── DROPDOWNS ────────────────────────────────────────────────
+  async function loadMarcas() {
+    const {data}=await sb.from('marcas').select('id,nombre').order('nombre');
+    marcasMap={}; const sel=$('f-marca');
+    (data||[]).forEach(({id,nombre})=>{
+      marcasMap[id]=nombre;
+      marcasMap[String(id).trim().toLowerCase()]=nombre;
+      if(sel) sel.add(new Option(nombre,id));
+    });
   }
 
   async function loadEmpresas() {
-    const eRes = await sb.from('empresas').select('*').order('nombre_comercial');
-
-    if (eRes.error) console.error('Error al cargar empresas:', eRes.error);
-
-    // Aviso visual si la tabla no devuelve filas (RLS o tabla vacía)
-    if (!eRes.data || eRes.data.length === 0) {
-      const grid = $('marcas-grid');
-      if (grid) grid.innerHTML = `<div style="grid-column:1/-1;padding:14px;
-        background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);
-        border-radius:10px;color:#fca5a5;font-size:.83rem">
-        <strong>empresasMap vacío</strong> — la tabla <code>empresas</code> no devolvió filas.
-        Revisa las políticas RLS en Supabase para el rol autenticado.
-      </div>`;
-    }
-
-    empresasMap = {};
-    const sel = $('f-empresa');
-    (eRes.data || []).forEach(e => {
-      console.log('Fila recibida de Supabase:', e);
-      const idStr = String(e.id).trim().toLowerCase();
-      const nombre = e.nombre_comercial || e.nombre || e.contacto_nombre || 'Sin Nombre';
-      empresasMap[idStr] = nombre;
-      // NO añadimos al select f-empresa aquí — se puebla en _filtrarEmpresasPorSector
-    });
-
-    console.log('Mapa de empresas cargado:', empresasMap);
-
-    if (allLeads.length > 0) renderTable(allLeads);
-    if (rol === 'gestor') loadMisMarcas();
-  }
-
-  // Carga la tabla empresa_marcas completa en memoria
-  // empresaMarcasMap[marca_id_norm] = [empresa_id_norm, ...]
-  async function loadEmpresaMarcas() {
-    const { data, error } = await sb.from('empresa_marcas').select('marca_id, empresa_id');
-    if (error) { console.error('Error al cargar empresa_marcas:', error); return; }
-    empresaMarcasMap = {};
-    (data || []).forEach(r => {
-      const mId = String(r.marca_id).trim().toLowerCase();
-      const eId = String(r.empresa_id).trim().toLowerCase();
-      if (!empresaMarcasMap[mId]) empresaMarcasMap[mId] = [];
-      if (!empresaMarcasMap[mId].includes(eId)) empresaMarcasMap[mId].push(eId);
+    const {data}=await sb.from('empresas').select('id,nombre_comercial').order('nombre_comercial');
+    empresasMap={}; const sel=$('f-empresa');
+    (data||[]).forEach(({id,nombre_comercial})=>{
+      empresasMap[id]=nombre_comercial;
+      empresasMap[String(id).trim().toLowerCase()]=nombre_comercial;
+      if(sel) sel.add(new Option(nombre_comercial,id));
     });
   }
 
-  // Filtra f-empresa para mostrar solo empresas vinculadas al sector elegido
-  // Cruza: marcas del sector → empresa_marcas → empresasMap
-  function _filtrarEmpresasPorSector(sector) {
-    const sel = $('f-empresa');
-    if (!sel) return;
-
-    sel.innerHTML = '';
-    if (!sector) {
-      sel.add(new Option('— Elige un sector primero —', ''));
-      sel.disabled = true;
-      return;
-    }
-
-    const kw = sector.toUpperCase().replace(/S$/, '');  // REFORMAS→REFORMA
-    // IDs de marcas que pertenecen a este sector
-    const marcasDelSector = marcasData
-      .filter(m => (m.descripcion || '').toUpperCase().includes(kw))
-      .map(m => String(m.id).trim().toLowerCase());
-
-    // Empresas únicas vinculadas a alguna de esas marcas
-    const empresasIds = new Set();
-    marcasDelSector.forEach(mId => {
-      (empresaMarcasMap[mId] || []).forEach(eId => empresasIds.add(eId));
-    });
-
-    sel.add(new Option('— Seleccionar empresa —', ''));
-    let count = 0;
-    empresasIds.forEach(eId => {
-      const nombre = empresasMap[eId];
-      if (nombre) { sel.add(new Option(nombre, eId)); count++; }
-    });
-
-    if (count === 0) sel.add(new Option('Sin empresas para este sector', ''));
-    sel.disabled = count === 0;
-    sel.value    = '';
-  }
-
-  // ───────────────────────────────────────────────────────────
-  //  MIS MARCAS (solo gestores)
-  //  Flujo en 4 pasos (schema real — marcas NO tiene empresa_id):
-  //    Paso 1: gestor_marcas  → marca_ids del gestor
-  //    Paso 2: marcas         → nombre + descripcion (sector)
-  //    Paso 3: empresa_marcas → empresa_id de cada marca (tabla intermedia)
-  //    Paso 4: render         → empresasMap[empresa_id] = nombre_comercial (string, en memoria)
-  // ───────────────────────────────────────────────────────────
-  async function loadMisMarcas() {
-    if (rol !== 'gestor') return;
-
-    showEl('marcas-loading', 'block');
-    hideEl('marcas-grid');
-    hideEl('marcas-empty');
-    hideEl('marcas-err');
-    $('marcas-grid').innerHTML = '';
-
-    try {
-      // ── Paso 1: IDs de marcas del gestor ─────────────────────
-      const { data: gm, error: gmErr } = await sb
-        .from('gestor_marcas')
-        .select('marca_id')
-        .eq('gestor_id', userId);
-
-      if (gmErr) throw gmErr;
-      if (!gm || gm.length === 0) {
-        hideEl('marcas-loading'); showEl('marcas-empty', 'block'); return;
-      }
-      const marcaIds = gm.map(r => r.marca_id);
-
-      // ── Paso 2: datos de las marcas ───────────────────────────
-      // Solo nombre + descripcion — marcas NO tiene columna empresa_id
-      const { data: marcas, error: mErr } = await sb
-        .from('marcas')
-        .select('id, nombre, descripcion')
-        .in('id', marcaIds)
-        .order('nombre');
-      if (mErr) throw mErr;
-
-      // ── Paso 3: relación marca → empresa (tabla intermedia) ───
-      // empresa_marcas: { marca_id, empresa_id }
-      const { data: em, error: emErr } = await sb
-        .from('empresa_marcas')
-        .select('marca_id, empresa_id')
-        .in('marca_id', marcaIds);
-      if (emErr) throw emErr;
-
-      // Construir mapa: marca_id (normalizado) → empresa_id (normalizado)
-      const marcaToEmpresaId = {};
-      (em || []).forEach(r => {
-        const mId = String(r.marca_id).trim().toLowerCase();
-        const eId = String(r.empresa_id).trim().toLowerCase();
-        marcaToEmpresaId[mId] = eId;
-      });
-
-      // ── Paso 4: render — empresasMap[empresa_id normalizado] ──
-      hideEl('marcas-loading');
-      if (!marcas || marcas.length === 0) { showEl('marcas-empty', 'block'); return; }
-
-      function sectorPill(desc) {
-        const d = (desc || '').toUpperCase();
-        return d.includes('LIMPIEZA')
-          ? `<span class="pill s-aceptada">LIMPIEZA</span>`
-          : `<span class="pill s-visita">REFORMA</span>`;
-      }
-
-      $('marcas-grid').innerHTML = marcas.map(rel => {
-        // Normalizar la clave de búsqueda exactamente igual que al escribir el mapa
-        const marcaIdNorm  = String(rel.id).trim().toLowerCase();
-        const empresaId    = marcaToEmpresaId[marcaIdNorm];
-        const empresaIdNorm = empresaId ? String(empresaId).trim().toLowerCase() : null;
-
-        console.log('Marca:', rel.nombre,
-                    '| marca_id norm:', marcaIdNorm,
-                    '| empresa_id norm:', empresaIdNorm,
-                    '| resultado mapa:', empresasMap[empresaIdNorm]);
-
-        // Sin ⚠ si se encuentra — texto de diagnóstico solo cuando falla
-        const empresaNombre = empresaIdNorm
-          ? (empresasMap[empresaIdNorm] || 'Error: Columna nombre_comercial no existe en los datos recibidos')
-          : 'Sin empresa asignada';
-
-        return `
-          <div class="marca-card" data-descripcion="${esc(rel.descripcion || '')}" data-marca-id="${esc(rel.id)}">
-            <div class="marca-nombre">${esc(rel.nombre)}</div>
-            <div>${sectorPill(rel.descripcion)}</div>
-            <div class="marca-empresa-row">
-              <span class="marca-empresa-lbl">Empresa</span>
-              <span class="marca-empresa-val">${esc(empresaNombre)}</span>
-            </div>
-          </div>`;
-      }).join('');
-
-      showEl('marcas-grid', 'grid');
-      // Resetear filtro a "Todas" tras cada recarga
-      filterMarcas('todas');
-
-    } catch (err) {
-      console.error('loadMisMarcas:', err);
-      hideEl('marcas-loading');
-      $('marcas-err').textContent = '✕ Error: ' + (err.message || JSON.stringify(err));
-      showEl('marcas-err', 'block');
-    }
-  }
-
-  // Botón de refresco manual
-  { const btnR = $('btn-refresh-marcas'); if (btnR) btnR.addEventListener('click', loadMisMarcas); }
-
-  // ───────────────────────────────────────────────────────────
-  //  FILTRO DE SECTOR EN MIS MARCAS
-  //  filterMarcas('todas'|'reformas'|'limpiezas')
-  //  Lee data-sector de cada .marca-card y oculta/muestra con CSS
-  // ───────────────────────────────────────────────────────────
-  function filterMarcas(sector) {
-    // Actualizar botones activos
-    document.querySelectorAll('#sector-filter .sf-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.sector === sector);
-    });
-
-    const cards = document.querySelectorAll('#marcas-grid .marca-card');
-    let visible = 0;
-    cards.forEach(card => {
-      // data-descripcion escrito en el render; fallback a marcasMap si es vacío
-      const marcaId = card.dataset.marcaId || '';
-      const fromMap = marcaId ? (marcasMap[marcaId]?.descripcion || '') : '';
-      const desc    = ((card.dataset.descripcion || fromMap) + '').toUpperCase();
-
-      const match = sector === 'todas'
-        || (sector === 'reformas'  && desc.includes('REFORMA')  && !desc.includes('LIMPIEZA'))
-        || (sector === 'limpiezas' && desc.includes('LIMPIEZA'));
-      card.style.display = match ? '' : 'none';
-      if (match) visible++;
-    });
-
-    const empty = $('marcas-empty');
-    if (empty) empty.style.display = visible === 0 ? 'block' : 'none';
-  }
-
-  // ───────────────────────────────────────────────────────────
-  //  SUBMIT LEAD (solo gestores)
-  // ───────────────────────────────────────────────────────────
+  // ─── SUBMIT LEAD ──────────────────────────────────────────────
   $('form-lead').addEventListener('submit', async e => {
-    e.preventDefault();
-    if (rol !== 'gestor') return;
+    e.preventDefault(); if(rol!=='gestor') return;
     clearAlert('form-ok'); clearAlert('form-err');
-
-    const btn = $('btn-lead-submit');
-
-    // ── Validación de campos obligatorios ──────────────────────
-    // Empresa es opcional: sin empresa → estado PENDIENTE DE ASIGNAR
-    const requiredFields = [
-      { id: 'f-nombre',  lbl: 'Nombre cliente' },
-      { id: 'f-tel',     lbl: 'Teléfono' },
-      { id: 'f-pobl',    lbl: 'Población' },
-      { id: 'f-sector',  lbl: 'Sector' },
-      { id: 'f-reforma', lbl: 'Subservicio' },
-      { id: 'f-marca',   lbl: 'Marca' },
-    ];
-    const missing = requiredFields.filter(f => !$(f.id).value.trim()).map(f => f.lbl);
-    if (missing.length) {
-      setAlert('form-err', 'form-err-txt', 'Campos obligatorios: ' + missing.join(', '));
-      return;
-    }
-
-    btn.textContent = 'Guardando…'; btn.disabled = true;
-
-    const str = id => { const v = $(id).value.trim(); return v || null; };
-    // tipo_reforma: el value del <select> ya es el string del ENUM
-    const tipoReforma = str('f-reforma');
-    const extra       = $('f-extra').value.trim();
-
+    const btn=$('btn-lead-submit'); btn.textContent='Guardando…'; btn.disabled=true;
+    const str=id=>{ const v=$(id).value.trim(); return v||null; };
+    const empresaId=str('f-empresa');
+    const estadoInicial=empresaId?'PENDIENTE DE LLAMAR':'PENDIENTE DE ASIGNAR';
     try {
-      // Estado inicial: sin empresa → PENDIENTE DE ASIGNAR; con empresa → PENDIENTE DE LLAMAR
-      const empresaIdForm = str('f-empresa');
-      const estadoInicial = empresaIdForm ? 'PENDIENTE DE LLAMAR' : 'PENDIENTE DE ASIGNAR';
-
-      // PASO A: insertar cliente y recuperar UUID
-      const { data: nuevoCliente, error: clienteErr } = await sb
-        .from('clientes')
-        .insert([{
-          nombre_cliente: str('f-nombre'),
-          telefono:       str('f-tel'),
-          email:          str('f-email'),
-          poblacion:      str('f-pobl'),
-          tipo_reforma:   tipoReforma,
-          marca_id:       str('f-marca'),
-          empresa_id:     empresaIdForm,
-          gestor_id:      userId,
-          estado:         estadoInicial,
-        }])
-        .select('id')
-        .single();
-
-      if (clienteErr) throw clienteErr;
-      const clienteId = nuevoCliente.id;
-
-      // PASO B: comentario inicial (solo si hay texto)
-      if (extra && clienteId) {
-        const { error: cErr } = await sb.from('comentarios_clientes').insert([{
-          cliente_id:   clienteId,
-          texto:        extra,
-          nombre_autor: userName,
-          autor_id:     userId,    // UUID del gestor — necesario para lógica de punto rojo
-          created_at:   new Date().toISOString(),
-        }]);
-        if (cErr) {
-          console.error('Comentario inicial:', cErr);
-          toast('Lead guardado, pero la nota inicial no se pudo registrar.', 'err');
-        }
-      }
-
-      $('form-lead').reset();
-      $('f-extra').value = '';
-      fillReformaSelector();   // restaurar opciones tras reset()
-      setAlert('form-ok', null, null);
-      setTimeout(() => clearAlert('form-ok'), 6000);
-      toast('Lead registrado correctamente');
-      loadDashboard();
-
-    } catch (err) {
-      console.error('Insert cliente:', err);
-      setAlert('form-err', 'form-err-txt', 'Error al guardar: ' + (err.message || JSON.stringify(err)));
-    } finally {
-      btn.textContent = 'Registrar lead'; btn.disabled = false;
-    }
+      const {data:nc,error:ce}=await sb.from('clientes').insert([{
+        nombre_cliente:str('f-nombre'), telefono:str('f-tel'), email:str('f-email'),
+        poblacion:str('f-pobl'), tipo_reforma:str('f-reforma'), marca_id:str('f-marca'),
+        empresa_id:empresaId, gestor_id:userId, estado:estadoInicial,
+      }]).select('id').single();
+      if(ce) throw ce;
+      const extra=$('f-extra').value.trim();
+      if(extra) await sb.from('comentarios_clientes').insert([{cliente_id:nc.id,texto:extra,nombre_autor:userName,autor_id:userId,created_at:new Date().toISOString()}]);
+      $('form-lead').reset(); $('f-extra').value=''; fillReformaSelector();
+      $('estado-inicial-lbl').textContent='PENDIENTE DE ASIGNAR'; $('estado-inicial-lbl').className='pill s-sin-asignar';
+      setAlert('form-ok',null,null); setTimeout(()=>clearAlert('form-ok'),6000);
+      toast('Lead registrado · '+estadoInicial); loadDashboard();
+    } catch(err) { setAlert('form-err','form-err-txt','Error: '+(err.message||JSON.stringify(err))); }
+    finally { btn.textContent='Registrar lead'; btn.disabled=false; }
   });
 
-  // ───────────────────────────────────────────────────────────
-  //  DASHBOARD
-  // ───────────────────────────────────────────────────────────
+  // ─── DASHBOARD ────────────────────────────────────────────────
   async function loadDashboard() {
-    showEl('tbl-loading', 'block'); hideEl('tbl-wrap'); hideEl('tbl-empty');
-    if ($('kpi-row')) $('kpi-row').innerHTML = '<div class="kpi"><p class="kpi-lbl">Cargando…</p></div>';
-    clientesConNuevoComentario = new Set();
-    filtroEstado          = null;
-    filtroEmpresa         = null;
-    filtroMostrarBorrados = false;
-    filtroBusqueda        = '';
-    const srch = $('search-lead');
-    if (srch) srch.value = '';
+    showEl('tbl-loading','block'); hideEl('tbl-wrap'); hideEl('tbl-empty');
+    if($('kpi-row')) $('kpi-row').innerHTML='<div class="kpi"><p class="kpi-lbl">Cargando…</p></div>';
+    if($('emp-grid')) $('emp-grid').innerHTML='<div class="empty">Cargando…</div>';
+    clientesConNuevoComentario=new Set();
+    filtroEstado=null; filtroSector=null; filtroPapelera=false; filtroBusqueda='';
+    const si=$('search-lead'); if(si) si.value='';
 
-    // ── Query de clientes según rol ──────────────────────────
-    let leadsQuery = sb
-      .from('clientes')
+    let q=sb.from('clientes')
       .select('id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion')
-      .order('created_at', { ascending: false });
+      .order('created_at',{ascending:false});
+    q=rol==='gestor'?q.eq('gestor_id',userId):q.eq('empresa_id',userId);
 
-    leadsQuery = rol === 'gestor'
-      ? leadsQuery.eq('gestor_id', userId)
-      : leadsQuery.eq('empresa_id', userId);
-
-    // Traemos autor_id en comentarios para la lógica de punto rojo
-    const [leadsRes, commentsRes] = await Promise.all([
-      leadsQuery,
-      sb.from('comentarios_clientes')
-        .select('cliente_id, created_at, autor_id')
-        .order('created_at', { ascending: false }),
+    const [leadsRes,commentsRes]=await Promise.all([
+      q,
+      sb.from('comentarios_clientes').select('cliente_id,created_at,autor_id').order('created_at',{ascending:false}),
     ]);
-
     hideEl('tbl-loading');
+    if(leadsRes.error) { console.error(leadsRes.error); return; }
 
-    if (leadsRes.error) {
-      console.error('Dashboard:', leadsRes.error);
-      $('kpi-row').innerHTML = `<div class="kpi"><p class="kpi-lbl" style="color:#f87171">Error al cargar datos</p></div>`;
-      return;
-    }
+    let leads=leadsRes.data||[];
+    const svs=subserviciosDelUsuario();
+    if(svs.length) leads=leads.filter(l=>!l.tipo_reforma||svs.includes(String(l.tipo_reforma)));
+    allLeads=leads;
 
-    let leads = leadsRes.data || [];
-
-    // ── FILTRO MULTISECTOR ───────────────────────────────────
-    // servicios[] contiene SECTORES (ej: ['REFORMAS', 'LIMPIEZAS']).
-    // Necesitamos expandirlos a sus subservicios para comparar con tipo_reforma
-    // (que almacena el subservicio concreto, ej: 'REFORMA DE BAÑO').
-    //
-    // Si el array servicios está vacío → sin restricción, se muestran todos.
-    const subserviciosVisibles = subserviciosDelUsuario();
-    if (subserviciosVisibles.length > 0) {
-      leads = leads.filter(lead => {
-        if (!lead.tipo_reforma) return true; // sin tipo → visible siempre
-        // tipo_reforma es ENUM → llega como string desde Supabase JS
-        return subserviciosVisibles.includes(String(lead.tipo_reforma));
-      });
-    }
-
-    allLeads = leads;
-
-    // ── ORDEN FRÍO → CALIENTE ────────────────────────────────
-    const ORDEN_ESTADO = {
-      'PENDIENTE DE ASIGNAR':  0,   // sin empresa — máxima prioridad
-      'PENDIENTE DE LLAMAR':   1,
-      'VISITA PROGRAMADA':     2,
-      'SEGUIMIENTO':           2,
-      'PRESUPUESTO ENVIADO':   2,
-      'OBRA ACEPTADA':         3,
-      'TRABAJANDO':            3,
-      'RECHAZADO':             4,
-    };
-    allLeads.sort((a, b) => {
-      // Sin empresa_id o estado PENDIENTE DE ASIGNAR → prioridad 0
-      const prioA = (!a.empresa_id || a.estado === 'PENDIENTE DE ASIGNAR') ? 0 : (ORDEN_ESTADO[a.estado] ?? 2);
-      const prioB = (!b.empresa_id || b.estado === 'PENDIENTE DE ASIGNAR') ? 0 : (ORDEN_ESTADO[b.estado] ?? 2);
-      if (prioA !== prioB) return prioA - prioB;
-      return new Date(b.created_at) - new Date(a.created_at);
+    // Notificaciones
+    const latest={};
+    (commentsRes.data||[]).forEach(c=>{ if(!latest[c.cliente_id]) latest[c.cliente_id]=c; });
+    clientesConNuevoComentario=new Set();
+    allLeads.forEach(lead=>{
+      const last=latest[lead.id]; if(!last) return;
+      const esDeOtro=last.autor_id!==null&&last.autor_id!==userId;
+      const esMasNuevo=new Date(last.created_at)>new Date(lead.updated_at||lead.created_at);
+      if(esDeOtro&&esMasNuevo) clientesConNuevoComentario.add(lead.id);
     });
 
-    // ── LÓGICA DE NOTIFICACIONES ─────────────────────────────
-    // Punto rojo si: el comentario más reciente tiene autor_id !== userId
-    // (es decir, lo escribió otra persona)
-    // Los comentarios de 'Sistema' tienen autor_id = null → nunca disparan el punto
-    const latestByCliente = {};
-    (commentsRes.data || []).forEach(c => {
-      if (!latestByCliente[c.cliente_id]) latestByCliente[c.cliente_id] = c;
-    });
-
-    clientesConNuevoComentario = new Set();
-    allLeads.forEach(lead => {
-      const last = latestByCliente[lead.id];
-      if (!last) return;
-      // Comparación: autor_id puede ser UUID o null
-      // Si es null (Sistema) → esDeOtro = true pero no queremos mostrar punto
-      // Por eso comprobamos también que autor_id no sea null
-      const esDeOtro   = last.autor_id !== null && last.autor_id !== userId;
-      const esMasNuevo = new Date(last.created_at) > new Date(lead.updated_at || lead.created_at);
-      if (esDeOtro && esMasNuevo) clientesConNuevoComentario.add(lead.id);
-    });
-
-    renderKPIs(allLeads);
-    renderFilterPills();
-    renderTable(allLeads);
+    renderDashboard();
   }
 
-  // ───────────────────────────────────────────────────────────
-  //  RENDERS
-  // ───────────────────────────────────────────────────────────
-
-  // Estado del filtro cruzado (persiste entre renders)
-  let filtroEstado         = null;   // null = todos (excl. BORRADO)
-  let filtroEmpresa        = null;   // null = todas
-  let filtroBusqueda       = '';     // texto libre
-  let filtroMostrarBorrados = false; // true = solo BORRADO, false = excluir BORRADO
-
-  function _leadsVisibles() {
-    const q = filtroBusqueda.trim().toLowerCase();
-    return allLeads.filter(c => {
-      // ── Borrados: solo si filtroMostrarBorrados activo ───────
-      if (filtroMostrarBorrados) return c.estado === 'BORRADO';
-      if (c.estado === 'BORRADO') return false;
-
-      // ── Filtros cruzados estado + empresa ────────────────────
-      const okE = !filtroEstado  || c.estado === filtroEstado;
-      const okR = !filtroEmpresa || (c.empresa_id && String(c.empresa_id).trim().toLowerCase() === filtroEmpresa);
-
-      // ── Búsqueda universal ───────────────────────────────────
-      const okQ = !q || [
-        c.nombre_cliente,
-        c.telefono,
-        c.poblacion,
-        marcasMap[c.marca_id]?.nombre,
-      ].some(v => v && String(v).toLowerCase().includes(q));
-
-      return okE && okR && okQ;
+  // ─── LEADS VISIBLES ───────────────────────────────────────────
+  function leadsVisibles() {
+    const q=filtroBusqueda.trim().toLowerCase();
+    return allLeads.filter(c=>{
+      if(filtroPapelera) return c.estado==='BORRADO';
+      if(c.estado==='BORRADO') return false;
+      if(filtroEstado && c.estado!==filtroEstado) return false;
+      if(filtroSector) { const s=sectorDeReforma(c.tipo_reforma); if(s!==filtroSector) return false; }
+      if(q) {
+        const mn=getMarcaNombre(c.marca_id).toLowerCase();
+        const campos=[(c.nombre_cliente||'').toLowerCase(),(c.telefono||'').toLowerCase(),(c.poblacion||'').toLowerCase(),mn];
+        if(!campos.some(v=>v.includes(q))) return false;
+      }
+      return true;
     });
   }
 
-  function renderFilterPills() {
-    // ── Fila de estados ──────────────────────────────────────
-    const rowE = $('filter-estado-row');
-    if (rowE) {
-      const lbl    = `<span style="font-size:.68rem;font-weight:700;letter-spacing:.07em;color:var(--muted);margin-right:4px;text-transform:uppercase">Estado:</span>`;
-      const actTodos = (!filtroEstado && !filtroMostrarBorrados) ? ' active' : '';
-      const allBtn = `<button class="sf-btn${actTodos}" onclick="applyFiltroEstado(null)">Todos</button>`;
-
-      // Solo estados activos (excluir BORRADO de la fila normal)
-      const ESTADOS_ACTIVOS = ESTADOS.filter(e => e !== 'BORRADO');
-      const estadoBtns = ESTADOS_ACTIVOS.map(e => {
-        const n = allLeads.filter(c => c.estado === e).length;
-        if (!n) return '';
-        const act = (!filtroMostrarBorrados && filtroEstado === e) ? ' active' : '';
-        const cls = ESTADO_CLS[e] || '';
-        return `<button class="sf-btn${act}" onclick="applyFiltroEstado('${e.replace(/'/g,"\\'")}')">
-          <span class="pill ${cls}" style="font-size:.58rem;padding:1px 6px;margin-right:5px">${n}</span>${esc(e)}
-        </button>`;
-      }).join('');
-
-      // Botón papelera (solo gestor)
-      const nBorrados   = allLeads.filter(c => c.estado === 'BORRADO').length;
-      const papeleraBtn = rol === 'gestor'
-        ? `<button class="sf-btn${filtroMostrarBorrados ? ' active' : ''}" onclick="applyFiltroBorrados()"
-            style="margin-left:8px;border-color:rgba(107,114,128,.4);${filtroMostrarBorrados ? 'color:#9ca3af' : ''}">
-            🗑 Papelera${nBorrados ? ` <span style="opacity:.7;font-size:.7rem;margin-left:3px">${nBorrados}</span>` : ''}
-          </button>`
-        : '';
-
-      rowE.innerHTML = lbl + allBtn + estadoBtns + papeleraBtn;
-    }
-
-    // ── Fila de empresas (solo gestor, oculto si modo papelera) ─
-    const rowR = $('filter-empresa-row');
-    if (rowR && rol === 'gestor') {
-      if (filtroMostrarBorrados) { rowR.innerHTML = ''; return; }
-      const lbl    = `<span style="font-size:.68rem;font-weight:700;letter-spacing:.07em;color:var(--muted);margin-right:4px;text-transform:uppercase">Empresa:</span>`;
-      const allBtn = `<button class="sf-btn${!filtroEmpresa ? ' active' : ''}" onclick="applyFiltroEmpresa(null)">Todas</button>`;
-      const empMap = {};
-      allLeads.filter(c => c.estado !== 'BORRADO').forEach(c => {
-        if (!c.empresa_id) return;
-        const k = String(c.empresa_id).trim().toLowerCase();
-        empMap[k] = (empMap[k] || 0) + 1;
-      });
-      const empBtns = Object.entries(empMap).map(([eId, n]) => {
-        const nombre = empresasMap[eId] || eId;
-        const act    = filtroEmpresa === eId ? ' active' : '';
-        return `<button class="sf-btn${act}" onclick="applyFiltroEmpresa('${eId.replace(/'/g,"\\'")}')">
-          ${esc(nombre)} <span style="opacity:.6;margin-left:4px;font-size:.7rem">${n}</span>
-        </button>`;
-      }).join('');
-      rowR.innerHTML = lbl + allBtn + empBtns;
-    }
-  }
-
-  window.applyFiltroBorrados = function() {
-    filtroMostrarBorrados = !filtroMostrarBorrados;
-    filtroEstado  = null;
-    filtroEmpresa = null;
-    const vis = _leadsVisibles();
-    renderFilterPills();
+  // ─── RENDER DASHBOARD ─────────────────────────────────────────
+  function renderDashboard() {
+    const vis=leadsVisibles();
     renderKPIs(vis);
+    renderEmpresaStats(allLeads.filter(c=>c.estado!=='BORRADO'));
+    renderFiltrosEstado();
+    renderFiltrosSector();
     renderTable(vis);
-  };
-
-  window.applyFiltroEstado = function(estado) {
-    filtroEstado          = estado;
-    filtroMostrarBorrados = false;
-    const vis = _leadsVisibles();
-    renderFilterPills();
-    renderKPIs(vis);
-    renderTable(vis);
-  };
-  window.applyFiltroEmpresa = function(empId) {
-    filtroEmpresa         = empId;
-    filtroMostrarBorrados = false;
-    const vis = _leadsVisibles();
-    renderFilterPills();
-    renderKPIs(vis);
-    renderTable(vis);
-  };
-
-  // ── Buscador universal en tiempo real ────────────────────────
-  const _searchInp = $('search-lead');
-  if (_searchInp) {
-    _searchInp.addEventListener('input', () => {
-      filtroBusqueda = _searchInp.value;
-      const vis = _leadsVisibles();
-      renderKPIs(vis);
-      renderTable(vis);
-    });
   }
 
+  function renderFiltrosEstado() {
+    const row=$('filtros-estado-row'); if(!row) return;
+    const activos=allLeads.filter(c=>c.estado!=='BORRADO');
+    const nBorr=allLeads.filter(c=>c.estado==='BORRADO').length;
+
+    let html=`<button class="sf-btn${!filtroEstado&&!filtroPapelera?' active':''}" onclick="window.__fe(null)">TODOS</button>`;
+    ESTADOS.filter(e=>e!=='BORRADO').forEach(e=>{
+      const n=activos.filter(c=>c.estado===e).length; if(!n) return;
+      const act=!filtroPapelera&&filtroEstado===e?' active':'';
+      html+=`<button class="sf-btn${act}" onclick="window.__fe('${e.replace(/'/g,"\\'")}')">
+        <span class="pill ${ESTADO_CLS[e]||''}" style="font-size:.55rem;padding:1px 5px;margin-right:4px">${n}</span>${esc(e)}
+      </button>`;
+    });
+    if(rol==='gestor') {
+      html+=`<button class="sf-btn papelera${filtroPapelera?' active':''}" onclick="window.__fp()">🗑 Papelera${nBorr?` <span style="opacity:.7;margin-left:3px">${nBorr}</span>`:''}</button>`;
+    }
+    row.innerHTML=html;
+  }
+
+  function renderFiltrosSector() {
+    const row=$('filtros-sector-row'); if(!row||rol!=='gestor') return;
+    const sectores=sectoresDelUsuario();
+    if(sectores.length<2) { row.innerHTML=''; return; }
+    let html=`<span style="font-size:.62rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-right:4px">Sector:</span>`;
+    html+=`<button class="sf-btn${!filtroSector?' active':''}" onclick="window.__fs(null)">Todos</button>`;
+    sectores.forEach(s=>{ html+=`<button class="sf-btn${filtroSector===s?' active':''}" onclick="window.__fs('${s}')">${esc(s.charAt(0)+s.slice(1).toLowerCase())}</button>`; });
+    row.innerHTML=html;
+  }
+
+  window.__fe = s  => { filtroEstado=s; filtroPapelera=false; renderDashboard(); };
+  window.__fp = () => { filtroPapelera=!filtroPapelera; filtroEstado=null; renderDashboard(); };
+  window.__fs = s  => { filtroSector=s; renderDashboard(); };
+
+  $('search-lead').addEventListener('input', function(){ filtroBusqueda=this.value; renderKPIs(leadsVisibles()); renderTable(leadsVisibles()); });
+
+  // ─── RENDERS ──────────────────────────────────────────────────
   function renderKPIs(data) {
-    const total   = data.length;
-    const ganados = data.filter(c => ['OBRA ACEPTADA', 'TRABAJANDO'].includes(c.estado)).length;
-    const sinAsig = data.filter(c => c.estado === 'PENDIENTE DE ASIGNAR').length;
-    const pend    = data.filter(c => c.estado === 'PENDIENTE DE LLAMAR').length;
-    const rechaz  = data.filter(c => c.estado === 'RECHAZADO').length;
-    const tasa    = total > 0 ? Math.round((ganados / total) * 100) : 0;
-
-    // Contadores por cada estado (solo los que tienen leads)
-    const estadoCounts = ESTADOS.map(e => {
-      const n = data.filter(c => c.estado === e).length;
-      if (!n) return '';
-      const cls = ESTADO_CLS[e] || '';
-      return `<div class="kpi" style="min-width:120px">
-        <p class="kpi-lbl">${esc(e)}</p>
-        <p class="kpi-val" style="color:${ESTADO_DOT[e] || '#e6f0ff'};font-size:1.7rem">${n}</p>
-      </div>`;
-    }).join('');
-
-    $('kpi-row').innerHTML = `
-      <div class="kpi">
-        <p class="kpi-lbl">Total</p>
-        <p class="kpi-val" style="color:#e6f0ff">${total}</p>
-      </div>
-      <div class="kpi">
-        <p class="kpi-lbl">Tasa de Éxito</p>
-        <p class="kpi-val" style="color:${ganados > 0 ? '#4ade80' : '#3d5a78'}">${tasa}%</p>
-      </div>
-      ${estadoCounts}`;
+    const el=$('kpi-row'); if(!el||rol!=='gestor') return;
+    const total=data.length;
+    const ganados=data.filter(c=>['OBRA ACEPTADA','TRABAJANDO'].includes(c.estado)).length;
+    const pend=data.filter(c=>c.estado==='PENDIENTE DE LLAMAR').length;
+    const rechaz=data.filter(c=>c.estado==='RECHAZADO').length;
+    const tasa=total>0?Math.round(ganados/total*100):0;
+    el.innerHTML=[
+      {lbl:'Total Leads',val:total,color:'#e6f0ff'},
+      {lbl:'Obras Aceptadas',val:ganados,color:'#4ade80'},
+      {lbl:'Pendientes',val:pend,color:'#f5a623'},
+      {lbl:'Rechazados',val:rechaz,color:'#f87171'},
+      {lbl:'Tasa de Éxito',val:tasa+'%',color:ganados>0?'#4ade80':'#3d5a78'},
+    ].map(k=>`<div class="kpi"><p class="kpi-lbl">${esc(k.lbl)}</p><p class="kpi-val" style="color:${k.color}">${esc(String(k.val))}</p></div>`).join('');
   }
 
   function renderEmpresaStats(data) {
-    if (!data.length) { $('emp-grid').innerHTML = '<div class="empty">Sin datos.</div>'; return; }
-
-    const groupKey = rol === 'gestor' ? 'empresa_id' : 'gestor_id';
-    const getLabel = id => {
-      if (!id) return null;
-      return rol === 'gestor'
-        ? (empresasMap[id] || 'Empresa desconocida')
-        : 'Gestor ' + id.slice(0, 8) + '…';
-    };
-
-    const byGroup = {};
-    data.forEach(c => {
-      const key = c[groupKey] || '__none__';
-      if (!byGroup[key]) byGroup[key] = {};
-      byGroup[key][c.estado] = (byGroup[key][c.estado] || 0) + 1;
-    });
-
-    $('emp-grid').innerHTML = Object.entries(byGroup).map(([gid, counts]) => {
-      const label = gid === '__none__'
-        ? '<em style="color:var(--muted)">Sin asignar</em>'
-        : esc(getLabel(gid));
-      const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([e, n]) => `
+    const el=$('emp-grid'); if(!el) return;
+    if(!data.length) { el.innerHTML='<div class="empty">Sin datos.</div>'; return; }
+    const gk=rol==='gestor'?'empresa_id':'gestor_id';
+    const gl=id=>!id?null:rol==='gestor'?(empresasMap[id]||'Empresa desconocida'):'Gestor '+id.slice(0,8)+'…';
+    const byG={};
+    data.forEach(c=>{ const k=c[gk]||'__none__'; if(!byG[k]) byG[k]={}; byG[k][c.estado]=(byG[k][c.estado]||0)+1; });
+    el.innerHTML=Object.entries(byG).map(([gid,counts])=>{
+      const label=gid==='__none__'?'<em style="color:var(--muted)">Sin asignar</em>':esc(gl(gid));
+      const rows=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([e,n])=>`
         <div class="emp-row">
-          <span style="display:flex;align-items:center">
-            <span class="estat-dot" style="background:${ESTADO_DOT[e] || '#3d5a78'}"></span>
-            <span style="font-size:.74rem;color:var(--txt)">${esc(e)}</span>
-          </span>
-          <span class="pill ${ESTADO_CLS[e] || ''}">${n}</span>
+          <span style="display:flex;align-items:center"><span class="estat-dot" style="background:${ESTADO_DOT[e]||'#3d5a78'}"></span><span style="font-size:.74rem">${esc(e)}</span></span>
+          <span class="pill ${ESTADO_CLS[e]||''}">${n}</span>
         </div>`).join('');
       return `<div class="emp-card"><div class="emp-name">${label}</div>${rows}</div>`;
     }).join('');
   }
 
   function renderTable(data) {
-    if (!data.length) { showEl('tbl-empty', 'block'); hideEl('tbl-wrap'); return; }
-    hideEl('tbl-empty'); showEl('tbl-wrap', 'block');
+    hideEl('tbl-loading');
+    if(!data.length) { showEl('tbl-empty','block'); hideEl('tbl-wrap'); return; }
+    hideEl('tbl-empty'); showEl('tbl-wrap','block');
 
-    $('tbl-body').innerHTML = data.map(c => {
-      const cls     = ESTADO_CLS[c.estado] || 's-pendiente';
-      // Fix: para empresa marcasMap se carga igual → lookup correcto
-      const marcaNomTxt = marcasMap[c.marca_id]?.nombre || '';
-      const marcaNom    = marcaNomTxt
-        ? `<span style="font-size:.8rem">${esc(marcaNomTxt)}</span>`
-        : '<span style="color:var(--muted)">—</span>';
-      const hasNew  = clientesConNuevoComentario.has(c.id);
-      const notif   = hasNew
-        ? '<span class="new-comment-dot">nuevo comentario</span>'
-        : '<span class="row-hint">Ver ficha →</span>';
+    $('tbl-body').innerHTML=data.map(c=>{
+      const cls=ESTADO_CLS[c.estado]||'s-pendiente';
+      const marcaNomTxt=getMarcaNombre(c.marca_id);
+      const marcaNom=marcaNomTxt?`<span style="font-size:.8rem">${esc(marcaNomTxt)}</span>`:'<span style="color:var(--muted)">—</span>';
+      const hasNew=clientesConNuevoComentario.has(c.id);
+      const notif=hasNew?'<span class="new-comment-dot">nuevo comentario</span>':'<span class="row-hint">Ver ficha →</span>';
+      const {txt:fechaTxt,cls:fechaCls}=semaforo(c.fecha_proxima_accion||null);
+      const fechaEntrada=c.created_at?fmtDate(c.created_at):'—';
 
-      const { txt: fechaTxt, cls: fechaCls } = semaforo(c.fecha_proxima_accion || null);
+      // Celda teléfono clicable
+      const telClean=(c.telefono||'').replace(/\s/g,'');
+      const telHtml=telClean
+        ?`<span class="tel-cell" onclick="event.stopPropagation();_openTelPopup(event,'${esc(telClean)}')" title="Llamar o WhatsApp">${esc(c.telefono)}</span>`
+        :'<span style="color:var(--muted)">—</span>';
 
-      // ── Celda empresa: gestor → select; empresa → oculto ─────
-      let empCell = '';
-      if (rol === 'gestor') {
-        const marcaIdNorm     = c.marca_id ? String(c.marca_id).trim().toLowerCase() : null;
-        const empresasValidas = marcaIdNorm ? (empresaMarcasMap[marcaIdNorm] || []) : null;
+      // Empresa: gestor ve el nombre, empresa no ve esta columna
+      const empNom=c.empresa_id?(empresasMap[c.empresa_id]||empresasMap[String(c.empresa_id).trim().toLowerCase()]||'—'):'—';
+      const empCell=rol==='gestor'
+        ?`<td style="font-size:.8rem;display:${rol==='empresa'?'none':''}">${esc(empNom)}</td>`
+        :'';
 
-        if (!marcaIdNorm) {
-          empCell = `<span style="font-size:.72rem;color:var(--muted);font-style:italic">— Sin marca —</span>`;
-        } else if (!empresasValidas || empresasValidas.length === 0) {
-          empCell = `<span style="font-size:.72rem;color:var(--muted);font-style:italic">Sin empresas vinculadas</span>`;
-        } else {
-          const opts = empresasValidas.map(eIdNorm => {
-            const nombre   = empresasMap[eIdNorm] || eIdNorm;
-            const currNorm = c.empresa_id ? String(c.empresa_id).trim().toLowerCase() : '';
-            return `<option value="${esc(eIdNorm)}"${currNorm === eIdNorm ? ' selected' : ''}>${esc(nombre)}</option>`;
-          }).join('');
-          empCell = `<select class="inline-emp-select" data-cliente="${esc(c.id)}"
-            style="background:var(--s1);border:1px solid var(--bd2);color:var(--txt);
-                   font-size:.73rem;border-radius:6px;padding:3px 6px;cursor:pointer;max-width:140px"
-            onclick="event.stopPropagation()">
-            <option value=""${!c.empresa_id ? ' selected' : ''}>— Sin asignar —</option>
-            ${opts}
-          </select>`;
-        }
-      }
-
-      // ── Botón papelera: solo gestor ───────────────────────────
-      const deleteBtn = rol === 'gestor'
-        ? `<button class="btn-delete-row" data-id="${esc(c.id)}" title="Mover a papelera"
-            style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.85rem;padding:3px 6px;border-radius:5px;transition:color .15s"
-            onmouseover="this.style.color='#f87171'" onmouseout="this.style.color=''"
-            onclick="event.stopPropagation()">🗑</button>`
-        : '';
+      // Botón eliminar solo gestor
+      const delBtn=rol==='gestor'
+        ?`<button class="btn-row-del" onclick="event.stopPropagation();_rowDel('${esc(c.id)}')" title="Mover a papelera">🗑</button>`
+        :'';
 
       return `
-        <tr data-id="${esc(c.id)}" style="cursor:pointer" title="Clic para abrir la ficha">
-          <td style="font-weight:500;color:#dce8f8">${esc(c.nombre_cliente || '—')}</td>
-          <td class="mono" style="font-size:.76rem;color:var(--muted)">${esc(c.telefono || '—')}</td>
-          <td>${esc(c.poblacion || '—')}</td>
-          <td>${c.tipo_reforma
-            ? `<span style="font-size:.68rem;background:rgba(255,255,255,.05);border:1px solid var(--bd2);color:var(--txt);padding:2px 8px;border-radius:99px">${esc(String(c.tipo_reforma))}</span>`
-            : '<span style="color:var(--muted)">—</span>'}</td>
-          <td>${empCell}</td>
+        <tr data-id="${esc(c.id)}" title="Clic para abrir la ficha">
+          <td style="font-weight:500;color:#dce8f8">${esc(c.nombre_cliente||'—')}</td>
+          <td>${telHtml}</td>
+          <td>${esc(c.poblacion||'—')}</td>
+          <td style="font-size:.76rem;color:var(--muted)">${esc(fechaEntrada)}</td>
+          ${empCell}
           <td>${marcaNom}</td>
-          <td><span class="pill ${cls}">${esc(c.estado || '—')}</span></td>
+          <td><span class="pill ${cls}">${esc(c.estado||'—')}</span></td>
           <td><span class="${fechaCls}" style="font-size:.78rem;white-space:nowrap">${esc(fechaTxt)}</span></td>
           <td>${notif}</td>
-          <td>${deleteBtn}</td>
+          <td>${delBtn}</td>
         </tr>`;
     }).join('');
 
-    // ── Click en filas → abrir modal (ambos roles) ────────────
-    $('tbl-body').querySelectorAll('tr').forEach(row => {
-      row.addEventListener('click', () => {
-        const id      = row.dataset.id;
-        const cliente = allLeads.find(c => c.id === id);
-        if (!cliente) return;
+    // Click en filas → abrir modal
+    $('tbl-body').querySelectorAll('tr').forEach(row=>{
+      row.addEventListener('click',e=>{
+        if(e.target.closest('.tel-cell')||e.target.closest('.btn-row-del')) return;
+        const id=row.dataset.id;
+        const cliente=allLeads.find(c=>c.id===id);
+        if(!cliente) return;
         clientesConNuevoComentario.delete(id);
-        const notifTd = row.querySelector('td:nth-child(9)');
-        if (notifTd) notifTd.innerHTML = '<span class="row-hint">Ver ficha →</span>';
+        const last=row.querySelector('td:last-child');
+        if(last) last.innerHTML='<span class="row-hint">Ver ficha →</span>';
         openModal(cliente);
       });
     });
 
-    // ── Papelera en filas (solo gestor) ───────────────────────
-    $('tbl-body').querySelectorAll('.btn-delete-row').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        await deleteLead(btn.dataset.id);
+    // Ocultar columna empresa para rol empresa
+    if(rol==='empresa') {
+      document.querySelectorAll('.th-empresa').forEach(th=>th.style.display='none');
+      $('tbl-body').querySelectorAll('tr').forEach(row=>{
+        // La empresa no tiene empCell, ya se excluye del HTML
       });
-    });
-
-    // ── Asignación inline de empresa (solo gestor) ────────────
-    $('tbl-body').querySelectorAll('.inline-emp-select').forEach(sel => {
-      sel.addEventListener('change', async function () {
-        const clienteId = this.dataset.cliente;
-        const empresaId = this.value;
-        if (!empresaId) return;
-
-        this.disabled = true;
-        const { error } = await sb
-          .from('clientes')
-          .update({ empresa_id: empresaId, estado: 'PENDIENTE DE LLAMAR' })
-          .eq('id', clienteId);
-
-        if (error) {
-          toast('Error al asignar empresa: ' + error.message, 'err');
-          this.disabled = false;
-          return;
-        }
-
-        const lead = allLeads.find(c => c.id === clienteId);
-        if (lead) { lead.empresa_id = empresaId; lead.estado = 'PENDIENTE DE LLAMAR'; }
-        toast('Empresa asignada — estado → PENDIENTE DE LLAMAR');
-        const vis = _leadsVisibles();
-        renderFilterPills();
-        renderKPIs(vis);
-        renderTable(vis);
-      });
-    });
+    }
   }
 
-  // ───────────────────────────────────────────────────────────
-  //  BORRADO LÓGICO (solo gestor)
-  // ───────────────────────────────────────────────────────────
-  async function deleteLead(id) {
-    const cliente = allLeads.find(c => c.id === id);
-    const nombre  = cliente?.nombre_cliente || 'este lead';
+  // ─── POPUP TELÉFONO ───────────────────────────────────────────
+  window._openTelPopup = function(e, tel) {
+    const popup=$('tel-popup');
+    $('tel-call').href='tel:'+tel;
+    $('tel-wa').href='https://wa.me/'+tel.replace(/^\+/,'').replace(/^00/,'');
+    popup.style.position='fixed';
+    popup.style.top=(e.clientY+10)+'px';
+    popup.style.left=(e.clientX)+'px';
+    popup.classList.add('open');
+    const close=ev=>{ if(!popup.contains(ev.target)){ popup.classList.remove('open'); document.removeEventListener('click',close); } };
+    setTimeout(()=>document.addEventListener('click',close),10);
+  };
 
-    // Pedir motivo con prompt — cancelar = no borrar
-    const motivo = prompt(`Motivo de borrado para "${nombre}":\n(Dejar vacío para omitir motivo)`);
-    if (motivo === null) return;  // usuario canceló
+  // ─── BORRADO DESDE FILA ───────────────────────────────────────
+  window._rowDel = async function(id) {
+    if(rol!=='gestor') return;
+    const motivo=prompt('Motivo de borrado (obligatorio):');
+    if(motivo===null||!motivo.trim()) { toast('Borrado cancelado: motivo obligatorio','err'); return; }
+    await softDeleteLead(id,motivo.trim());
+  };
 
-    const updatePayload = { estado: 'BORRADO' };
-    if (motivo.trim()) updatePayload.notas_internas = motivo.trim();
-
-    const { error } = await sb.from('clientes').update(updatePayload).eq('id', id);
-    if (error) { toast('Error al borrar: ' + error.message, 'err'); return; }
-
-    // Actualizar en memoria (mantenemos el lead como BORRADO)
-    const lead = allLeads.find(c => c.id === id);
-    if (lead) { lead.estado = 'BORRADO'; if (motivo.trim()) lead.notas_internas = motivo.trim(); }
-
-    closeModal();
-    const vis = _leadsVisibles();
-    renderFilterPills();
-    renderKPIs(vis);
-    renderTable(vis);
-    toast('Lead movido a papelera');
-  }
-
-  // Listener del botón papelera en el modal (solo gestor — oculto para empresa via applyRoleUI)
-  $('btn-delete-lead').addEventListener('click', async () => {
-    if (!activeClienteId || rol !== 'gestor') return;
-    await deleteLead(activeClienteId);
-  });
-
-  // ───────────────────────────────────────────────────────────
-  //  COMENTARIOS
-  // ───────────────────────────────────────────────────────────
+  // ─── COMENTARIOS ──────────────────────────────────────────────
   async function loadComments(clienteId) {
-    showEl('comments-loading', 'block');
-    hideEl('comments-list'); hideEl('comments-empty');
-
-    const { data, error } = await sb
-      .from('comentarios_clientes')
-      .select('id, texto, nombre_autor, autor_id, created_at')
-      .eq('cliente_id', clienteId)
-      .order('created_at', { ascending: true });
-
+    showEl('comments-loading','block'); hideEl('comments-list'); hideEl('comments-empty');
+    const {data,error}=await sb.from('comentarios_clientes').select('id,texto,nombre_autor,autor_id,created_at').eq('cliente_id',clienteId).order('created_at',{ascending:true});
     hideEl('comments-loading');
-    if (error) { toast('Error al cargar comentarios: ' + error.message, 'err'); return; }
-    if (!data || !data.length) { showEl('comments-empty', 'block'); return; }
-
-    showEl('comments-list', 'flex');
-    $('comments-list').style.flexDirection = 'column';
-    $('comments-list').innerHTML = data.map(c => {
-      const esSistema = c.nombre_autor === 'Sistema';
-      return `
-        <div class="comment-bubble${esSistema ? ' sistema' : ''}">
-          <div class="comment-meta">
-            <span class="comment-author${esSistema ? ' sistema' : ''}">${esc(c.nombre_autor || 'Desconocido')}</span>
-            <span class="comment-date">${fmtDate(c.created_at, true)}</span>
-          </div>
-          <div class="comment-text">${esc(c.texto)}</div>
-        </div>`;
+    if(error) { toast('Error al cargar comentarios: '+error.message,'err'); return; }
+    if(!data||!data.length) { showEl('comments-empty','block'); return; }
+    showEl('comments-list','flex');
+    $('comments-list').style.flexDirection='column';
+    $('comments-list').innerHTML=data.map(c=>{
+      const esSistema=c.nombre_autor==='Sistema';
+      return `<div class="comment-bubble${esSistema?' sistema':''}">
+        <div class="comment-meta">
+          <span class="comment-author${esSistema?' sistema':''}">${esc(c.nombre_autor||'Desconocido')}</span>
+          <span class="comment-date">${fmtDate(c.created_at,true)}</span>
+        </div>
+        <div class="comment-text">${esc(c.texto)}</div>
+      </div>`;
     }).join('');
-
-    const list = $('comments-list');
-    list.scrollTop = list.scrollHeight;
+    const list=$('comments-list'); list.scrollTop=list.scrollHeight;
   }
 
   $('btn-send-comment').addEventListener('click', async () => {
     clearAlert('comment-err');
-    const texto = $('comment-input').value.trim();
-    if (!texto) { setAlert('comment-err', 'comment-err-txt', 'Escribe algo antes de enviar.'); return; }
-    if (!activeClienteId) return;
-
-    const btn = $('btn-send-comment');
-    btn.textContent = '…'; btn.disabled = true;
-
+    const texto=$('comment-input').value.trim();
+    if(!texto) { setAlert('comment-err','comment-err-txt','Escribe algo antes de enviar.'); return; }
+    if(!activeClienteId) return;
+    const btn=$('btn-send-comment'); btn.textContent='…'; btn.disabled=true;
     try {
-      const { error } = await sb.from('comentarios_clientes').insert([{
-        cliente_id:   activeClienteId,
-        texto,
-        nombre_autor: userName,
-        autor_id:     userId,   // UUID del usuario actual — clave para punto rojo
-      }]);
-      if (error) throw error;
-      $('comment-input').value = '';
-      await loadComments(activeClienteId);
-      toast('Comentario guardado');
-    } catch (err) {
-      setAlert('comment-err', 'comment-err-txt', 'Error: ' + (err.message || JSON.stringify(err)));
-    } finally { btn.textContent = 'Enviar'; btn.disabled = false; }
+      const {error}=await sb.from('comentarios_clientes').insert([{cliente_id:activeClienteId,texto,nombre_autor:userName,autor_id:userId}]);
+      if(error) throw error;
+      $('comment-input').value=''; await loadComments(activeClienteId); toast('Comentario guardado');
+    } catch(err) { setAlert('comment-err','comment-err-txt','Error: '+(err.message||JSON.stringify(err))); }
+    finally { btn.textContent='Enviar'; btn.disabled=false; }
   });
+  $('comment-input').addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key==='Enter') $('btn-send-comment').click(); });
 
-  $('comment-input').addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') $('btn-send-comment').click();
-  });
-
-  // ───────────────────────────────────────────────────────────
-  //  DOCUMENTOS
-  // ───────────────────────────────────────────────────────────
+  // ─── DOCUMENTOS ───────────────────────────────────────────────
   async function loadDocs(clienteId) {
-    showEl('docs-loading', 'block'); hideEl('doc-list'); hideEl('docs-empty');
-    clearAlert('docs-err');
-
-    const { data, error } = await sb.storage
-      .from(BUCKET)
-      .list(clienteId, { sortBy: { column: 'created_at', order: 'desc' } });
-
+    showEl('docs-loading','block'); hideEl('doc-list'); hideEl('docs-empty'); clearAlert('docs-err');
+    const {data,error}=await sb.storage.from(BUCKET).list(clienteId,{sortBy:{column:'created_at',order:'desc'}});
     hideEl('docs-loading');
-    if (error) { setAlert('docs-err', 'docs-err-txt', 'Error al cargar documentos: ' + error.message); return; }
-
-    const files = (data || []).filter(f => f.name && f.name !== '.emptyFolderPlaceholder');
-    if (!files.length) { showEl('docs-empty', 'block'); return; }
-
-    showEl('doc-list', 'flex');
-    $('doc-list').style.flexDirection = 'column';
-    $('doc-list').innerHTML = files.map(f => `
+    if(error) { setAlert('docs-err','docs-err-txt','Error al cargar documentos: '+error.message); return; }
+    const files=(data||[]).filter(f=>f.name&&f.name!=='.emptyFolderPlaceholder');
+    if(!files.length) { showEl('docs-empty','block'); return; }
+    showEl('doc-list','flex'); $('doc-list').style.flexDirection='column';
+    $('doc-list').innerHTML=files.map(f=>`
       <div class="doc-item">
         <span class="doc-icon">${docIcon(f.name)}</span>
         <span class="doc-name" title="${esc(f.name)}">${esc(f.name)}</span>
-        <span class="doc-size">${f.metadata?.size ? fmtBytes(f.metadata.size) : ''}</span>
-        <button class="btn-sm btn-sm-green"
-          onclick="window.__downloadDoc('${esc(clienteId)}','${esc(f.name)}',this)">
-          ↓ Descargar
-        </button>
+        <span class="doc-size">${f.metadata?.size?fmtBytes(f.metadata.size):''}</span>
+        <button class="btn-sm btn-sm-green" onclick="window.__dl('${esc(clienteId)}','${esc(f.name)}',this)">↓ Descargar</button>
       </div>`).join('');
   }
-
-  window.__downloadDoc = async (clienteId, fileName, btn) => {
-    btn.textContent = '…'; btn.disabled = true;
-    const { data, error } = await sb.storage.from(BUCKET)
-      .createSignedUrl(`${clienteId}/${fileName}`, 60);
-    btn.textContent = '↓ Descargar'; btn.disabled = false;
-    if (error) { toast('Error al generar enlace: ' + error.message, 'err'); return; }
-    const a = document.createElement('a');
-    a.href = data.signedUrl; a.download = fileName; a.target = '_blank';
+  window.__dl=async(cId,fn,btn)=>{
+    btn.textContent='…'; btn.disabled=true;
+    const {data,error}=await sb.storage.from(BUCKET).createSignedUrl(`${cId}/${fn}`,60);
+    btn.textContent='↓ Descargar'; btn.disabled=false;
+    if(error) { toast('Error al generar enlace: '+error.message,'err'); return; }
+    const a=document.createElement('a'); a.href=data.signedUrl; a.download=fn; a.target='_blank';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
   };
 
-  const dz = $('drop-zone');
-  const fi = $('file-input');
-  dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('dragover'); });
-  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); handleFiles([...e.dataTransfer.files]); });
-  fi.addEventListener('change', () => { handleFiles([...fi.files]); fi.value = ''; });
+  const dz=$('drop-zone'), fi=$('file-input');
+  dz.addEventListener('dragover',e=>{ e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
+  dz.addEventListener('drop',e=>{ e.preventDefault(); dz.classList.remove('dragover'); handleFiles([...e.dataTransfer.files]); });
+  fi.addEventListener('change',()=>{ handleFiles([...fi.files]); fi.value=''; });
 
   async function handleFiles(files) {
-    if (!activeClienteId) return;
+    if(!activeClienteId) return;
     clearAlert('docs-err');
-    const valid = [];
-    for (const f of files) {
-      if (f.size > MAX_SIZE) { toast(`${f.name}: supera el límite de 5 MB`, 'err'); continue; }
-      const ext = '.' + f.name.split('.').pop().toLowerCase();
-      if (!ALLOWED_EXT.includes(ext)) { toast(`${f.name}: formato no permitido`, 'err'); continue; }
+    const valid=[];
+    for(const f of files) {
+      if(f.size>MAX_SIZE) { toast(`${f.name}: supera 5 MB`,'err'); continue; }
+      const ext='.'+f.name.split('.').pop().toLowerCase();
+      if(!ALLOWED_EXT.includes(ext)) { toast(`${f.name}: formato no permitido`,'err'); continue; }
       valid.push(f);
     }
-    if (!valid.length) return;
-
-    const bar = $('upload-progress-bar');
-    const lbl = $('upload-progress-label');
-    showEl('upload-progress-wrap', 'block');
-
-    for (let i = 0; i < valid.length; i++) {
-      const f = valid[i];
-      bar.style.width = Math.round((i / valid.length) * 100) + '%';
-      lbl.textContent = `Subiendo ${i + 1} de ${valid.length}: ${f.name}`;
-      const { error } = await sb.storage.from(BUCKET)
-        .upload(`${activeClienteId}/${f.name}`, f, { upsert: true });
-      error ? toast(`Error subiendo ${f.name}: ${error.message}`, 'err') : toast(`${f.name} subido`);
+    if(!valid.length) return;
+    const bar=$('upload-progress-bar'), lbl=$('upload-progress-label');
+    showEl('upload-progress-wrap','block');
+    for(let i=0;i<valid.length;i++) {
+      const f=valid[i]; bar.style.width=Math.round(i/valid.length*100)+'%';
+      lbl.textContent=`Subiendo ${i+1} de ${valid.length}: ${f.name}`;
+      const {error}=await sb.storage.from(BUCKET).upload(`${activeClienteId}/${f.name}`,f,{upsert:true});
+      error?toast(`Error subiendo ${f.name}: ${error.message}`,'err'):toast(`${f.name} subido`);
     }
-
-    bar.style.width = '100%'; lbl.textContent = 'Completado';
-    setTimeout(() => hideEl('upload-progress-wrap'), 1200);
+    bar.style.width='100%'; lbl.textContent='Completado';
+    setTimeout(()=>hideEl('upload-progress-wrap'),1200);
     await loadDocs(activeClienteId);
   }
 
-  // ───────────────────────────────────────────────────────────
-  //  REFRESH & LOGOUT
-  // ───────────────────────────────────────────────────────────
-  $('btn-refresh').addEventListener('click', () => { if (userId) loadDashboard(); });
+  // ─── REFRESH & LOGOUT ─────────────────────────────────────────
+  $('btn-refresh').addEventListener('click',()=>{ if(userId) loadDashboard(); });
 
   $('btn-logout').addEventListener('click', async () => {
-    if (rtComments) { sb.removeChannel(rtComments); rtComments = null; }
-    if (rtClientes) { sb.removeChannel(rtClientes); rtClientes = null; }
+    if(rtComments) { sb.removeChannel(rtComments); rtComments=null; }
+    if(rtClientes) { sb.removeChannel(rtClientes); rtClientes=null; }
     await sb.auth.signOut();
-    rol = null; userId = null; userName = ''; servicios = []; allLeads = [];
+    rol=null; userId=null; userName=''; servicios=[]; allLeads=[];
     closeModal();
-    $('screen-app').style.display = 'none';
-    showEl('screen-login', 'flex');
-    $('form-login').reset();
-    clearAlert('err-login');
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    showEl('tab-btn-form', 'block');
+    $('screen-app').style.display='none';
+    showEl('screen-login','flex');
+    $('form-login').reset(); clearAlert('err-login');
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    showEl('tab-btn-form','block');
     $('tab-btn-form').classList.add('active');
     $('tab-form').classList.add('active');
   });
 
-  sb.auth.onAuthStateChange(ev => {
-    if (ev === 'SIGNED_OUT') {
-      if (rtComments) { sb.removeChannel(rtComments); rtComments = null; }
-      if (rtClientes) { sb.removeChannel(rtClientes); rtClientes = null; }
-      rol = null; userId = null; allLeads = [];
-      $('screen-app').style.display = 'none';
-      showEl('screen-login', 'flex');
+  sb.auth.onAuthStateChange(ev=>{
+    if(ev==='SIGNED_OUT') {
+      if(rtComments) { sb.removeChannel(rtComments); rtComments=null; }
+      if(rtClientes) { sb.removeChannel(rtClientes); rtClientes=null; }
+      rol=null; userId=null; allLeads=[];
+      $('screen-app').style.display='none';
+      showEl('screen-login','flex');
     }
   });
 
-  init().catch(err => console.error('Init error:', err));
+  init().catch(err=>console.error('Init error:',err));
 })();
 </script>
 </body>
