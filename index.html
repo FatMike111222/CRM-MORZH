@@ -142,6 +142,34 @@
     .tel-cell { cursor:pointer; color:var(--muted); font-family:'DM Mono',monospace; font-size:.76rem; text-decoration:underline dotted; text-underline-offset:3px; transition:color .14s; }
     .tel-cell:hover { color:var(--txt); }
 
+    /* ── Select estado inline (empresa) ── */
+    .estado-select {
+      font-family:'DM Mono',monospace; font-size:.62rem; font-weight:600; letter-spacing:.04em;
+      border-radius:99px; padding:4px 24px 4px 10px; border:1px solid transparent;
+      cursor:pointer; outline:none; appearance:none; -webkit-appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%233d5a78'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 8px center;
+      transition:box-shadow .2s, opacity .15s;
+    }
+    .estado-select:hover  { opacity:.85; }
+    .estado-select:focus  { box-shadow:0 0 0 2px rgba(59,125,216,.35); }
+    .estado-select:disabled { opacity:.45; cursor:not-allowed; }
+    /* Colores por estado – heredan las mismas vars que .pill */
+    .estado-select.s-sin-asignar { background-color:rgba(148,163,184,.1);  border-color:rgba(148,163,184,.35); color:#94a3b8; }
+    .estado-select.s-pendiente   { background-color:rgba(245,166,35,.13);  border-color:rgba(245,166,35,.4);   color:#f5a623; }
+    .estado-select.s-visita      { background-color:rgba(59,125,216,.13);  border-color:rgba(59,125,216,.4);   color:#63a8f8; }
+    .estado-select.s-seguimiento { background-color:rgba(139,92,246,.13);  border-color:rgba(139,92,246,.4);   color:#a78bfa; }
+    .estado-select.s-presupuesto { background-color:rgba(249,115,22,.13);  border-color:rgba(249,115,22,.4);   color:#fb923c; }
+    .estado-select.s-aceptada    { background-color:rgba(34,197,94,.13);   border-color:rgba(34,197,94,.4);    color:#4ade80; }
+    .estado-select.s-trabajando  { background-color:rgba(20,184,166,.13);  border-color:rgba(20,184,166,.4);   color:#2dd4bf; }
+    .estado-select.s-rechazado   { background-color:rgba(239,68,68,.13);   border-color:rgba(239,68,68,.4);    color:#f87171; }
+    .estado-select.s-borrado     { background-color:rgba(107,114,128,.1);  border-color:rgba(107,114,128,.28); color:#6b7280; }
+    /* Flash de éxito/error */
+    @keyframes flash-ok  { 0%,100%{box-shadow:none} 30%{box-shadow:0 0 0 3px rgba(34,197,94,.55)} }
+    @keyframes flash-err { 0%,100%{box-shadow:none} 30%{box-shadow:0 0 0 3px rgba(239,68,68,.55)} }
+    .estado-select.flash-ok  { animation:flash-ok  .9s ease both; }
+    .estado-select.flash-err { animation:flash-err .9s ease both; }
+
     .rt-live { display: inline-flex; align-items: center; gap: 5px; font-family: 'DM Mono', monospace; font-size: .6rem; color: #4ade80; letter-spacing: .06em; }
     .rt-live::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #4ade80; animation: rt-blink 1.8s ease-in-out infinite; }
     @keyframes rt-blink { 0%,100% { opacity: 1; box-shadow: 0 0 4px #4ade80; } 50% { opacity: .4; box-shadow: none; } }
@@ -886,9 +914,17 @@
     const row=document.querySelector(`#tbl-body tr[data-id="${id}"]`);
     if(!row) return;
     const cls=ESTADO_CLS[nuevoEstado]||'s-pendiente';
-    const idx=rol==='empresa'?6:7;  // col estado depende de si hay col empresa
-    const cell=row.querySelector(`td:nth-child(${idx})`);
-    if(cell) cell.innerHTML=`<span class="pill ${cls}">${esc(nuevoEstado)}</span>`;
+    // Actualiza select (empresa) o pill span (gestor) en la celda de estado
+    const sel=row.querySelector('.estado-select');
+    if(sel) {
+      sel.value=nuevoEstado;
+      sel.className='estado-select '+cls;
+    } else {
+      // Columna 7 para gestor (con col empresa), 6 para empresa (sin col empresa)
+      const idx=rol==='empresa'?6:7;
+      const cell=row.querySelector(`td:nth-child(${idx})`);
+      if(cell) cell.innerHTML=`<span class="pill ${cls}">${esc(nuevoEstado)}</span>`;
+    }
     row.style.transition='background .1s'; row.style.background='rgba(59,125,216,.18)';
     setTimeout(()=>{ row.style.background=''; },900);
     renderKPIs(leadsVisibles());
@@ -1227,13 +1263,19 @@
       // Empresa: gestor ve el nombre, empresa no ve esta columna
       const empNom=c.empresa_id?(empresasMap[c.empresa_id]||empresasMap[String(c.empresa_id).trim().toLowerCase()]||'—'):'—';
       const empCell=rol==='gestor'
-        ?`<td style="font-size:.8rem;display:${rol==='empresa'?'none':''}">${esc(empNom)}</td>`
+        ?`<td style="font-size:.8rem">${esc(empNom)}</td>`
         :'';
 
       // Botón eliminar solo gestor
       const delBtn=rol==='gestor'
         ?`<button class="btn-row-del" onclick="event.stopPropagation();_rowDel('${esc(c.id)}')" title="Mover a papelera">🗑</button>`
         :'';
+
+      // Celda estado: select interactivo para empresa, pill estático para gestor
+      const estadosEmpresa=ESTADOS.filter(e=>!['BORRADO','PENDIENTE DE ASIGNAR'].includes(e));
+      const estadoCell=rol==='empresa'
+        ? `<select class="estado-select ${cls}" data-id="${c.id}" onchange="event.stopPropagation();window._updateEstado('${c.id}',this)" onclick="event.stopPropagation()" title="Cambiar estado">${estadosEmpresa.map(e=>`<option value="${e}"${e===c.estado?' selected':''}>${e}</option>`).join('')}</select>`
+        : `<span class="pill ${cls}">${esc(c.estado||'—')}</span>`;
 
       return `
         <tr data-id="${esc(c.id)}" title="Clic para abrir la ficha">
@@ -1243,7 +1285,7 @@
           <td style="font-size:.76rem;color:var(--muted)">${esc(fechaEntrada)}</td>
           ${empCell}
           <td>${marcaNom}</td>
-          <td><span class="pill ${cls}">${esc(c.estado||'—')}</span></td>
+          <td>${estadoCell}</td>
           <td><span class="${fechaCls}" style="font-size:.78rem;white-space:nowrap">${esc(fechaTxt)}</span></td>
           <td>${notif}</td>
           <td>${delBtn}</td>
@@ -1272,6 +1314,58 @@
       });
     }
   }
+
+  // ─── ACTUALIZAR ESTADO DESDE SELECT INLINE (empresa) ────────
+  window._updateEstado = async function(id, selectEl) {
+    const nuevoEstado = selectEl.value;
+    const lead = allLeads.find(c => c.id === id);
+    if (!lead || nuevoEstado === lead.estado) return;
+
+    selectEl.disabled = true;
+    const estadoAnterior = lead.estado;
+
+    try {
+      const { error } = await sb
+        .from('clientes')
+        .update({ estado: nuevoEstado })
+        .eq('id', id)
+        .select('id,estado');
+
+      if (error) throw error;
+
+      // Actualiza memoria local
+      lead.estado = nuevoEstado;
+      activeClienteData && activeClienteData.id === id && (activeClienteData.estado = nuevoEstado);
+
+      // Recolor del select con el nuevo estado
+      const newCls = ESTADO_CLS[nuevoEstado] || 's-pendiente';
+      selectEl.className = 'estado-select ' + newCls;
+      selectEl.classList.add('flash-ok');
+      selectEl.addEventListener('animationend', () => selectEl.classList.remove('flash-ok'), { once: true });
+
+      // Flash verde en la fila
+      const row = selectEl.closest('tr');
+      if (row) {
+        row.style.transition = 'background .1s';
+        row.style.background = 'rgba(34,197,94,.13)';
+        setTimeout(() => { row.style.background = ''; }, 900);
+      }
+
+      toast('Estado actualizado → ' + nuevoEstado);
+      renderKPIs(leadsVisibles());
+      renderFiltrosEstado();
+
+    } catch (err) {
+      // Revertir selección visual al estado anterior
+      selectEl.value = estadoAnterior;
+      selectEl.className = 'estado-select ' + (ESTADO_CLS[estadoAnterior] || 's-pendiente');
+      selectEl.classList.add('flash-err');
+      selectEl.addEventListener('animationend', () => selectEl.classList.remove('flash-err'), { once: true });
+      toast('Error al guardar: ' + err.message, 'err');
+    } finally {
+      selectEl.disabled = false;
+    }
+  };
 
   // ─── POPUP TELÉFONO ───────────────────────────────────────────
   window._openTelPopup = function(e, tel) {
