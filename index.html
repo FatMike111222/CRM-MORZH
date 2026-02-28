@@ -45,7 +45,6 @@
     .btn-ghost { font-family: 'DM Sans', sans-serif; font-size: .75rem; font-weight: 500; background: rgba(255,255,255,.04); border: 1px solid var(--bd); color: var(--muted); border-radius: 8px; padding: 6px 13px; cursor: pointer; transition: color .18s, border-color .18s; }
     .btn-ghost:hover { color: #f87171; border-color: rgba(248,113,113,.3); }
 
-    .main { max-width: 1300px; margin: 0 auto; padding: 28px 24px 52px; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; animation: fadein .28s ease both; }
     @keyframes fadein { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } }
@@ -129,9 +128,18 @@
     .s-borrado    { background: rgba(107,114,128,.1);  border-color: rgba(107,114,128,.28);color: #6b7280; }
 
     /* ── Table ── */
+    /* Padding lateral base */
+    .main { max-width: 1300px; margin: 0 auto; padding: 28px 24px 52px; }
+
+    /* ── Tabla desktop ── */
     .tbl-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; min-width: 700px; }
     thead th { background: rgba(12,19,34,.98); color: var(--muted); font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; padding: 11px 16px; border-bottom: 1px solid var(--bd); text-align: left; white-space: nowrap; }
+    thead th.sortable { cursor: pointer; user-select: none; }
+    thead th.sortable:hover { color: var(--txt); }
+    .sort-icon { margin-left: 4px; opacity: .4; font-style: normal; font-size: .7rem; }
+    thead th.sort-asc .sort-icon,
+    thead th.sort-desc .sort-icon { opacity: 1; color: var(--blue); }
     tbody tr { border-bottom: 1px solid rgba(29,46,71,.5); transition: background .14s; cursor: pointer; }
     tbody tr:last-child { border-bottom: none; }
     tbody tr:hover { background: rgba(59,125,216,.07); }
@@ -141,6 +149,79 @@
     .btn-row-del:hover { color:#f87171; }
     .tel-cell { cursor:pointer; color:var(--muted); font-family:'DM Mono',monospace; font-size:.76rem; text-decoration:underline dotted; text-underline-offset:3px; transition:color .14s; }
     .tel-cell:hover { color:var(--txt); }
+
+    /* ── Cards móvil (< 768px) ── */
+    @media (max-width: 767px) {
+      .main { padding: 16px 14px 52px; }
+      .topbar-inner { padding: 0 14px; }
+
+      /* Ocultar tabla entera, mostrar cards */
+      .tbl-wrap table, .tbl-wrap thead { display: none; }
+      .tbl-wrap { overflow-x: unset; }
+
+      /* Cada <tr> se convierte en card */
+      #tbl-body { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; }
+      #tbl-body tr {
+        display: flex; flex-direction: column;
+        background: var(--s3); border: 1px solid var(--bd);
+        border-radius: 13px; padding: 14px 16px;
+        cursor: pointer; transition: border-color .18s, background .14s;
+        border-bottom: 1px solid var(--bd) !important;
+        gap: 8px;
+      }
+      #tbl-body tr:hover { border-color: var(--bd2); background: rgba(59,125,216,.07); }
+
+      /* Ocultar TDs secundarios — solo mostrar los relevantes */
+      #tbl-body td { display: none; padding: 0; font-size: .83rem; }
+
+      /* TD 1: Nombre — siempre visible, título de la card */
+      #tbl-body td:nth-child(1) {
+        display: block;
+        font-weight: 600; color: var(--hi); font-size: .9rem;
+      }
+
+      /* TD de Estado (clase .td-estado) — siempre visible */
+      #tbl-body td.td-estado { display: flex; align-items: center; }
+
+      /* TD de Marca — visible */
+      #tbl-body td.td-marca { display: flex; align-items: center; gap: 6px; }
+      #tbl-body td.td-marca::before {
+        content: 'Marca'; font-size: .6rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .08em;
+        color: var(--muted); min-width: 46px;
+      }
+
+      /* TD Teléfono — visible */
+      #tbl-body td.td-tel { display: flex; align-items: center; gap: 6px; }
+      #tbl-body td.td-tel::before {
+        content: 'Tel'; font-size: .6rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .08em;
+        color: var(--muted); min-width: 46px;
+      }
+
+      /* TD Próxima Acción — visible */
+      #tbl-body td.td-fecha { display: flex; align-items: center; gap: 6px; }
+      #tbl-body td.td-fecha::before {
+        content: 'Acción'; font-size: .6rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .08em;
+        color: var(--muted); min-width: 46px;
+      }
+
+      /* TD notif/acciones — fila inferior */
+      #tbl-body td.td-notif { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+      #tbl-body td.td-del   { display: none; } /* el borrado se hace desde el modal en móvil */
+
+      /* Select estado dentro de card */
+      #tbl-body .estado-select { width: 100%; border-radius: 8px; padding: 6px 28px 6px 10px; }
+
+      /* Ajustes cards de filtros */
+      .filtros-bar { gap: 6px; }
+      #search-lead { width: 100%; }
+      .kpi-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+      /* Topbar en móvil */
+      .tab-bar .tab { padding: 7px 12px; font-size: .72rem; }
+    }
 
     /* ── Select estado inline (empresa) ── */
     .estado-select {
@@ -453,9 +534,12 @@
           <table id="leads-table">
             <thead>
               <tr id="tbl-head">
-                <th>Cliente</th><th>Teléfono</th><th>Población</th>
-                <th>Fecha entrada</th><th class="th-empresa">Empresa</th><th>Marca</th>
-                <th>Estado</th><th>Próxima Acción</th><th></th><th class="th-acciones"></th>
+                <th class="sortable" data-col="nombre" onclick="window.__sort('nombre')">Cliente <em class="sort-icon">↕</em></th>
+                <th>Teléfono</th><th>Población</th>
+                <th class="sortable" data-col="created_at" onclick="window.__sort('created_at')">Fecha entrada <em class="sort-icon">↓</em></th>
+                <th class="th-empresa">Empresa</th><th>Marca</th>
+                <th class="sortable" data-col="estado" onclick="window.__sort('estado')">Estado <em class="sort-icon">↕</em></th>
+                <th>Próxima Acción</th><th></th><th class="th-acciones"></th>
               </tr>
             </thead>
             <tbody id="tbl-body"></tbody>
@@ -642,6 +726,7 @@
 
   // ─── FILTROS ──────────────────────────────────────────────────
   let filtroEstado = null, filtroSector = null, filtroPapelera = false, filtroBusqueda = '';
+  let sortCol = 'created_at', sortDir = 'desc'; // ordenación de tabla
 
   // ─── HELPERS ──────────────────────────────────────────────────
   const $      = id => document.getElementById(id);
@@ -1158,11 +1243,15 @@
     if($('kpi-row')) $('kpi-row').innerHTML='<div class="kpi"><p class="kpi-lbl">Cargando…</p></div>';
     if($('emp-grid')) $('emp-grid').innerHTML='<div class="empty">Cargando…</div>';
     clientesConNuevoComentario=new Set();
-    filtroEstado=null; filtroSector=null; filtroPapelera=false; filtroBusqueda='';
+    filtroEstado=null; filtroSector=null; filtroPapelera=false; filtroBusqueda=''; sortCol='created_at'; sortDir='desc';
     const si=$('search-lead'); if(si) si.value='';
 
+    // Para empresa: traer el nombre de marca directamente via join para evitar problemas de marcasMap
+    const selectCols = rol==='empresa'
+      ? 'id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion,marcas(id,nombre)'
+      : 'id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion';
     let q=sb.from('clientes')
-      .select('id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion')
+      .select(selectCols)
       .order('created_at',{ascending:false});
     q=rol==='gestor'?q.eq('gestor_id',userId):q.eq('empresa_id',userId);
 
@@ -1176,6 +1265,13 @@
     let leads=leadsRes.data||[];
     const svs=subserviciosDelUsuario();
     if(svs.length) leads=leads.filter(l=>!l.tipo_reforma||svs.includes(String(l.tipo_reforma)));
+    // Para empresa: enriquecer marcasMap con los nombres traídos directamente del join
+    if(rol==='empresa') {
+      leads.forEach(l=>{ if(l.marcas?.id && l.marcas?.nombre) {
+        marcasMap[l.marcas.id]=l.marcas.nombre;
+        marcasMap[String(l.marcas.id).trim().toLowerCase()]=l.marcas.nombre;
+      }});
+    }
     allLeads=leads;
 
     // Notificaciones
@@ -1210,13 +1306,43 @@
   }
 
   // ─── RENDER DASHBOARD ─────────────────────────────────────────
+  // ─── SORT ────────────────────────────────────────────────────
+  window.__sort = function(col) {
+    if(sortCol===col) { sortDir=sortDir==='asc'?'desc':'asc'; }
+    else { sortCol=col; sortDir='asc'; }
+    renderTable(leadsVisibles());
+    renderSortHeaders();
+  };
+
+  function sortedLeads(data) {
+    return [...data].sort((a,b)=>{
+      let va='', vb='';
+      if(sortCol==='nombre')  { va=(a.nombre_cliente||'').toLowerCase(); vb=(b.nombre_cliente||'').toLowerCase(); }
+      if(sortCol==='estado')  { va=a.estado||''; vb=b.estado||''; }
+      if(sortCol==='created_at') { va=a.created_at||''; vb=b.created_at||''; }
+      if(va<vb) return sortDir==='asc'?-1:1;
+      if(va>vb) return sortDir==='asc'?1:-1;
+      return 0;
+    });
+  }
+
+  function renderSortHeaders() {
+    document.querySelectorAll('thead th.sortable').forEach(th=>{
+      th.classList.remove('sort-asc','sort-desc');
+      if(th.dataset.col===sortCol) th.classList.add('sort-'+sortDir);
+      const icon=th.querySelector('.sort-icon');
+      if(icon) icon.textContent = th.dataset.col===sortCol ? (sortDir==='asc'?'↑':'↓') : '↕';
+    });
+  }
+
   function renderDashboard() {
     const vis=leadsVisibles();
     renderKPIs(vis);
     renderEmpresaStats(allLeads.filter(c=>c.estado!=='BORRADO'));
     renderFiltrosEstado();
     renderFiltrosSector();
-    renderTable(vis);
+    renderTable(sortedLeads(vis));
+    renderSortHeaders();
   }
 
   function renderFiltrosEstado() {
@@ -1328,19 +1454,20 @@
 
       return `
         <tr data-id="${esc(c.id)}" title="Clic para abrir la ficha">
-          <td style="font-weight:500;color:#dce8f8">${esc(c.nombre_cliente||'—')}</td>
-          <td>${telHtml}</td>
+          <td>${esc(c.nombre_cliente||'—')}</td>
+          <td class="td-tel">${telHtml}</td>
           <td>${esc(c.poblacion||'—')}</td>
           <td style="font-size:.76rem;color:var(--muted)">${esc(fechaEntrada)}</td>
           ${empCell}
-          <td>${marcaNom}</td>
-          <td>${estadoCell}</td>
-          <td><span class="${fechaCls}" style="font-size:.78rem;white-space:nowrap">${esc(fechaTxt)}</span></td>
-          <td>${notif}</td>
-          <td>${delBtn}</td>
+          <td class="td-marca">${marcaNom}</td>
+          <td class="td-estado">${estadoCell}</td>
+          <td class="td-fecha"><span class="${fechaCls}" style="font-size:.78rem;white-space:nowrap">${esc(fechaTxt)}</span></td>
+          <td class="td-notif">${notif}</td>
+          <td class="td-del">${delBtn}</td>
         </tr>`;
     }).join('');
 
+    renderSortHeaders();
     // Click en filas → abrir modal
     $('tbl-body').querySelectorAll('tr').forEach(row=>{
       row.addEventListener('click',e=>{
