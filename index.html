@@ -75,8 +75,9 @@
     .btn-modal-del:hover  { background:rgba(239,68,68,.18); }
 
     /* form-2col: mobile-first — 1 columna base, 2 en ≥768px */
-    .form-2col { display: grid; grid-template-columns: 1fr; gap: 16px; }
-    @media(min-width:768px) { .form-2col { grid-template-columns: 1fr 1fr; } }
+    .form-2col { display: grid; grid-template-columns: 1fr; gap: 14px; width: 100%; }
+    .form-2col .field { width: 100%; box-sizing: border-box; min-width: 0; }
+    @media(min-width:768px) { .form-2col { grid-template-columns: 1fr 1fr; gap: 16px; } }
     .col-span-2 { grid-column: 1 / -1; }
 
     .alert { border-radius: 9px; font-size: .83rem; padding: 10px 14px; display: none; }
@@ -155,6 +156,8 @@
     /* ── Cards móvil (< 768px) ── */
     /* Desktop: mostrar tabla, ocultar cards */
     #cards-body { display: none; }
+    /* Sort bar — visible solo en móvil */
+    #mobile-sort-bar { display: none; }
 
     @media (max-width: 767px) {
       .main { padding: 16px 14px 52px; }
@@ -163,7 +166,12 @@
 
       /* Ocultar tabla, mostrar cards */
       #leads-table { display: none; }
-      #cards-body  { display: flex; flex-direction: column; gap: 10px; padding: 14px; }
+      #mobile-sort-bar { display: flex; align-items: center; gap: 8px; padding: 12px 14px 0; flex-wrap: wrap; }
+      #mobile-sort-bar .msort-lbl { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); flex-shrink: 0; }
+      #mobile-sort-bar .msort-btn { font-size: .7rem; font-weight: 600; font-family: 'DM Sans',sans-serif; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--bd); background: var(--s2); color: var(--muted); cursor: pointer; transition: all .15s; }
+      #mobile-sort-bar .msort-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+      #mobile-sort-bar .msort-dir { font-size: .65rem; margin-left: 2px; }
+      #cards-body  { display: flex; flex-direction: column; gap: 10px; padding: 10px 14px 14px; }
 
       /* Card individual */
       .lead-card {
@@ -537,6 +545,13 @@
             </thead>
             <tbody id="tbl-body"></tbody>
           </table>
+          <!-- Sort bar móvil — visible solo en pantallas pequeñas -->
+          <div id="mobile-sort-bar">
+            <span class="msort-lbl">Ordenar:</span>
+            <button class="msort-btn" id="msort-nombre" onclick="window.__sortMobile('nombre')">Nombre <span class="msort-dir" id="msort-nombre-dir"></span></button>
+            <button class="msort-btn" id="msort-created_at" onclick="window.__sortMobile('created_at')">Fecha <span class="msort-dir" id="msort-created_at-dir">↓</span></button>
+            <button class="msort-btn" id="msort-estado" onclick="window.__sortMobile('estado')">Estado <span class="msort-dir" id="msort-estado-dir"></span></button>
+          </div>
           <!-- Cards móvil — renderizado en paralelo por renderTable() -->
           <div id="cards-body"></div>
         </div>
@@ -817,6 +832,9 @@
     const imp=cliente.importe_presupuesto;
     $('destaque-importe').textContent=(imp!==null&&imp!==undefined)?Number(imp).toLocaleString('es-ES',{minimumFractionDigits:2}):'—';
     $('edit-importe').value=(imp!==null&&imp!==undefined)?imp:'';
+    // Solo gestor puede editar el importe
+    $('edit-importe').disabled = (rol !== 'gestor');
+    $('edit-importe').style.opacity = (rol !== 'gestor') ? '.45' : '';
 
     // Selector de estado
     renderEstadoSelector(cliente.estado);
@@ -1149,8 +1167,10 @@
       // Ocultar KPIs y stats para empresa
       hideEl('kpi-wrap');
       hideEl('stats-wrap');
-      // Ocultar col empresa
+      // Ocultar col empresa y filtro de sector
       document.querySelectorAll('.th-empresa').forEach(th=>th.style.display='none');
+      const sr=$('filtros-sector-row');
+      if(sr) sr.style.display='none';
     }
   }
 
@@ -1321,7 +1341,28 @@
     // Aplicar sort + limpiar + repintar
     renderTable(sortedLeads(leadsVisibles()));
     renderSortHeaders();
+    renderMobileSortBar();
   };
+
+  // Sort bar para móvil — misma lógica que __sort pero actualiza botones móvil
+  window.__sortMobile = function(col) {
+    window.__sort(col); // reutilizar lógica completa
+  };
+
+  function renderMobileSortBar() {
+    ['nombre','created_at','estado'].forEach(col=>{
+      const btn=document.getElementById('msort-'+col);
+      const dir=document.getElementById('msort-'+col+'-dir');
+      if(!btn) return;
+      if(sortCol===col) {
+        btn.classList.add('active');
+        if(dir) dir.textContent=sortDir==='asc'?'↑':'↓';
+      } else {
+        btn.classList.remove('active');
+        if(dir) dir.textContent='';
+      }
+    });
+  }
 
   function sortedLeads(data) {
     return [...data].sort((a,b)=>{
@@ -1352,6 +1393,7 @@
     renderFiltrosSector();
     renderTable(sortedLeads(vis));
     renderSortHeaders();
+    renderMobileSortBar();
   }
 
   function renderFiltrosEstado() {
