@@ -8,6 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
   <style>
     :root {
       --bg:    #060911; --s1: #0c1322; --s2: #101929; --s3: #172034;
@@ -1426,14 +1427,19 @@
     if(!data.length) { showEl('tbl-empty','block'); hideEl('tbl-wrap'); return; }
     hideEl('tbl-empty'); showEl('tbl-wrap','block');
 
+    // Limpiar antes de repintar (evita duplicados tras sort/filter)
+    $('tbl-body').innerHTML   = '';
+    $('cards-body').innerHTML = '';
+
     // ── Generar HTML para tabla (desktop) Y cards (móvil) en paralelo ──
     const rowsHTML   = [];
     const cardsHTML  = [];
 
     data.forEach(c=>{
       const cls=ESTADO_CLS[c.estado]||'s-pendiente';
-      // Marca: usar join directo si existe (empresa), sino lookup en marcasMap (gestor)
-      const marcaNomTxt = (c.marcas?.nombre) || getMarcaNombre(c.marca_id) || '';
+      // Marca: normalizar respuesta Supabase (objeto o array) + fallback marcasMap
+      const _mObj = Array.isArray(c.marcas) ? c.marcas[0] : c.marcas;
+      const marcaNomTxt = _mObj?.nombre || getMarcaNombre(c.marca_id) || '';
       const marcaNom=marcaNomTxt?`<span style="font-size:.8rem">${esc(marcaNomTxt)}</span>`:'<span style="color:var(--muted)">—</span>';
       const hasNew=clientesConNuevoComentario.has(c.id);
       const notif=hasNew?'<span class="new-comment-dot">nuevo comentario</span>':'<span class="row-hint">Ver ficha →</span>';
@@ -1710,12 +1716,31 @@
     }
     if(!valid.length) return;
 
-    // ── Obtener editor en tiempo real (misma lógica que _editorId) ──
     const bar=$('upload-progress-bar'), lbl=$('upload-progress-label');
     showEl('upload-progress-wrap','block');
     for(let i=0;i<valid.length;i++) {
-      const f=valid[i]; bar.style.width=Math.round(i/valid.length*100)+'%';
-      lbl.textContent=`Subiendo ${i+1} de ${valid.length}: ${f.name}`;
+      let f=valid[i];
+      bar.style.width=Math.round(i/valid.length*100)+'%';
+      lbl.textContent=`Procesando ${i+1} de ${valid.length}: ${f.name}`;
+
+      // ── Comprimir imágenes antes de subir ────────────────────
+      const ext=f.name.split('.').pop().toLowerCase();
+      if(['jpg','jpeg','png'].includes(ext) && typeof imageCompression !== 'undefined') {
+        try {
+          const compressed = await imageCompression(f, {
+            maxSizeMB: 1,           // máximo 1 MB tras compresión
+            maxWidthOrHeight: 1920, // redimensionar si es mayor
+            useWebWorker: true,
+            onProgress: pct => { bar.style.width=Math.round((i + pct/100)/valid.length*100)+'%'; },
+          });
+          // Mantener el nombre original en el archivo comprimido
+          f = new File([compressed], f.name, { type: compressed.type });
+          lbl.textContent=`Subiendo ${i+1} de ${valid.length}: ${f.name} (${(f.size/1024).toFixed(0)} KB)`;
+        } catch(compErr) {
+          console.warn('Compresión fallida, subiendo original:', compErr.message);
+        }
+      }
+
       const {error}=await sb.storage.from(BUCKET).upload(`${activeClienteId}/${f.name}`,f,{upsert:true});
       if(error) {
         toast(`Error subiendo ${f.name}: ${error.message}`,'err');
