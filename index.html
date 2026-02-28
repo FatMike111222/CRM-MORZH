@@ -634,7 +634,7 @@
   const sb = createClient(SB_URL, SB_KEY);
 
   // ─── SESIÓN ───────────────────────────────────────────────────
-  let rol = null, userId = null, userName = '', servicios = [];
+  let rol = null, userId = null, authUserId = null, userName = '', servicios = [];
   let allLeads = [], marcasMap = {}, empresasMap = {};
   let activeClienteId = null, activeClienteData = null, pendingEstado = null;
   let clientesConNuevoComentario = new Set();
@@ -859,7 +859,8 @@
     const fechaAccionVal=$('edit-proxima-accion').value||null;
     const editOpen=$('edit-panel').classList.contains('open');
 
-    const payload={ estado:nuevoEstado, importe_presupuesto:importeVal, fecha_proxima_accion:fechaAccionVal, ultimo_editor_id:userId };
+    console.log('Debug Usuario [gestor save]:', { userId, authUserId });
+    const payload={ estado:nuevoEstado, importe_presupuesto:importeVal, fecha_proxima_accion:fechaAccionVal, ultimo_editor_id:authUserId };
     if(editOpen) {
       const n=$('edit-nombre').value.trim(), t=$('edit-tel').value.trim();
       const em=$('edit-email').value.trim(), p=$('edit-pobl').value.trim();
@@ -870,7 +871,9 @@
     }
 
     try {
-      const {error}=await sb.from('clientes').update(payload).eq('id',activeClienteId);
+      const {data:saveData,error}=await sb.from('clientes').update(payload).eq('id',activeClienteId).select('id,estado,ultimo_editor_id');
+      console.log('Respuesta Supabase [gestor-save]:', { saveData, error, authUserId });
+      if(saveData && saveData[0] && !saveData[0].ultimo_editor_id) console.warn('⚠ ultimo_editor_id NULL en respuesta gestor');
       if(error) throw error;
 
       activeClienteData={...activeClienteData,...payload};
@@ -932,7 +935,8 @@
 
   // ─── BORRADO LÓGICO ───────────────────────────────────────────
   async function softDeleteLead(id, motivo) {
-    const {error}=await sb.from('clientes').update({estado:'BORRADO',notas_internas:motivo,ultimo_editor_id:userId}).eq('id',id);
+    console.log('Debug Usuario [softDelete]:', { userId, authUserId });
+    const {error}=await sb.from('clientes').update({estado:'BORRADO',notas_internas:motivo,ultimo_editor_id:authUserId}).eq('id',id);
     if(error) { toast('Error al borrar: '+error.message,'err'); return; }
     const lead=allLeads.find(c=>c.id===id);
     if(lead) { lead.estado='BORRADO'; lead.notas_internas=motivo; }
@@ -960,6 +964,7 @@
 
   // ─── DETECCIÓN DE ROL ─────────────────────────────────────────
   async function enterApp(user) {
+    authUserId = user.id; // UUID real de auth.users — usado para ultimo_editor_id
     const {data:gestor,error:gErr}=await sb.from('gestores').select('id,nombre,servicios').eq('auth_user_id',user.id).single();
     if(!gErr && gestor) {
       rol='gestor'; userId=gestor.id; userName=gestor.nombre||user.email.split('@')[0];
@@ -1325,13 +1330,18 @@
     const estadoAnterior = lead.estado;
 
     try {
-      const { error } = await sb
+      console.log('Debug Usuario [_updateEstado]:', { userId, authUserId });
+      const { data: updData, error } = await sb
         .from('clientes')
-        .update({ estado: nuevoEstado, ultimo_editor_id: userId })
+        .update({ estado: nuevoEstado, ultimo_editor_id: authUserId })
         .eq('id', id)
-        .select('id,estado');
+        .select('id,estado,ultimo_editor_id');
 
+      console.log('Respuesta Supabase [_updateEstado]:', { updData, error, authUserId });
       if (error) throw error;
+      if (updData && updData[0] && !updData[0].ultimo_editor_id) {
+        console.warn('⚠ ultimo_editor_id llegó NULL en la respuesta — probable bloqueo RLS o columna inexistente');
+      }
 
       // Actualiza memoria local
       lead.estado = nuevoEstado;
@@ -1488,7 +1498,7 @@
     if(rtComments) { sb.removeChannel(rtComments); rtComments=null; }
     if(rtClientes) { sb.removeChannel(rtClientes); rtClientes=null; }
     await sb.auth.signOut();
-    rol=null; userId=null; userName=''; servicios=[]; allLeads=[];
+    rol=null; userId=null; authUserId=null; userName=''; servicios=[]; allLeads=[];
     closeModal();
     $('screen-app').style.display='none';
     showEl('screen-login','flex');
