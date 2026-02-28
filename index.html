@@ -859,8 +859,14 @@
     const fechaAccionVal=$('edit-proxima-accion').value||null;
     const editOpen=$('edit-panel').classList.contains('open');
 
-    console.log('Debug Usuario [gestor save]:', { userId, authUserId });
-    const payload={ estado:nuevoEstado, importe_presupuesto:importeVal, fecha_proxima_accion:fechaAccionVal, ultimo_editor_id:authUserId };
+    // ── Obtener UUID de auth.users en tiempo real ────────────────
+    const { data: { session: _sess1 } } = await sb.auth.getSession();
+    const _editorId1 = _sess1?.user?.id ?? authUserId ?? null;
+    console.log('═══ [GESTOR SAVE] ultimo_editor_id que se enviará:', _editorId1,
+      '| authUserId en memoria:', authUserId,
+      '| session.user.id:', _sess1?.user?.id ?? 'NO SESSION');
+    if (!_editorId1) console.error('⛔ _editorId1 es NULL — el campo llegará vacío a Supabase');
+    const payload={ estado:nuevoEstado, importe_presupuesto:importeVal, fecha_proxima_accion:fechaAccionVal, ultimo_editor_id:_editorId1 };
     if(editOpen) {
       const n=$('edit-nombre').value.trim(), t=$('edit-tel').value.trim();
       const em=$('edit-email').value.trim(), p=$('edit-pobl').value.trim();
@@ -935,8 +941,14 @@
 
   // ─── BORRADO LÓGICO ───────────────────────────────────────────
   async function softDeleteLead(id, motivo) {
-    console.log('Debug Usuario [softDelete]:', { userId, authUserId });
-    const {error}=await sb.from('clientes').update({estado:'BORRADO',notas_internas:motivo,ultimo_editor_id:authUserId}).eq('id',id);
+    // ── Obtener UUID de auth.users en tiempo real ────────────────
+    const { data: { session: _sess3 } } = await sb.auth.getSession();
+    const _editorId3 = _sess3?.user?.id ?? authUserId ?? null;
+    console.log('═══ [SOFT DELETE] ultimo_editor_id que se enviará:', _editorId3,
+      '| authUserId en memoria:', authUserId,
+      '| session.user.id:', _sess3?.user?.id ?? 'NO SESSION');
+    if (!_editorId3) console.error('⛔ _editorId3 es NULL — el campo llegará vacío a Supabase');
+    const {error}=await sb.from('clientes').update({estado:'BORRADO',notas_internas:motivo,ultimo_editor_id:_editorId3}).eq('id',id);
     if(error) { toast('Error al borrar: '+error.message,'err'); return; }
     const lead=allLeads.find(c=>c.id===id);
     if(lead) { lead.estado='BORRADO'; lead.notas_internas=motivo; }
@@ -1330,17 +1342,28 @@
     const estadoAnterior = lead.estado;
 
     try {
-      console.log('Debug Usuario [_updateEstado]:', { userId, authUserId });
+      // ── Obtener UUID de auth.users en tiempo real ────────────────
+      const { data: { session: _sess2 } } = await sb.auth.getSession();
+      const _editorId2 = _sess2?.user?.id ?? authUserId ?? null;
+      console.log('═══ [_updateEstado] ultimo_editor_id que se enviará:', _editorId2,
+        '| authUserId en memoria:', authUserId,
+        '| session.user.id:', _sess2?.user?.id ?? 'NO SESSION');
+      if (!_editorId2) console.error('⛔ _editorId2 es NULL — el campo llegará vacío a Supabase');
+
       const { data: updData, error } = await sb
         .from('clientes')
-        .update({ estado: nuevoEstado, ultimo_editor_id: authUserId })
+        .update({ estado: nuevoEstado, ultimo_editor_id: _editorId2 })
         .eq('id', id)
         .select('id,estado,ultimo_editor_id');
 
-      console.log('Respuesta Supabase [_updateEstado]:', { updData, error, authUserId });
+      console.log('═══ [_updateEstado] Respuesta Supabase:', {
+        filaActualizada: updData?.[0] ?? null,
+        ultimo_editor_id_guardado: updData?.[0]?.ultimo_editor_id ?? 'NULL ⚠',
+        error: error ?? 'ninguno'
+      });
       if (error) throw error;
-      if (updData && updData[0] && !updData[0].ultimo_editor_id) {
-        console.warn('⚠ ultimo_editor_id llegó NULL en la respuesta — probable bloqueo RLS o columna inexistente');
+      if (updData?.[0] && !updData[0].ultimo_editor_id) {
+        console.error('⛔ Supabase devolvió ultimo_editor_id=NULL — causas posibles: columna no existe, RLS bloquea la escritura o la columna no está en el SELECT de la política');
       }
 
       // Actualiza memoria local
