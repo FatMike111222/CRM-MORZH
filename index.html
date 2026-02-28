@@ -1501,13 +1501,34 @@
       valid.push(f);
     }
     if(!valid.length) return;
+
+    // ── Obtener editor en tiempo real (misma lógica que _editorId) ──
+    const { data: { session: _sessDocs } } = await sb.auth.getSession();
+    const _editorIdDocs = _sessDocs?.user?.id ?? authUserId ?? null;
+
     const bar=$('upload-progress-bar'), lbl=$('upload-progress-label');
     showEl('upload-progress-wrap','block');
     for(let i=0;i<valid.length;i++) {
       const f=valid[i]; bar.style.width=Math.round(i/valid.length*100)+'%';
       lbl.textContent=`Subiendo ${i+1} de ${valid.length}: ${f.name}`;
       const {error}=await sb.storage.from(BUCKET).upload(`${activeClienteId}/${f.name}`,f,{upsert:true});
-      error?toast(`Error subiendo ${f.name}: ${error.message}`,'err'):toast(`${f.name} subido`);
+      if(error) {
+        toast(`Error subiendo ${f.name}: ${error.message}`,'err');
+      } else {
+        toast(`${f.name} subido`);
+        // ── Registrar subida en comentarios_clientes ──────────────
+        const { error: cErr } = await sb.from('comentarios_clientes').insert([{
+          cliente_id:   activeClienteId,
+          autor_id:     _editorIdDocs,
+          nombre_autor: userName,
+          texto:        `Ha subido un nuevo archivo: ${f.name}`,
+          created_at:   new Date().toISOString(),
+        }]);
+        if(cErr) console.error('Error al registrar subida en comentarios:', cErr.message);
+        // Refrescar comentarios si la pestaña está activa
+        const tabComments = document.querySelector('[data-mpanel="mp-comments"]');
+        if(tabComments?.classList.contains('active')) loadComments(activeClienteId);
+      }
     }
     bar.style.width='100%'; lbl.textContent='Completado';
     setTimeout(()=>hideEl('upload-progress-wrap'),1200);
