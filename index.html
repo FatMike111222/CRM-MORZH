@@ -74,10 +74,15 @@
     .btn-modal-del    { font-family:'DM Sans',sans-serif; font-size:.74rem; font-weight:600; background:rgba(239,68,68,.09); border:1px solid rgba(239,68,68,.22); color:#f87171; border-radius:7px; padding:5px 12px; cursor:pointer; transition:all .15s; }
     .btn-modal-del:hover  { background:rgba(239,68,68,.18); }
 
-    /* form-2col: mobile-first — 1 columna base, 2 en ≥768px */
-    .form-2col { display: grid; grid-template-columns: 1fr; gap: 14px; width: 100%; }
+    /* Combobox marcas */
+    #marca-dropdown .mopt { padding:8px 14px; font-size:.82rem; cursor:pointer; color:var(--txt); transition:background .12s; }
+    #marca-dropdown .mopt:hover, #marca-dropdown .mopt.selected { background:rgba(59,125,216,.18); }
+    #marca-dropdown .mopt-empty { padding:10px 14px; font-size:.8rem; color:var(--muted); }
+    /* form-2col: flex column en móvil, grid 2col en ≥768px */
+    .form-2col { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+    .form-2col > div { width: 100%; }
     .form-2col .field { width: 100%; box-sizing: border-box; min-width: 0; }
-    @media(min-width:768px) { .form-2col { grid-template-columns: 1fr 1fr; gap: 16px; } }
+    @media(min-width:768px) { .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; } }
     .col-span-2 { grid-column: 1 / -1; }
 
     .alert { border-radius: 9px; font-size: .83rem; padding: 10px 14px; display: none; }
@@ -262,6 +267,13 @@
     .spin    { width: 20px; height: 20px; border: 2px solid rgba(59,125,216,.2); border-top-color: var(--blue); border-radius: 50%; animation: spin .65s linear infinite; margin: 40px auto; }
     .spin-sm { width: 14px; height: 14px; border: 2px solid rgba(59,125,216,.2); border-top-color: var(--blue); border-radius: 50%; animation: spin .65s linear infinite; display: inline-block; vertical-align: middle; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    /* Skeleton loaders */
+    @keyframes shimmer { 0%{background-position:-600px 0} 100%{background-position:600px 0} }
+    .skel { background:linear-gradient(90deg,var(--s2) 25%,var(--s3) 50%,var(--s2) 75%);
+            background-size:600px 100%; animation:shimmer 1.4s infinite linear;
+            border-radius:6px; }
+    .skel-row { display:flex; gap:12px; padding:13px 16px; border-bottom:1px solid rgba(29,46,71,.4); align-items:center; }
+    .skel-card { background:var(--s3); border:1px solid var(--bd); border-radius:13px; padding:16px; margin-bottom:10px; display:flex; flex-direction:column; gap:10px; }
     .empty { padding: 40px 20px; text-align: center; color: var(--muted); font-size: .84rem; }
     .dot-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); flex-shrink: 0; animation: dpulse 2.2s ease-in-out infinite; }
     @keyframes dpulse { 0%,100% { box-shadow: 0 0 6px var(--blue); } 50% { box-shadow: 0 0 16px var(--blue), 0 0 28px rgba(59,125,216,.25); } }
@@ -457,7 +469,7 @@
           <form id="form-lead" novalidate>
             <div class="form-2col">
               <div><label class="field-label" for="f-nombre">Nombre cliente</label><input id="f-nombre" type="text" placeholder="Ej: Carmen Rivas" class="field"/></div>
-              <div><label class="field-label" for="f-tel">Teléfono</label><input id="f-tel" type="text" placeholder="6XX XXX XXX" class="field"/></div>
+              <div><label class="field-label" for="f-tel">Teléfono</label><input id="f-tel" type="text" placeholder="+34 6XX XXX XXX" value="+34" class="field"/></div>
               <div><label class="field-label" for="f-email">Email</label><input id="f-email" type="email" placeholder="cliente@email.com" class="field"/></div>
               <div><label class="field-label" for="f-pobl">Población</label><input id="f-pobl" type="text" placeholder="Ciudad o municipio" class="field"/></div>
               <div>
@@ -468,7 +480,15 @@
                 <label class="field-label" for="f-reforma">Subservicio</label>
                 <select id="f-reforma" class="field" disabled><option value="">— Elige un sector primero —</option></select>
               </div>
-              <div><label class="field-label" for="f-marca">Marca</label><select id="f-marca" class="field"><option value="">— Seleccionar —</option></select></div>
+              <div style="position:relative">
+                <label class="field-label" for="f-marca-input">Marca</label>
+                <input id="f-marca-input" type="text" placeholder="Buscar marca…" class="field" autocomplete="off"
+                  oninput="window.__filterMarcas(this.value)" onfocus="window.__filterMarcas(this.value)"/>
+                <input id="f-marca" type="hidden"/>
+                <div id="marca-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:100;
+                  background:var(--s2);border:1px solid var(--bd2);border-radius:9px;max-height:180px;overflow-y:auto;margin-top:3px;box-shadow:0 8px 24px rgba(0,0,0,.4)">
+                </div>
+              </div>
               <div class="col-span-2"><label class="field-label" for="f-empresa">Empresa</label><select id="f-empresa" class="field"><option value="">— Seleccionar —</option></select></div>
             </div>
             <div style="margin-top:16px">
@@ -528,7 +548,16 @@
           <div class="pcard-title">Seguimiento de Leads</div>
           <span style="font-size:.72rem;color:var(--muted)">Haz clic en una fila para abrir la ficha</span>
         </div>
-        <div id="tbl-loading"><div class="spin"></div></div>
+        <div id="tbl-loading">
+          <!-- Skeleton desktop -->
+          <div id="skel-table" style="display:block">
+            <div class="skel-row"><div class="skel" style="width:22%;height:13px"></div><div class="skel" style="width:14%;height:13px"></div><div class="skel" style="width:12%;height:13px"></div><div class="skel" style="width:10%;height:13px"></div><div class="skel" style="width:18%;height:13px"></div></div><div class="skel-row"><div class="skel" style="width:22%;height:13px"></div><div class="skel" style="width:14%;height:13px"></div><div class="skel" style="width:12%;height:13px"></div><div class="skel" style="width:10%;height:13px"></div><div class="skel" style="width:18%;height:13px"></div></div><div class="skel-row"><div class="skel" style="width:22%;height:13px"></div><div class="skel" style="width:14%;height:13px"></div><div class="skel" style="width:12%;height:13px"></div><div class="skel" style="width:10%;height:13px"></div><div class="skel" style="width:18%;height:13px"></div></div><div class="skel-row"><div class="skel" style="width:22%;height:13px"></div><div class="skel" style="width:14%;height:13px"></div><div class="skel" style="width:12%;height:13px"></div><div class="skel" style="width:10%;height:13px"></div><div class="skel" style="width:18%;height:13px"></div></div><div class="skel-row"><div class="skel" style="width:22%;height:13px"></div><div class="skel" style="width:14%;height:13px"></div><div class="skel" style="width:12%;height:13px"></div><div class="skel" style="width:10%;height:13px"></div><div class="skel" style="width:18%;height:13px"></div></div>
+          </div>
+          <!-- Skeleton móvil (cards) -->
+          <div id="skel-cards" style="display:none;padding:14px">
+            <div class="skel-card"><div class="skel" style="height:14px;width:55%"></div><div class="skel" style="height:11px;width:35%"></div><div class="skel" style="height:24px;width:70%"></div></div><div class="skel-card"><div class="skel" style="height:14px;width:55%"></div><div class="skel" style="height:11px;width:35%"></div><div class="skel" style="height:24px;width:70%"></div></div><div class="skel-card"><div class="skel" style="height:14px;width:55%"></div><div class="skel" style="height:11px;width:35%"></div><div class="skel" style="height:24px;width:70%"></div></div><div class="skel-card"><div class="skel" style="height:14px;width:55%"></div><div class="skel" style="height:11px;width:35%"></div><div class="skel" style="height:24px;width:70%"></div></div>
+          </div>
+        </div>
         <div id="tbl-empty" class="empty" style="display:none">No hay leads registrados.</div>
         <div id="tbl-wrap" class="tbl-wrap" style="display:none">
           <!-- Tabla desktop -->
@@ -627,6 +656,10 @@
             <div>
               <label class="field-label" style="font-size:.6rem">Población</label>
               <input id="edit-pobl" type="text" class="edit-field" placeholder="Ciudad"/>
+            </div>
+            <div>
+              <label class="field-label" style="font-size:.6rem">Subservicio</label>
+              <select id="edit-reforma" class="edit-field"><option value="">— Sin cambio —</option></select>
             </div>
           </div>
         </div>
@@ -839,18 +872,30 @@
     // Selector de estado
     renderEstadoSelector(cliente.estado);
 
-    // Panel edición (solo gestor)
+    // Panel edición: valores siempre asignados; disabled según rol
     $('edit-panel').classList.remove('open');
+    $('edit-nombre').value=cliente.nombre_cliente||'';
+    $('edit-tel').value=cliente.telefono||'';
+    $('edit-email').value=cliente.email||'';
+    $('edit-pobl').value=cliente.poblacion||'';
+
+    // Poblar subservicio del modal
+    const erSel=$('edit-reforma');
+    if(erSel) {
+      const allSubs=Object.values(SECTOR_MAP).flat();
+      erSel.innerHTML='<option value="">— Sin cambio —</option>'+
+        allSubs.map(s=>`<option value="${esc(s)}"${s===cliente.tipo_reforma?' selected':''}>${esc(s)}</option>`).join('');
+    }
+
+    const editFields=['edit-nombre','edit-tel','edit-email','edit-pobl','edit-reforma'];
     if(rol==='gestor') {
       $('btn-modal-edit').style.display='';
       $('btn-modal-del').style.display='';
-      $('edit-nombre').value=cliente.nombre_cliente||'';
-      $('edit-tel').value=cliente.telefono||'';
-      $('edit-email').value=cliente.email||'';
-      $('edit-pobl').value=cliente.poblacion||'';
+      editFields.forEach(id=>{ const el=$(id); if(el){ el.disabled=false; el.style.opacity=''; } });
     } else {
       $('btn-modal-edit').style.display='none';
       $('btn-modal-del').style.display='none';
+      editFields.forEach(id=>{ const el=$(id); if(el){ el.disabled=true; el.style.opacity='.45'; } });
     }
 
     // Empresa: el selector de estado ya es interactivo vía autoSaveEstado
@@ -999,10 +1044,12 @@
     if(editOpen) {
       const n=$('edit-nombre').value.trim(), t=$('edit-tel').value.trim();
       const em=$('edit-email').value.trim(), p=$('edit-pobl').value.trim();
+      const rf=$('edit-reforma')?$('edit-reforma').value.trim():'';
       if(n) payload.nombre_cliente=n;
       if(t) payload.telefono=t;
       if(em) payload.email=em;
       if(p) payload.poblacion=p;
+      if(rf) payload.tipo_reforma=rf;
     }
 
     try {
@@ -1246,20 +1293,54 @@
     clearAlert('form-ok'); clearAlert('form-err');
     const btn=$('btn-lead-submit'); btn.textContent='Guardando…'; btn.disabled=true;
     const str=id=>{ const v=$(id).value.trim(); return v||null; };
+
+    // ── Validación de teléfono ──────────────────────────────────
+    const telVal=($('f-tel').value||'').trim();
+    if(telVal && telVal !== '+34') {
+      const digits=telVal.replace(/[\s\-().]/g,'');
+      const isIntl=digits.startsWith('+');
+      const numDigits=digits.replace(/\D/g,'').length;
+      if(isIntl && (numDigits<7||numDigits>15)) {
+        setAlert('form-err','form-err-txt','El teléfono internacional debe tener entre 7 y 15 dígitos.');
+        btn.textContent='Registrar lead'; btn.disabled=false; return;
+      }
+      if(!isIntl && numDigits!==9) {
+        setAlert('form-err','form-err-txt','El teléfono nacional debe tener 9 dígitos.');
+        btn.textContent='Registrar lead'; btn.disabled=false; return;
+      }
+      // ── Detección de duplicados ─────────────────────────────────
+      const {data:dup}=await sb.from('clientes').select('id').eq('telefono',digits).limit(1);
+      if(dup&&dup.length>0) {
+        setAlert('form-err','form-err-txt','⚠ Este cliente ya está registrado con ese teléfono.');
+        btn.textContent='Registrar lead'; btn.disabled=false; return;
+      }
+    }
+
     const empresaId=str('f-empresa');
     const estadoInicial=empresaId?'PENDIENTE DE LLAMAR':'PENDIENTE DE ASIGNAR';
     try {
+      const telFinal=(telVal==='+34'||!telVal)?null:($('f-tel').value.trim().replace(/[\s\-().]/g,''));
       const {data:nc,error:ce}=await sb.from('clientes').insert([{
-        nombre_cliente:str('f-nombre'), telefono:str('f-tel'), email:str('f-email'),
+        nombre_cliente:str('f-nombre'), telefono:telFinal, email:str('f-email'),
         poblacion:str('f-pobl'), tipo_reforma:str('f-reforma'), marca_id:str('f-marca'),
         empresa_id:empresaId, gestor_id:userId, estado:estadoInicial,
-      }]).select('id').single();
+      }]).select('id,nombre_cliente').single();
       if(ce) throw ce;
       const extra=$('f-extra').value.trim();
       if(extra) await sb.from('comentarios_clientes').insert([{cliente_id:nc.id,texto:extra,nombre_autor:userName,autor_id:userId,created_at:new Date().toISOString()}]);
-      $('form-lead').reset(); $('f-extra').value=''; fillReformaSelector();
+      $('form-lead').reset(); $('f-tel').value='+34'; $('f-extra').value=''; fillReformaSelector();
       $('estado-inicial-lbl').textContent='PENDIENTE DE ASIGNAR'; $('estado-inicial-lbl').className='pill s-sin-asignar';
-      setAlert('form-ok',null,null); setTimeout(()=>clearAlert('form-ok'),6000);
+      // ── Smart-Action: botón Ver ficha en el mensaje de éxito ────
+      const nombreMostrar=nc.nombre_cliente||'Lead nuevo';
+      $('form-ok').innerHTML=`
+        <svg style="width:14px;height:14px;flex-shrink:0;margin-top:1px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        <span>Lead "<strong>${esc(nombreMostrar)}</strong>" registrado correctamente.</span>
+        <button onclick="const c=allLeads.find(x=>x.id==='${nc.id}');if(c)openModal(c);else{loadDashboard().then(()=>{const cc=allLeads.find(x=>x.id==='${nc.id}');if(cc)openModal(cc);});}"
+          style="margin-left:auto;font-size:.72rem;font-weight:600;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.4);color:#4ade80;border-radius:6px;padding:4px 10px;cursor:pointer;white-space:nowrap">
+          Ver ficha →
+        </button>`;
+      $('form-ok').style.display='flex';
+      setTimeout(()=>clearAlert('form-ok'),10000);
       toast('Lead registrado · '+estadoInicial); loadDashboard();
     } catch(err) { setAlert('form-err','form-err-txt','Error: '+(err.message||JSON.stringify(err))); }
     finally { btn.textContent='Registrar lead'; btn.disabled=false; }
@@ -1268,6 +1349,10 @@
   // ─── DASHBOARD ────────────────────────────────────────────────
   async function loadDashboard() {
     showEl('tbl-loading','block'); hideEl('tbl-wrap'); hideEl('tbl-empty');
+    // Mostrar skeleton correcto según viewport
+    const isMobile = window.innerWidth < 768;
+    if($('skel-table')) $('skel-table').style.display = isMobile ? 'none' : 'block';
+    if($('skel-cards')) $('skel-cards').style.display = isMobile ? 'block' : 'none';
     if($('kpi-row')) $('kpi-row').innerHTML='<div class="kpi"><p class="kpi-lbl">Cargando…</p></div>';
     if($('emp-grid')) $('emp-grid').innerHTML='<div class="empty">Cargando…</div>';
     clientesConNuevoComentario=new Set();
@@ -1426,6 +1511,35 @@
   }
 
   window.__fe = s  => { filtroEstado=s; filtroPapelera=false; renderDashboard(); };
+
+  // ── Combobox de marcas ──────────────────────────────────────
+  window.__filterMarcas = function(q) {
+    const dd=$('marca-dropdown'); if(!dd) return;
+    const matches=Object.entries(marcasMap)
+      .filter(([k,v])=>typeof k==='string'&&k.length>10) // solo UUIDs (no los lowercase duplicados)
+      .filter(([k,v])=>!q||v.toLowerCase().includes(q.toLowerCase()))
+      .slice(0,20);
+    if(!matches.length) {
+      dd.innerHTML='<div class="mopt-empty">Sin resultados</div>';
+    } else {
+      const current=$('f-marca').value;
+      dd.innerHTML=matches.map(([id,nombre])=>
+        `<div class="mopt${id===current?' selected':''}" data-id="${esc(id)}" data-nom="${esc(nombre)}"
+          onmousedown="event.preventDefault();window.__selectMarca('${esc(id)}','${esc(nombre)}')">${esc(nombre)}</div>`
+      ).join('');
+    }
+    dd.style.display='block';
+  };
+  window.__selectMarca = function(id, nombre) {
+    $('f-marca').value=id;
+    $('f-marca-input').value=nombre;
+    $('marca-dropdown').style.display='none';
+  };
+  // Cerrar dropdown al hacer clic fuera
+  document.addEventListener('click', e=>{
+    const dd=$('marca-dropdown');
+    if(dd && !dd.contains(e.target) && e.target.id!=='f-marca-input') dd.style.display='none';
+  });
   window.__fp = () => { filtroPapelera=!filtroPapelera; filtroEstado=null; renderDashboard(); };
   window.__fs = s  => { filtroSector=s; renderDashboard(); };
 
