@@ -311,6 +311,22 @@
 
     /* ── Panel edición datos cliente (gestor) ── */
     #edit-panel { display:none; margin-top:14px; padding:16px; background:rgba(255,255,255,.02); border:1px solid var(--bd); border-radius:12px; }
+
+    /* ── Tel duplicate warning ── */
+    .tel-dup-warn { font-size:.75rem; color:#f5a623; margin-top:5px; display:flex; align-items:center; gap:6px; }
+    .tel-dup-warn button { font-size:.68rem; font-weight:600; background:rgba(245,166,35,.15); border:1px solid rgba(245,166,35,.4); color:#f5a623; border-radius:5px; padding:2px 8px; cursor:pointer; }
+
+    /* ── Timeline audit log ── */
+    .timeline { display:flex; flex-direction:column; gap:0; margin-top:16px; padding-bottom:4px; }
+    .tl-item { display:flex; gap:12px; position:relative; padding-bottom:16px; }
+    .tl-item:last-child { padding-bottom:0; }
+    .tl-item:not(:last-child)::before { content:''; position:absolute; left:7px; top:16px; bottom:0; width:1px; background:var(--bd2); }
+    .tl-dot { width:15px; height:15px; border-radius:50%; flex-shrink:0; margin-top:2px; border:2px solid var(--bg); box-shadow:0 0 0 1px currentColor; }
+    .tl-body { flex:1; min-width:0; }
+    .tl-text { font-size:.78rem; color:var(--txt); line-height:1.4; }
+    .tl-text strong { color:var(--hi); }
+    .tl-time { font-size:.65rem; color:var(--muted); margin-top:2px; font-family:'DM Mono',monospace; }
+    .tl-empty { font-size:.78rem; color:var(--muted); padding:8px 0; }
     #edit-panel.open { display:block; animation:fadein .18s ease both; }
     .edit-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     @media(max-width:540px){ .edit-grid { grid-template-columns:1fr; } }
@@ -469,7 +485,14 @@
           <form id="form-lead" novalidate>
             <div class="form-2col">
               <div><label class="field-label" for="f-nombre">Nombre cliente</label><input id="f-nombre" type="text" placeholder="Ej: Carmen Rivas" class="field"/></div>
-              <div><label class="field-label" for="f-tel">Teléfono</label><input id="f-tel" type="text" placeholder="+34 6XX XXX XXX" value="+34" class="field"/></div>
+              <div>
+                <label class="field-label" for="f-tel">Teléfono</label>
+                <input id="f-tel" type="text" placeholder="+34 6XX XXX XXX" value="+34" class="field"/>
+                <div id="tel-dup-warn" style="display:none" class="tel-dup-warn">
+                  <span id="tel-dup-txt"></span>
+                  <button id="tel-dup-btn" type="button">Ver ficha</button>
+                </div>
+              </div>
               <div><label class="field-label" for="f-email">Email</label><input id="f-email" type="email" placeholder="cliente@email.com" class="field"/></div>
               <div><label class="field-label" for="f-pobl">Población</label><input id="f-pobl" type="text" placeholder="Ciudad o municipio" class="field"/></div>
               <div>
@@ -667,6 +690,12 @@
         <div style="margin-top:16px;margin-bottom:4px">
           <p class="field-label" style="margin-bottom:8px">Estado del lead</p>
           <div class="estado-selector" id="estado-selector"></div>
+        </div>
+
+        <!-- Timeline audit log -->
+        <div id="timeline-wrap" style="margin-top:20px;border-top:1px solid var(--bd);padding-top:14px">
+          <p style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:10px">🕐 Historial de cambios</p>
+          <div id="timeline-body" class="timeline"><p class="tl-empty">Cargando historial…</p></div>
         </div>
 
         <div class="save-bar" id="save-bar">
@@ -1180,8 +1209,8 @@
 
     hideEl('screen-login');
     showEl('screen-app','flex');
-    // Cargar dashboard automáticamente al entrar (evita el F5 en empresa)
-    await loadDashboard();
+    // Mostrar UI al instante; cargar datos en background sin bloquear render
+    loadDashboard(); // sin await — la pantalla ya es visible
   }
 
   // ─── APPLY ROLE UI ────────────────────────────────────────────
@@ -1288,11 +1317,72 @@
   }
 
   // ─── SUBMIT LEAD ──────────────────────────────────────────────
+  // ── Helpers offline ──────────────────────────────────────────
+  function buildLeadPayload() {
+    const str=id=>{ const v=$(id)?.value.trim(); return v||null; };
+    const telVal=($('f-tel').value||'').trim();
+    const telFinal=(telVal==='+34'||!telVal)?null:(telVal.replace(/[\s\-().]/g,''));
+    const empresaId=str('f-empresa');
+    return {
+      nombre_cliente:str('f-nombre'), telefono:telFinal, email:str('f-email'),
+      poblacion:str('f-pobl'), tipo_reforma:str('f-reforma'), marca_id:str('f-marca'),
+      empresa_id:empresaId, gestor_id:userId,
+      estado:empresaId?'PENDIENTE DE LLAMAR':'PENDIENTE DE ASIGNAR',
+      _extra:$('f-extra').value.trim(), _ts:Date.now(),
+    };
+  }
+
+  async function insertLeadOnline(payload) {
+    const {_extra, _ts, ...data}=payload;
+    const {data:nc,error:ce}=await sb.from('clientes').insert([data]).select('id,nombre_cliente').single();
+    if(ce) throw ce;
+    if(_extra) await sb.from('comentarios_clientes').insert([{
+      cliente_id:nc.id, texto:_extra, nombre_autor:userName, autor_id:userId, created_at:new Date().toISOString()
+    }]);
+    return nc;
+  }
+
+  function resetForm() {
+    $('form-lead').reset(); $('f-tel').value='+34'; $('f-extra').value='';
+    fillReformaSelector();
+    $('estado-inicial-lbl').textContent='PENDIENTE DE ASIGNAR';
+    $('estado-inicial-lbl').className='pill s-sin-asignar';
+    $('tel-dup-warn').style.display='none';
+  }
+
+  function showSuccessAlert(nc) {
+    const nombreMostrar=nc.nombre_cliente||'Lead nuevo';
+    $('form-ok').innerHTML=`
+      <svg style="width:14px;height:14px;flex-shrink:0;margin-top:1px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+      <span>Lead "<strong>${esc(nombreMostrar)}</strong>" registrado.</span>
+      <button onclick="const c=allLeads.find(x=>x.id==='${nc.id}');if(c)openModal(c);else loadDashboard().then(()=>{const cc=allLeads.find(x=>x.id==='${nc.id}');if(cc)openModal(cc);})"
+        style="margin-left:auto;font-size:.72rem;font-weight:600;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.4);color:#4ade80;border-radius:6px;padding:4px 10px;cursor:pointer;white-space:nowrap">
+        Ver ficha →
+      </button>`;
+    $('form-ok').style.display='flex';
+    setTimeout(()=>clearAlert('form-ok'),10000);
+  }
+
+  // ── Sincronización de leads pendientes ───────────────────────
+  async function syncPendingLeads() {
+    let pending=[];
+    try { pending=JSON.parse(localStorage.getItem('leads_pendientes')||'[]'); } catch(e){}
+    if(!pending.length) return;
+    let synced=0;
+    const remaining=[];
+    for(const p of pending) {
+      try { await insertLeadOnline(p); synced++; }
+      catch(e) { remaining.push(p); }
+    }
+    localStorage.setItem('leads_pendientes', JSON.stringify(remaining));
+    if(synced>0) { toast(`✓ ${synced} lead(s) pendiente(s) sincronizados`); loadDashboard(); }
+  }
+  window.addEventListener('online', syncPendingLeads);
+
   $('form-lead').addEventListener('submit', async e => {
     e.preventDefault(); if(rol!=='gestor') return;
     clearAlert('form-ok'); clearAlert('form-err');
     const btn=$('btn-lead-submit'); btn.textContent='Guardando…'; btn.disabled=true;
-    const str=id=>{ const v=$(id).value.trim(); return v||null; };
 
     // ── Validación de teléfono ──────────────────────────────────
     const telVal=($('f-tel').value||'').trim();
@@ -1308,42 +1398,67 @@
         setAlert('form-err','form-err-txt','El teléfono nacional debe tener 9 dígitos.');
         btn.textContent='Registrar lead'; btn.disabled=false; return;
       }
-      // ── Detección de duplicados ─────────────────────────────────
-      const {data:dup}=await sb.from('clientes').select('id').eq('telefono',digits).limit(1);
-      if(dup&&dup.length>0) {
-        setAlert('form-err','form-err-txt','⚠ Este cliente ya está registrado con ese teléfono.');
-        btn.textContent='Registrar lead'; btn.disabled=false; return;
-      }
     }
 
-    const empresaId=str('f-empresa');
-    const estadoInicial=empresaId?'PENDIENTE DE LLAMAR':'PENDIENTE DE ASIGNAR';
-    try {
-      const telFinal=(telVal==='+34'||!telVal)?null:($('f-tel').value.trim().replace(/[\s\-().]/g,''));
-      const {data:nc,error:ce}=await sb.from('clientes').insert([{
-        nombre_cliente:str('f-nombre'), telefono:telFinal, email:str('f-email'),
-        poblacion:str('f-pobl'), tipo_reforma:str('f-reforma'), marca_id:str('f-marca'),
-        empresa_id:empresaId, gestor_id:userId, estado:estadoInicial,
-      }]).select('id,nombre_cliente').single();
-      if(ce) throw ce;
-      const extra=$('f-extra').value.trim();
-      if(extra) await sb.from('comentarios_clientes').insert([{cliente_id:nc.id,texto:extra,nombre_autor:userName,autor_id:userId,created_at:new Date().toISOString()}]);
-      $('form-lead').reset(); $('f-tel').value='+34'; $('f-extra').value=''; fillReformaSelector();
-      $('estado-inicial-lbl').textContent='PENDIENTE DE ASIGNAR'; $('estado-inicial-lbl').className='pill s-sin-asignar';
-      // ── Smart-Action: botón Ver ficha en el mensaje de éxito ────
-      const nombreMostrar=nc.nombre_cliente||'Lead nuevo';
-      $('form-ok').innerHTML=`
-        <svg style="width:14px;height:14px;flex-shrink:0;margin-top:1px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-        <span>Lead "<strong>${esc(nombreMostrar)}</strong>" registrado correctamente.</span>
-        <button onclick="const c=allLeads.find(x=>x.id==='${nc.id}');if(c)openModal(c);else{loadDashboard().then(()=>{const cc=allLeads.find(x=>x.id==='${nc.id}');if(cc)openModal(cc);});}"
-          style="margin-left:auto;font-size:.72rem;font-weight:600;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.4);color:#4ade80;border-radius:6px;padding:4px 10px;cursor:pointer;white-space:nowrap">
-          Ver ficha →
-        </button>`;
+    const payload=buildLeadPayload();
+
+    // ── Sin conexión → guardar en localStorage ─────────────────
+    if(!navigator.onLine) {
+      let pending=[];
+      try { pending=JSON.parse(localStorage.getItem('leads_pendientes')||'[]'); } catch(e){}
+      pending.push(payload);
+      localStorage.setItem('leads_pendientes', JSON.stringify(pending));
+      setAlert('form-ok',null,null);
+      $('form-ok').innerHTML=`<span>📵 Sin conexión. El lead se guardará en el dispositivo y se enviará automáticamente al recuperar internet.</span>`;
       $('form-ok').style.display='flex';
-      setTimeout(()=>clearAlert('form-ok'),10000);
-      toast('Lead registrado · '+estadoInicial); loadDashboard();
-    } catch(err) { setAlert('form-err','form-err-txt','Error: '+(err.message||JSON.stringify(err))); }
+      resetForm();
+      btn.textContent='Registrar lead'; btn.disabled=false;
+      return;
+    }
+
+    try {
+      const nc=await insertLeadOnline(payload);
+      resetForm();
+      showSuccessAlert(nc);
+      toast('Lead registrado · '+payload.estado);
+      loadDashboard();
+    } catch(err) {
+      // Si falla la red en mitad del proceso, guardar offline
+      if(!navigator.onLine || err.message?.includes('fetch')) {
+        let pending=[];
+        try { pending=JSON.parse(localStorage.getItem('leads_pendientes')||'[]'); } catch(e){}
+        pending.push(payload);
+        localStorage.setItem('leads_pendientes', JSON.stringify(pending));
+        $('form-ok').innerHTML=`<span>📵 Error de red. Lead guardado localmente para reintento automático.</span>`;
+        $('form-ok').style.display='flex';
+        resetForm();
+      } else {
+        setAlert('form-err','form-err-txt','Error: '+(err.message||JSON.stringify(err)));
+      }
+    }
     finally { btn.textContent='Registrar lead'; btn.disabled=false; }
+  });
+
+  // ── Detección duplicados no bloqueante en f-tel ─────────────
+  let _dupTimer=null;
+  $('f-tel').addEventListener('input', function() {
+    clearTimeout(_dupTimer);
+    $('tel-dup-warn').style.display='none';
+    const raw=(this.value||'').trim();
+    if(!raw||raw==='+34'||raw.length<7) return;
+    _dupTimer=setTimeout(async()=>{
+      const digits=raw.replace(/[\s\-().]/g,'');
+      const {data}=await sb.from('clientes').select('id,nombre_cliente').eq('telefono',digits).limit(1);
+      if(data&&data.length>0) {
+        const nom=data[0].nombre_cliente||'Sin nombre';
+        $('tel-dup-txt').textContent=`⚠ Este teléfono ya existe (Cliente: ${nom})`;
+        $('tel-dup-btn').onclick=()=>{
+          const c=allLeads.find(x=>x.id===data[0].id);
+          if(c) openModal(c); else toast('Abre el Dashboard para ver la ficha');
+        };
+        $('tel-dup-warn').style.display='flex';
+      }
+    }, 600);
   });
 
   // ─── DASHBOARD ────────────────────────────────────────────────
@@ -1359,46 +1474,64 @@
     filtroEstado=null; filtroSector=null; filtroPapelera=false; filtroBusqueda=''; sortCol='created_at'; sortDir='desc';
     const si=$('search-lead'); if(si) si.value='';
 
-    // Para empresa: traer el nombre de marca directamente via join para evitar problemas de marcasMap
     const selectCols = rol==='empresa'
       ? 'id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion,marcas(id,nombre)'
       : 'id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion';
-    let q=sb.from('clientes')
-      .select(selectCols)
-      .order('created_at',{ascending:false});
-    q=rol==='gestor'?q.eq('gestor_id',userId):q.eq('empresa_id',userId);
 
-    const [leadsRes,commentsRes]=await Promise.all([
-      q,
+    function buildQ(limit=null) {
+      let q=sb.from('clientes').select(selectCols).order('created_at',{ascending:false});
+      q=rol==='gestor'?q.eq('gestor_id',userId):q.eq('empresa_id',userId);
+      if(limit) q=q.limit(limit);
+      return q;
+    }
+
+    function processLeads(data) {
+      let leads=data||[];
+      const svs=subserviciosDelUsuario();
+      if(svs.length) leads=leads.filter(l=>!l.tipo_reforma||svs.includes(String(l.tipo_reforma)));
+      if(rol==='empresa') {
+        leads.forEach(l=>{ if(l.marcas?.id && l.marcas?.nombre) {
+          marcasMap[l.marcas.id]=l.marcas.nombre;
+          marcasMap[String(l.marcas.id).trim().toLowerCase()]=l.marcas.nombre;
+        }});
+      }
+      return leads;
+    }
+
+    function applyComments(commData) {
+      const latest={};
+      (commData||[]).forEach(c=>{ if(!latest[c.cliente_id]) latest[c.cliente_id]=c; });
+      clientesConNuevoComentario=new Set();
+      allLeads.forEach(lead=>{
+        const last=latest[lead.id]; if(!last) return;
+        const esDeOtro=last.autor_id!==null&&last.autor_id!==userId;
+        const esMasNuevo=new Date(last.created_at)>new Date(lead.updated_at||lead.created_at);
+        if(esDeOtro&&esMasNuevo) clientesConNuevoComentario.add(lead.id);
+      });
+    }
+
+    // ── FASE 1: primeros 20 leads (rápido) ─────────────────────
+    const [fase1Res, commentsRes] = await Promise.all([
+      buildQ(20),
       sb.from('comentarios_clientes').select('cliente_id,created_at,autor_id').order('created_at',{ascending:false}),
     ]);
     hideEl('tbl-loading');
-    if(leadsRes.error) { console.error(leadsRes.error); return; }
+    if(fase1Res.error) { console.error(fase1Res.error); return; }
 
-    let leads=leadsRes.data||[];
-    const svs=subserviciosDelUsuario();
-    if(svs.length) leads=leads.filter(l=>!l.tipo_reforma||svs.includes(String(l.tipo_reforma)));
-    // Para empresa: enriquecer marcasMap con los nombres traídos directamente del join
-    if(rol==='empresa') {
-      leads.forEach(l=>{ if(l.marcas?.id && l.marcas?.nombre) {
-        marcasMap[l.marcas.id]=l.marcas.nombre;
-        marcasMap[String(l.marcas.id).trim().toLowerCase()]=l.marcas.nombre;
-      }});
-    }
-    allLeads=leads;
-
-    // Notificaciones
-    const latest={};
-    (commentsRes.data||[]).forEach(c=>{ if(!latest[c.cliente_id]) latest[c.cliente_id]=c; });
-    clientesConNuevoComentario=new Set();
-    allLeads.forEach(lead=>{
-      const last=latest[lead.id]; if(!last) return;
-      const esDeOtro=last.autor_id!==null&&last.autor_id!==userId;
-      const esMasNuevo=new Date(last.created_at)>new Date(lead.updated_at||lead.created_at);
-      if(esDeOtro&&esMasNuevo) clientesConNuevoComentario.add(lead.id);
-    });
-
+    allLeads = processLeads(fase1Res.data);
+    applyComments(commentsRes.data);
     renderDashboard();
+
+    // ── FASE 2: resto de leads en background ────────────────────
+    const fase2Res = await buildQ(null).range(20, 9999);
+    if(!fase2Res.error && fase2Res.data?.length) {
+      const extra = processLeads(fase2Res.data);
+      // Merge: añadir los que no estén ya (por si hubo inserts entre fases)
+      const existIds = new Set(allLeads.map(l=>l.id));
+      extra.forEach(l=>{ if(!existIds.has(l.id)) allLeads.push(l); });
+      applyComments(commentsRes.data);
+      renderDashboard();
+    }
   }
 
   // ─── LEADS VISIBLES ───────────────────────────────────────────
@@ -1956,6 +2089,66 @@
       showEl('screen-login','flex');
     }
   });
+
+  // ─── TIMELINE (Audit Log) ────────────────────────────────────
+  function tiempoRelativo(isoStr) {
+    const diff=Date.now()-new Date(isoStr).getTime();
+    const m=Math.floor(diff/60000), h=Math.floor(m/60), d=Math.floor(h/24);
+    if(diff<60000) return 'hace un momento';
+    if(m<60) return `hace ${m} min`;
+    if(h<24) return `hace ${h}h`;
+    if(d<7)  return `hace ${d}d`;
+    return new Date(isoStr).toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
+  }
+
+  const TL_ESTADO_COLOR={
+    'PENDIENTE DE LLAMAR':'#f5a623','VISITA PROGRAMADA':'#3b7dd8',
+    'SEGUIMIENTO':'#8b5cf6','PRESUPUESTO ENVIADO':'#ea580c',
+    'OBRA ACEPTADA':'#22c55e','TRABAJANDO':'#0d9488',
+    'RECHAZADO':'#ef4444','BORRADO':'#6b7280',
+    'PENDIENTE DE ASIGNAR':'#3d5a78',
+  };
+
+  async function loadTimeline(clienteId) {
+    const tl=$('timeline-body'); if(!tl) return;
+    tl.innerHTML='<p class="tl-empty">Cargando…</p>';
+    const {data,error}=await sb.from('comentarios_clientes')
+      .select('texto,nombre_autor,created_at,autor_id')
+      .eq('cliente_id',clienteId)
+      .ilike('texto','%estado ha cambiado%')
+      .order('created_at',{ascending:false})
+      .limit(20);
+    if(error||!data?.length) {
+      tl.innerHTML='<p class="tl-empty">Sin cambios de estado registrados.</p>';
+      return;
+    }
+    tl.innerHTML=data.map(c=>{
+      // Extraer estado del texto "Sistema: El estado ha cambiado a ESTADO"
+      const match=c.texto.match(/ha cambiado a (.+)$/);
+      const estado=match?match[1].trim():'';
+      const color=TL_ESTADO_COLOR[estado]||'#3d5a78';
+      const autor=c.nombre_autor&&c.nombre_autor!=='Sistema'?c.nombre_autor:'Sistema';
+      return `<div class="tl-item">
+        <div class="tl-dot" style="background:${color};color:${color}"></div>
+        <div class="tl-body">
+          <p class="tl-text"><strong>${esc(autor)}</strong> movió a <strong style="color:${color}">${esc(estado||c.texto)}</strong></p>
+          <p class="tl-time">${tiempoRelativo(c.created_at)}</p>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Llamar loadTimeline al abrir modal (en pestaña info)
+  const _origOpenModal=openModal;
+  // Monkey-patch: tras openModal, lanzar loadTimeline sin bloquear
+  const _patchedOpenModal=function(cliente) {
+    _origOpenModal(cliente);
+    // Lanzar en background sin bloquear la apertura del modal
+    setTimeout(()=>loadTimeline(cliente.id), 50);
+  };
+  // Reemplazar referencias internas (row click + card click)
+  // — ya están ligadas a openModal por closure, así que parcheamos la función global
+  window.openModal=_patchedOpenModal;
 
   init().catch(err=>console.error('Init error:',err));
 
