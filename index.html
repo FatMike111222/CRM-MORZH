@@ -1255,9 +1255,9 @@
 
   // ─── DROPDOWNS ────────────────────────────────────────────────
   async function loadMarcas() {
-    marcasMap={}; const sel=$('f-marca');
+    marcasMap={};
     if(rol==='empresa') {
-      // Empresa: cargar solo las marcas vinculadas a través de empresa_marcas
+      // Empresa: solo marcas vinculadas a través de empresa_marcas
       const {data}=await sb.from('empresa_marcas')
         .select('marca_id, marcas(id, nombre)')
         .eq('empresa_id', userId);
@@ -1267,12 +1267,12 @@
         marcasMap[String(m.id).trim().toLowerCase()]=m.nombre;
       });
     } else {
-      // Gestor: todas las marcas
+      // Gestor: todas las marcas — solo se llena marcasMap (el combobox filtra desde aquí)
       const {data}=await sb.from('marcas').select('id,nombre').order('nombre');
       (data||[]).forEach(({id,nombre})=>{
         marcasMap[id]=nombre;
         marcasMap[String(id).trim().toLowerCase()]=nombre;
-        if(sel) sel.add(new Option(nombre,id));
+        // f-marca es ahora <input type="hidden"> — NO usar .add()
       });
     }
   }
