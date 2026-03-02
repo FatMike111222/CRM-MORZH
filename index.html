@@ -853,11 +853,11 @@
   // ─── TABS ─────────────────────────────────────────────────────
   document.querySelectorAll('.tab').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-      btn.classList.add('active');
-      $(btn.dataset.tab).classList.add('active');
-      if(btn.dataset.tab==='tab-dash') loadDashboard();
+      const targetTab = btn.dataset.tab;
+      activateAppTab(targetTab);          // usa el mismo helper que el router
+      const urlMap = { 'tab-dash': '/dashboard', 'tab-form': '/formulario' };
+      window.history.pushState(null, '', urlMap[targetTab] || '/dashboard');
+      if(targetTab === 'tab-dash') loadDashboard();
     });
   });
   document.querySelectorAll('.mtab').forEach(btn => {
@@ -873,6 +873,10 @@
 
   // ─── MODAL ────────────────────────────────────────────────────
   function openModal(cliente) {
+    // Actualizar URL para permitir deep-link directo a este cliente
+    window.history.pushState(null, '', `/cliente/${cliente.id}`);
+    // Cargar timeline en background (sin bloquear apertura del modal)
+    setTimeout(() => { if(typeof loadTimeline==='function') loadTimeline(cliente.id); }, 50);
     activeClienteId=cliente.id; activeClienteData={...cliente}; pendingEstado=cliente.estado;
 
     $('modal-client-name').textContent = cliente.nombre_cliente||'Sin nombre';
@@ -961,6 +965,9 @@
   }
 
   function closeModal() {
+    // Restaurar URL según la tab activa bajo el modal
+    const prevPath = $('tab-form')?.classList.contains('active') ? '/formulario' : '/dashboard';
+    window.history.pushState(null, '', prevPath);
     if(rtComments) { sb.removeChannel(rtComments); rtComments=null; }
     $('modal-backdrop').classList.remove('open');
     document.body.style.overflow='';
@@ -1162,19 +1169,170 @@
   }
 
   // ─── LOGIN ────────────────────────────────────────────────────
+  // ─── ROUTER ───────────────────────────────────────────────────
+  // Parsea la URL actual y devuelve { view, clienteId }
+  // Rutas reconocidas:
+  //   /                → dashboard
+  //   /dashboard       → dashboard
+  //   /formulario      → formulario (solo gestor)
+  //   /cliente/:id     → abrir modal de ese cliente
+  function parsePath() {
+    const parts = window.location.pathname
+      .split('/')
+      .map(s => s.trim())
+      .filter(Boolean);               // elimina segmentos vacíos
+
+    if (!parts.length)               return { view: 'dashboard' };
+    if (parts[0] === 'dashboard')    return { view: 'dashboard' };
+    if (parts[0] === 'formulario')   return { view: 'formulario' };
+    if (parts[0] === 'cliente' && parts[1])
+                                     return { view: 'cliente', clienteId: parts[1] };
+    return { view: 'dashboard' };    // fallback seguro
+  }
+
+  // Cambia la URL sin recargar y ejecuta el router
+  function navigate(path) {
+    window.history.pushState(null, '', path);
+    handleRouting();
+  }
+
+  let _routingInProgress = false;
+  // Punto de entrada central — auth guard + despacho de vistas
+  async function handleRouting() {
+    if (_routingInProgress) return;
+    _routingInProgress = true;
+    try {
+    const { data: { session } } = await sb.auth.getSession();
+    const route = parsePath();
+
+    // ── Sin sesión: guardar ruta deseada y mostrar login ────────
+    if (!session) {
+      const intended = window.location.pathname;
+      const isDefault = ['/', '/dashboard', '/login'].includes(intended);
+      if (intended && !isDefault) {
+        localStorage.setItem('redirectAfterLogin', intended);
+      }
+      hideEl('screen-app');
+      showEl('screen-login', 'flex');
+      return;
+    }
+
+    // ── Con sesión: montar app si aún no está inicializada ───────
+    // userId se setea en enterApp — si es falsy, es la primera vez
+    if (!userId) {
+      // enterApp inicializa la app y llama dispatchRoute() directamente
+      // No llamamos handleRouting desde enterApp para evitar doble dispatch
+      await enterApp(session.user);
+      return;
+    }
+
+    // App ya montada — solo despachar vista
+    hideEl('screen-login');
+    showEl('screen-app', 'flex');
+    dispatchRoute(route);
+    } finally { _routingInProgress = false; }
+  }
+
+  // Separa la lógica de despacho del guard para evitar recursión
+  function dispatchRoute(route) {
+    if (!route) route = parsePath();
+
+    if (route.view === 'cliente' && route.clienteId) {
+      // Asegurar que el dashboard esté activo
+      activateAppTab('tab-dash');
+      // Intentar abrir modal; con reintentos limitados si los leads cargan en background
+      let attempts = 0;
+      const tryOpen = () => {
+        const c = allLeads.find(x => x.id === route.clienteId);
+        if (c) { openModal(c); return; }
+        if (++attempts < 15) {
+          setTimeout(tryOpen, 300);
+        } else {
+          toast('Cliente no encontrado o sin acceso.', 'err');
+          navigate('/dashboard');
+        }
+      };
+      if (!allLeads.length) {
+        loadDashboard().then(tryOpen);
+      } else {
+        tryOpen();
+      }
+
+    } else if (route.view === 'formulario') {
+      if (rol === 'gestor') {
+        activateAppTab('tab-form');
+      } else {
+        navigate('/dashboard');
+      }
+
+    } else {
+      // /dashboard o / — vista por defecto
+      activateAppTab('tab-dash');
+      if (!allLeads.length) loadDashboard();
+    }
+  }
+
+  // Activa un tab de la app por su panel-id
+  function activateAppTab(tabId) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const btn = document.querySelector(`.tab[data-tab="${tabId}"]`);
+    const panel = $(tabId);
+    if (btn)   btn.classList.add('active');
+    if (panel) panel.classList.add('active');
+  }
+
   async function init() {
-    const {data:{session}}=await sb.auth.getSession();
-    if(session) await enterApp(session.user);
+    // El router es ahora el único punto de entrada
+    await handleRouting();
+
+    // Detectar cambios de sesión externos (logout otra pestaña, token expirado)
+    sb.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        // Limpiar canales realtime
+        if(rtComments) { try{sb.removeChannel(rtComments);}catch(e){} rtComments=null; }
+        if(rtClientes) { try{sb.removeChannel(rtClientes);}catch(e){} rtClientes=null; }
+        allLeads=[]; rol=null; userId=null; userName='';
+        window.history.replaceState(null, '', '/');
+        handleRouting().catch(console.error);
+      }
+      if (event === 'SIGNED_IN' && session && !userId) {
+        const appMounted = $('screen-app')?.style.display !== 'none';
+        if (!appMounted) handleRouting().catch(console.error);
+      }
+    });
   }
 
   $('form-login').addEventListener('submit', async e => {
     e.preventDefault(); clearAlert('err-login');
     const btn=$('btn-login'); btn.textContent='Verificando…'; btn.disabled=true;
     try {
-      const {data:auth,error}=await sb.auth.signInWithPassword({email:$('l-email').value.trim(),password:$('l-pass').value});
+      const {data:auth,error}=await sb.auth.signInWithPassword({
+        email: $('l-email').value.trim(),
+        password: $('l-pass').value,
+      });
       if(error) throw new Error(error.message);
+
+      // ── Sincronizar leads guardados offline ─────────────────
+      syncPendingLeads().catch(console.error);
+
+      // Leer destino guardado por el auth guard antes del login
+      const savedRedirect = localStorage.getItem('redirectAfterLogin');
+      localStorage.removeItem('redirectAfterLogin');
+      // Fijar URL ANTES de enterApp — parsePath() la leerá en dispatchRoute
+      window.history.pushState(null, '', savedRedirect || '/dashboard');
+      // enterApp → applyRoleUI → dispatchRoute(parsePath())
       await enterApp(auth.user);
-    } catch(err) { setAlert('err-login','err-login-txt',err.message||'Error al iniciar sesión.'); }
+    } catch(err) {
+      const msg = err.message || '';
+      if (msg.includes('Invalid login') || msg.includes('invalid_credentials')) {
+        setAlert('err-login','err-login-txt','Email o contraseña incorrectos.');
+      } else if (msg.includes('Email not confirmed')) {
+        setAlert('err-login','err-login-txt','Confirma tu email antes de entrar.');
+      } else {
+        setAlert('err-login','err-login-txt', msg || 'Error al iniciar sesión.');
+      }
+    }
     finally { btn.textContent='Iniciar sesión'; btn.disabled=false; }
   });
 
@@ -1208,9 +1366,9 @@
       .subscribe();
 
     hideEl('screen-login');
-    showEl('screen-app','flex');
-    // Mostrar UI al instante; cargar datos en background sin bloquear render
-    loadDashboard(); // sin await — la pantalla ya es visible
+    showEl('screen-app', 'flex');
+    // App montada: despachar ruta actual sin volver a ejecutar el guard
+    dispatchRoute();
   }
 
   // ─── APPLY ROLE UI ────────────────────────────────────────────
@@ -1223,10 +1381,7 @@
       $('gestor-badge-form').textContent=userName;
       $('user-badge').className='badge mono';
       showEl('tab-btn-form','block');
-      $('tab-btn-form').classList.add('active');
-      $('tab-btn-dash').classList.remove('active');
-      $('tab-form').classList.add('active');
-      $('tab-dash').classList.remove('active');
+      // dispatchRoute activa la tab correcta segun URL
       $('stats-card-title').textContent='Rendimiento por Empresa';
       showEl('kpi-wrap','block');
       showEl('stats-wrap','block');
@@ -2080,15 +2235,7 @@
     $('tab-form').classList.add('active');
   });
 
-  sb.auth.onAuthStateChange(ev=>{
-    if(ev==='SIGNED_OUT') {
-      if(rtComments) { sb.removeChannel(rtComments); rtComments=null; }
-      if(rtClientes) { sb.removeChannel(rtClientes); rtClientes=null; }
-      rol=null; userId=null; allLeads=[];
-      $('screen-app').style.display='none';
-      showEl('screen-login','flex');
-    }
-  });
+  // onAuthStateChange gestionado en init()
 
   // ─── TIMELINE (Audit Log) ────────────────────────────────────
   function tiempoRelativo(isoStr) {
@@ -2138,19 +2285,27 @@
     }).join('');
   }
 
-  // Llamar loadTimeline al abrir modal (en pestaña info)
-  const _origOpenModal=openModal;
-  // Monkey-patch: tras openModal, lanzar loadTimeline sin bloquear
-  const _patchedOpenModal=function(cliente) {
-    _origOpenModal(cliente);
-    // Lanzar en background sin bloquear la apertura del modal
-    setTimeout(()=>loadTimeline(cliente.id), 50);
-  };
-  // Reemplazar referencias internas (row click + card click)
-  // — ya están ligadas a openModal por closure, así que parcheamos la función global
-  window.openModal=_patchedOpenModal;
+  // loadTimeline se llama directamente desde openModal (ver función openModal)
 
-  init().catch(err=>console.error('Init error:',err));
+  // ─── DISPARADORES DE ENRUTAMIENTO ───────────────────────────
+  // window.onload: punto de entrada cuando el HTML está listo
+  window.addEventListener('load', () => {
+    init().catch(err => console.error('Init error:', err));
+    if (navigator.onLine) syncPendingLeads().catch(() => {});
+  });
+
+  // popstate: botón atrás/adelante del navegador
+  window.addEventListener('popstate', () => {
+    // Si hay modal abierto, el botón Atrás lo cierra (sin re-routear)
+    if ($('modal-backdrop')?.classList.contains('open')) {
+      $('modal-backdrop').classList.remove('open');
+      document.body.style.overflow = '';
+      if(rtComments) { try{sb.removeChannel(rtComments);}catch(e){} rtComments = null; }
+      activeClienteId = null; activeClienteData = null; pendingEstado = null;
+      return;
+    }
+    handleRouting().catch(err => console.error('Routing error:', err));
+  });
 
   // ─── PLANTILLA EMAIL ANTI-SPAM ───────────────────────────────
   // Uso: emailTemplate({ asunto, nombreCliente, estado, gestor, mensaje })
