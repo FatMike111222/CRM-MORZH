@@ -638,6 +638,7 @@
       <button class="mtab active" data-mpanel="mp-info">Información</button>
       <button class="mtab" data-mpanel="mp-comments">Comentarios</button>
       <button class="mtab" data-mpanel="mp-docs">Documentos</button>
+      <button class="mtab" id="mtab-cambios" data-mpanel="mp-cambios" style="display:none">Cambios</button>
     </div>
 
     <div class="modal-body">
@@ -692,12 +693,6 @@
           <div class="estado-selector" id="estado-selector"></div>
         </div>
 
-        <!-- Timeline audit log -->
-        <div id="timeline-wrap" style="margin-top:20px;border-top:1px solid var(--bd);padding-top:14px">
-          <p style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:10px">🕐 Historial de cambios</p>
-          <div id="timeline-body" class="timeline"><p class="tl-empty">Cargando historial…</p></div>
-        </div>
-
         <div class="save-bar" id="save-bar">
           <button id="btn-save-info" class="btn-primary" style="font-size:.82rem;padding:9px 20px">Guardar cambios</button>
           <span id="save-ok"  style="font-size:.78rem;color:#4ade80;display:none">✓ Guardado</span>
@@ -716,6 +711,12 @@
           <button id="btn-send-comment" class="btn-primary" style="padding:10px 16px;white-space:nowrap">Enviar</button>
         </div>
         <div id="comment-err" class="alert err" style="margin-top:10px"><span id="comment-err-txt"></span></div>
+      </div>
+
+      <!-- ── Panel: Cambios (solo gestor) ── -->
+      <div id="mp-cambios" class="mpanel">
+        <p style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:14px">🕐 Historial de cambios de estado</p>
+        <div id="timeline-body" class="timeline"><p class="tl-empty">Selecciona la pestaña para cargar el historial.</p></div>
       </div>
 
       <!-- ── Panel: Documentos ── -->
@@ -791,7 +792,7 @@
 
   // ─── SESIÓN ───────────────────────────────────────────────────
   let rol = null, userId = null, authUserId = null, userName = '', servicios = [];
-  let allLeads = [], marcasMap = {}, empresasMap = {};
+  let allLeads = [], marcasMap = {}, marcasSectorMap = {}, empresasMap = {};
   let activeClienteId = null, activeClienteData = null, pendingEstado = null;
   let clientesConNuevoComentario = new Set();
   let rtComments = null, rtClientes = null;
@@ -868,6 +869,7 @@
       $(btn.dataset.mpanel).classList.add('active');
       if(btn.dataset.mpanel==='mp-comments' && activeClienteId) loadComments(activeClienteId);
       if(btn.dataset.mpanel==='mp-docs'     && activeClienteId) loadDocs(activeClienteId);
+      if(btn.dataset.mpanel==='mp-cambios'  && activeClienteId) loadTimeline(activeClienteId);
     });
   });
 
@@ -875,8 +877,7 @@
   function openModal(cliente) {
     // Actualizar URL para permitir deep-link directo a este cliente
     window.history.pushState(null, '', `/cliente/${cliente.id}`);
-    // Cargar timeline en background (sin bloquear apertura del modal)
-    setTimeout(() => { if(typeof loadTimeline==='function') loadTimeline(cliente.id); }, 50);
+    // Timeline carga bajo demanda al clicar pestaña Cambios (solo gestor)
     activeClienteId=cliente.id; activeClienteData={...cliente}; pendingEstado=cliente.estado;
 
     $('modal-client-name').textContent = cliente.nombre_cliente||'Sin nombre';
@@ -937,6 +938,10 @@
     $('save-bar').classList.remove('visible');
     $('save-ok').style.display='none'; $('save-err').style.display='none';
     ['edit-importe','edit-proxima-accion'].forEach(id=>$(id).addEventListener('input',markDirty,{once:true}));
+
+    // Pestaña Cambios: solo visible para gestor — empresa no sabe que existe
+    const _mtabC=$('mtab-cambios');
+    if(_mtabC) _mtabC.style.display=(rol==='gestor')?'':'none';
 
     // Reset tabs → info
     document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));
@@ -1428,7 +1433,14 @@
     sr.disabled=!subs.length;
   }
 
-  $('f-sector').addEventListener('change',function(){ if(this.value) _poblarSubs(this.value); else { const r=$('f-reforma'); r.innerHTML='<option value="">— Elige un sector primero —</option>'; r.disabled=true; } });
+  $('f-sector').addEventListener('change',function(){
+    if(this.value) _poblarSubs(this.value);
+    else { const r=$('f-reforma'); r.innerHTML='<option value="">— Elige un sector primero —</option>'; r.disabled=true; }
+    // Resetear marca al cambiar sector — evita mostrar marca de otro sector
+    if($('f-marca'))       $('f-marca').value='';
+    if($('f-marca-input')) $('f-marca-input').value='';
+    if($('marca-dropdown')) $('marca-dropdown').style.display='none';
+  });
 
   // Estado inicial según empresa
   $('f-empresa').addEventListener('change',function(){
@@ -1451,12 +1463,20 @@
         marcasMap[String(m.id).trim().toLowerCase()]=m.nombre;
       });
     } else {
-      // Gestor: todas las marcas — solo se llena marcasMap (el combobox filtra desde aquí)
-      const {data}=await sb.from('marcas').select('id,nombre').order('nombre');
-      (data||[]).forEach(({id,nombre})=>{
+      // Gestor: todas las marcas + inferir sector via empresa_marcas
+      const [mRes, emRes] = await Promise.all([
+        sb.from('marcas').select('id,nombre').order('nombre'),
+        sb.from('empresa_marcas').select('marca_id,empresas(servicios)'),
+      ]);
+      marcasSectorMap = {};
+      (emRes.data||[]).forEach(row=>{
+        const svs=Array.isArray(row.empresas?.servicios)?row.empresas.servicios:[];
+        const sector=svs.find(s=>Object.keys(SECTOR_MAP).includes(s))||null;
+        if(sector && row.marca_id) marcasSectorMap[row.marca_id]=sector;
+      });
+      (mRes.data||[]).forEach(({id,nombre})=>{
         marcasMap[id]=nombre;
         marcasMap[String(id).trim().toLowerCase()]=nombre;
-        // f-marca es ahora <input type="hidden"> — NO usar .add()
       });
     }
   }
@@ -1464,10 +1484,13 @@
   async function loadEmpresas() {
     const {data}=await sb.from('empresas').select('id,nombre_comercial').order('nombre_comercial');
     empresasMap={}; const sel=$('f-empresa');
+    // Limpiar opciones previas para evitar duplicados si se llama varias veces
+    if(sel) { while(sel.options.length>1) sel.remove(1); }
+    const seen=new Set();
     (data||[]).forEach(({id,nombre_comercial})=>{
       empresasMap[id]=nombre_comercial;
       empresasMap[String(id).trim().toLowerCase()]=nombre_comercial;
-      if(sel) sel.add(new Option(nombre_comercial,id));
+      if(sel && !seen.has(id)) { seen.add(id); sel.add(new Option(nombre_comercial,id)); }
     });
   }
 
@@ -1507,14 +1530,18 @@
 
   function showSuccessAlert(nc) {
     const nombreMostrar=nc.nombre_cliente||'Lead nuevo';
+    const clienteId=nc.id;
     $('form-ok').innerHTML=`
       <svg style="width:14px;height:14px;flex-shrink:0;margin-top:1px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
       <span>Lead "<strong>${esc(nombreMostrar)}</strong>" registrado.</span>
-      <button onclick="const c=allLeads.find(x=>x.id==='${nc.id}');if(c)openModal(c);else loadDashboard().then(()=>{const cc=allLeads.find(x=>x.id==='${nc.id}');if(cc)openModal(cc);})"
+      <button id="btn-ver-ficha-ok"
         style="margin-left:auto;font-size:.72rem;font-weight:600;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.4);color:#4ade80;border-radius:6px;padding:4px 10px;cursor:pointer;white-space:nowrap">
         Ver ficha →
       </button>`;
     $('form-ok').style.display='flex';
+    // Usar navigate() del router — pushState + handleRouting → abre la ficha directamente
+    const btnVer=$('btn-ver-ficha-ok');
+    if(btnVer) btnVer.addEventListener('click', ()=>navigate('/cliente/'+clienteId));
     setTimeout(()=>clearAlert('form-ok'),10000);
   }
 
@@ -1803,9 +1830,11 @@
   // ── Combobox de marcas ──────────────────────────────────────
   window.__filterMarcas = function(q) {
     const dd=$('marca-dropdown'); if(!dd) return;
+    const sectorActivo=$('f-sector')?.value||'';
     const matches=Object.entries(marcasMap)
-      .filter(([k,v])=>typeof k==='string'&&k.length>10) // solo UUIDs (no los lowercase duplicados)
-      .filter(([k,v])=>!q||v.toLowerCase().includes(q.toLowerCase()))
+      .filter(([k])=>typeof k==='string'&&k.length>10) // solo UUIDs
+      .filter(([k])=>!sectorActivo||!marcasSectorMap[k]||marcasSectorMap[k]===sectorActivo)
+      .filter(([,v])=>!q||v.toLowerCase().includes(q.toLowerCase()))
       .slice(0,20);
     if(!matches.length) {
       dd.innerHTML='<div class="mopt-empty">Sin resultados</div>';
