@@ -102,6 +102,15 @@
     #search-lead::placeholder { color:var(--muted); }
     #search-lead:focus { border-color:rgba(59,125,216,.45); }
 
+    /* ── T3: Filtro pills empresa / marca ── */
+    .filtros-emp-row, .filtros-mrk-row {
+      display:flex; flex-wrap:wrap; gap:5px; align-items:center; min-height:0;
+    }
+    .filtros-emp-row:empty, .filtros-mrk-row:empty { display:none; }
+    .sf-lbl { font-size:.6rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:.08em; color:var(--muted); margin-right:3px; white-space:nowrap; }
+    .sf-btn.sel-multi { background:var(--s3); color:var(--hi); border-color:var(--bd2); }
+
     /* ── T2: Filtros select combinados ── */
     .filtro-sel {
       font-family:'DM Mono',monospace; font-size:.63rem; font-weight:600; letter-spacing:.04em;
@@ -120,11 +129,6 @@
     @media(max-width:767px) {
       .filtro-sel { font-size:.7rem; padding:7px 28px 7px 12px; }
     }
-
-    /* T5: semáforo fechas de próxima acción */
-    .fecha-verde { color: #4ade80; }
-    .fecha-rojo  { color: #f87171; font-weight: 700; }
-    .fecha-nil   { color: var(--muted); }
 
     /* ── Tel popup ── */
     #tel-popup { position:fixed; background:var(--s1); border:1px solid var(--bd2); border-radius:10px; box-shadow:0 10px 28px rgba(0,0,0,.55); padding:6px 0; z-index:500; min-width:155px; display:none; }
@@ -250,36 +254,23 @@
       #fab-nuevo-lead.gestor-fab { display: flex; }
       /* M-02: FAB oculto cuando estamos en la vista formulario */
       #fab-nuevo-lead.gestor-fab.en-formulario { display: none; }
-      /* T1: botón volver al dashboard — visible en móvil en la cabecera del form */
-      #btn-volver-dash { display: flex; }
     }
 
-    /* T2: btn-volver-dash — botón flotante fijo, solo visible en móvil */
-    #btn-volver-dash { display: none; }
-    @media (max-width: 767px) {
-      #btn-volver-dash {
-        display: flex;
-        position: fixed;
-        top: 12px; left: 12px;
-        z-index: 200;
-        align-items: center; gap: 6px;
-        background: rgba(20,26,36,.88);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid var(--bd2);
-        border-radius: 10px;
-        color: var(--txt);
-        font-family: 'DM Sans', sans-serif;
-        font-size: .82rem; font-weight: 600;
-        padding: 9px 14px;
-        cursor: pointer;
-        box-shadow: 0 4px 16px rgba(0,0,0,.45);
-        transition: border-color .15s, background .15s;
-      }
-      #btn-volver-dash:hover { border-color: var(--hi); background: rgba(30,38,52,.95); }
-      /* T2: padding-top extra para que el contenido del form no quede bajo el botón flotante */
-      #tab-form { padding-top: 52px; }
+    /* T3: btn-volver-dash — flotante fixed, se activa con clase .visible (JS) */
+    #btn-volver-dash {
+      display: none;
+      position: fixed; top: 14px; left: 14px; z-index: 210;
+      align-items: center; gap: 7px;
+      background: rgba(6,9,17,.93); border: 1px solid var(--bd2);
+      border-radius: 99px; color: var(--hi);
+      font-family: 'DM Sans', sans-serif; font-size: .78rem; font-weight: 600;
+      padding: 8px 16px 8px 12px; cursor: pointer;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 4px 18px rgba(0,0,0,.55);
+      transition: border-color .18s, transform .15s, opacity .18s;
     }
+    #btn-volver-dash:hover { border-color: var(--blue); transform: translateX(-2px); }
+    @media (max-width: 767px) { #btn-volver-dash.visible { display: flex; } }
 
     /* M-01: Bottom Navigation Bar — solo móvil */
     #bottom-nav {
@@ -483,6 +474,8 @@
     .upload-progress { height: 3px; background: var(--bd); border-radius: 99px; margin-top: 6px; overflow: hidden; }
     .upload-progress-bar { height: 100%; background: linear-gradient(90deg, var(--blue), var(--blue2)); border-radius: 99px; transition: width .3s ease; }
 
+    .fecha-ok  { color: #4ade80; font-weight: 600; }
+    .fecha-bad { color: #f87171; font-weight: 600; }
     .fecha-nil { color: var(--muted); }
 
     .destaque-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
@@ -565,14 +558,6 @@
 
     <!-- ══ TAB 1: FORMULARIO (solo gestores) ══ -->
     <div id="tab-form" class="tab-panel">
-      <!-- T1: botón volver — visible en móvil (topbar oculto en móvil) -->
-      <button id="btn-volver-dash" aria-label="Volver al dashboard">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-        Volver al Dashboard
-      </button>
       <div class="pcard" style="max-width:720px;margin:0 auto">
         <div class="pcard-head">
           <div>
@@ -661,25 +646,23 @@
 
       <!-- stats-wrap eliminado — dashboard limpio (Fase 1) -->
 
-      <!-- T2: Filtros combinados AND — Estado + Empresa + Marca + Buscador -->
+      <!-- T3: Filtros combinados AND — Estado (select) + Empresa (pills) + Marca (pills) -->
       <div style="margin-bottom:14px;display:flex;flex-direction:column;gap:8px">
-        <!-- Fila 1: selects de filtro -->
+        <!-- Fila 1: estado + papelera -->
         <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-          <!-- Estado -->
           <select id="filtro-estado-sel" class="filtro-sel"
             onchange="window.__feSel(this.value)"
             title="Filtrar por estado">
             <option value="">Estado: Todos</option>
           </select>
-          <!-- T1: Empresa — botones pill (solo gestor, JS gestiona visibilidad) -->
-          <div id="filtro-empresa-row" class="filtros-bar" style="display:none"></div>
-          <!-- T1: Marca — botones pill -->
-          <div id="filtro-marca-row" class="filtros-bar"></div>
-          <!-- Papelera (solo gestor) -->
           <button id="filtro-papelera-btn" class="sf-btn papelera" style="display:none"
             onclick="window.__fp()">🗑 Papelera<span id="filtro-papelera-n" style="opacity:.7;margin-left:3px"></span></button>
         </div>
-        <!-- Fila 2: buscador libre -->
+        <!-- Fila 2: pills empresa (solo gestor, JS la rellena) -->
+        <div id="filtros-emp-row" class="filtros-emp-row"></div>
+        <!-- Fila 3: pills marca (JS la rellena) -->
+        <div id="filtros-mrk-row" class="filtros-mrk-row"></div>
+        <!-- Fila 4: buscador libre -->
         <div>
           <input id="search-lead" type="text" placeholder="Buscar: nombre, tel, población…"
             style="width:100%;max-width:420px"/>
@@ -766,8 +749,18 @@
             <span class="destaque-val" id="destaque-fecha">—</span>
             <span class="destaque-sub" id="destaque-fecha-sub"></span>
             <input id="edit-proxima-accion" type="date" class="info-item-input" style="margin-top:8px"/>
-            <select id="edit-tipo-accion" class="info-item-input" style="margin-top:6px;font-size:.75rem">
-              <option value="">— Seleccionar tipo —</option><option value="Primera llamada">Primera llamada</option><option value="Contactar por WhatsApp">Contactar por WhatsApp</option><option value="Agendar visita">Agendar visita</option><option value="Seguimiento tras visita">Seguimiento tras visita</option><option value="Enviar presupuesto">Enviar presupuesto</option><option value="Seguimiento de presupuesto">Seguimiento de presupuesto</option><option value="Pedir documentación / fotos">Pedir documentación / fotos</option><option value="Agendar inicio de obra/servicio">Agendar inicio de obra/servicio</option><option value="Seguimiento general">Seguimiento general</option><option value="Otro">Otro</option>
+            <select id="edit-tipo-accion" class="info-item-input" style="margin-top:6px;cursor:pointer">
+              <option value="">— Tipo de acción —</option>
+              <option value="Primera llamada">📞 Primera llamada</option>
+              <option value="Contactar por WhatsApp">💬 Contactar por WhatsApp</option>
+              <option value="Agendar visita">📍 Agendar visita</option>
+              <option value="Seguimiento tras visita">🔁 Seguimiento tras visita</option>
+              <option value="Enviar presupuesto">📋 Enviar presupuesto</option>
+              <option value="Seguimiento de presupuesto">💰 Seguimiento de presupuesto</option>
+              <option value="Pedir documentación / fotos">📎 Pedir documentación / fotos</option>
+              <option value="Agendar inicio de obra/servicio">🏗️ Agendar inicio de obra/servicio</option>
+              <option value="Seguimiento general">📌 Seguimiento general</option>
+              <option value="Otro">✏️ Otro</option>
             </select>
           </div>
           <div class="destaque-card importe">
@@ -802,10 +795,11 @@
               <label class="field-label" style="font-size:.6rem">Subservicio</label>
               <select id="edit-reforma" class="edit-field"><option value="">— Sin cambio —</option></select>
             </div>
-            <!-- T6b: reasignación empresa — solo gestor -->
-            <div id="edit-empresa-wrap">
+            <div id="edit-empresa-wrap" style="display:none">
               <label class="field-label" style="font-size:.6rem">Empresa asignada</label>
-              <select id="edit-empresa-modal" class="edit-field"><option value="">— Sin empresa —</option></select>
+              <select id="edit-empresa-modal" class="edit-field">
+                <option value="">— Sin empresa —</option>
+              </select>
             </div>
           </div>
         </div>
@@ -872,6 +866,15 @@
   <a id="tel-wa"   href="#" target="_blank" rel="noopener"><span>💬</span> WhatsApp</a>
 </div>
 
+<!-- T3: btn-volver-dash flotante — fixed, clase .visible añadida/quitada por syncBottomNav -->
+<button id="btn-volver-dash" aria-label="Volver al dashboard">
+  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"
+       stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+    <polyline points="15 18 9 12 15 6"/>
+  </svg>
+  Dashboard
+</button>
+
 <!-- M-01: Bottom Navigation Bar (móvil) — visible solo en <768px via CSS -->
 <nav id="bottom-nav" aria-label="Navegación principal">
   <button class="bnav-btn active" id="bnav-dash" data-tab="tab-dash">
@@ -928,6 +931,20 @@
     'OBRA ACEPTADA':         's-aceptada',   'TRABAJANDO':          's-trabajando',
     'RECHAZADO':             's-rechazado',  'BORRADO':             's-borrado',
   };
+  // T5: mapa emoji por tipo de próxima acción (null-safe en uso)
+  const TIPO_ACCION_EMOJI = {
+    'Primera llamada':                '📞',
+    'Contactar por WhatsApp':         '💬',
+    'Agendar visita':                 '📍',
+    'Seguimiento tras visita':        '🔁',
+    'Enviar presupuesto':             '📋',
+    'Seguimiento de presupuesto':     '💰',
+    'Pedir documentación / fotos':    '📎',
+    'Agendar inicio de obra/servicio':'🏗️',
+    'Seguimiento general':            '📌',
+    'Otro':                           '✏️',
+  };
+
   const ESTADO_DOT = {
     'PENDIENTE DE ASIGNAR':  '#94a3b8',
     'PENDIENTE DE LLAMAR':   '#f5a623', 'VISITA PROGRAMADA':   '#63a8f8',
@@ -957,7 +974,7 @@
 
   // ─── FILTROS ──────────────────────────────────────────────────
   let filtroEstado = null, filtroSector = null, filtroPapelera = false, filtroBusqueda = '';
-  let filtroEmpresa = null, filtroMarca = null; // T2: filtros combinados AND
+  let filtroEmpresas = new Set(), filtroMarcas = new Set(); // T3: multi-select pills AND
   let _dashLoading = false; // H-08: evita loadDashboard() concurrentes
   let _lastSubmit  = 0;    // H-11: timestamp último envío (cooldown anti-spam)
   let _commentCooldown = false; // H-11: anti-spam comentarios
@@ -990,13 +1007,14 @@
 
   function semaforo(v) {
     if(!v) return {txt:'—',cls:'fecha-nil',sub:'Sin fecha'};
-    const h=new Date().toISOString().slice(0,10), atrasado=v<h;
-    const [y,m,d]=v.split('-');
-    const leg=new Date(+y,+m-1,+d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'});
-    // T5: rojo si caducada, verde si hoy o futuro
-    return atrasado ? {txt:leg,cls:'fecha-rojo',sub:'⚠️ Caducada'} : {txt:leg,cls:'fecha-verde',sub:v===h?'Hoy':'Próximamente'};
+    const hoy = new Date().toISOString().slice(0,10);
+    const atrasado = v < hoy, esHoy = v === hoy;
+    const [y,m,d] = v.split('-');
+    const leg = new Date(+y,+m-1,+d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'});
+    if(atrasado) return {txt:leg,   cls:'fecha-bad', sub:'⚠ Atrasado'};
+    if(esHoy)    return {txt:'HOY', cls:'fecha-ok',  sub:'⚡ Para hoy'};
+    return            {txt:leg,   cls:'fecha-ok',  sub:'✓ A tiempo'};
   }
-   }
 
   // Resolución de marca con normalización de ID
   function getMarcaNombre(marcaId) {
@@ -1063,11 +1081,12 @@
     if(marcaNomModal)      _subParts.push(esc(marcaNomModal));
     $('modal-subline').innerHTML=_subParts.map((v,i)=>(i>0?'<span class="sep">|</span>':'')+v).join('');
 
-    // Próxima acción
+    // Próxima acción — fecha + tipo acción
     const fv=cliente.fecha_proxima_accion||null, {txt,cls:fc,sub}=semaforo(fv);
     $('destaque-fecha').textContent=txt; $('destaque-fecha').className='destaque-val '+fc;
-    $('destaque-fecha-sub').textContent=sub; $('edit-proxima-accion').value=fv||'';
-    if($('edit-tipo-accion')) $('edit-tipo-accion').value=cliente.tipo_proxima_accion||'';
+    $('destaque-fecha-sub').textContent=sub;
+    const _epaSel=$('edit-proxima-accion'); if(_epaSel) _epaSel.value=fv||'';
+    const _etaSel=$('edit-tipo-accion');   if(_etaSel) _etaSel.value=cliente.tipo_proxima_accion||'';
 
     // Importe
     const imp=cliente.importe_presupuesto;
@@ -1088,29 +1107,28 @@
     $('edit-pobl').value=cliente.poblacion||'';
 
     // Poblar subservicio del modal
-    // T6b: poblar select empresa (solo gestor)
-    const empSelModal=$('edit-empresa-modal');
-    const empWrap=$('edit-empresa-wrap');
-    if(empSelModal && empWrap) {
-      if(rol!=='gestor') { empWrap.style.display='none'; }
-      else {
-        empWrap.style.display='';
-        let htmlEmp='<option value="">— Sin empresa —</option>';
-        Object.entries(empresasMap).forEach(([id,nom])=>{
-          if(typeof id==='string' && id.length>10) { // solo UUIDs, no aliases
-            htmlEmp+=`<option value="${esc(id)}"${cliente.empresa_id===id?' selected':''}>${esc(nom)}</option>`;
-          }
-        });
-        empSelModal.innerHTML=htmlEmp;
-        empSelModal.addEventListener('change', markDirty, {once:true});
-      }
-    }
-
     const erSel=$('edit-reforma');
     if(erSel) {
       const allSubs=Object.values(SECTOR_MAP).flat();
       erSel.innerHTML='<option value="">— Sin cambio —</option>'+
         allSubs.map(s=>`<option value="${esc(s)}"${s===cliente.tipo_reforma?' selected':''}>${esc(s)}</option>`).join('');
+    }
+
+    // T6b: poblar select empresa (solo gestor, defensivo)
+    const _eEmpWrap = document.getElementById('edit-empresa-wrap');
+    const _eEmpSel  = document.getElementById('edit-empresa-modal');
+    if(_eEmpWrap && _eEmpSel) {
+      if(rol === 'gestor') {
+        _eEmpWrap.style.display = '';
+        // Poblar solo con IDs que sean UUIDs (longitud > 10, no claves normalizadas)
+        const _empOpts = Object.entries(empresasMap)
+          .filter(([k]) => typeof k === 'string' && k.length > 10)
+          .map(([id, nom]) => `<option value="${esc(id)}"${id===cliente.empresa_id?' selected':''}>${esc(nom)}</option>`)
+          .join('');
+        _eEmpSel.innerHTML = '<option value="">— Sin empresa —</option>' + _empOpts;
+      } else {
+        _eEmpWrap.style.display = 'none';
+      }
     }
 
     const editFields=['edit-nombre','edit-tel','edit-email','edit-pobl','edit-reforma','edit-empresa-modal'];
@@ -1129,7 +1147,8 @@
     // Save bar
     $('save-bar').classList.remove('visible');
     $('save-ok').style.display='none'; $('save-err').style.display='none';
-    ['edit-importe','edit-proxima-accion','edit-tipo-accion'].forEach(id=>{const _e=$(id);if(_e)_e.addEventListener('change',markDirty,{once:true});});
+    ['edit-importe','edit-proxima-accion'].forEach(id=>{ const _el=$(id); if(_el) _el.addEventListener('input',markDirty,{once:true}); });
+    const _etaDirty=$('edit-tipo-accion'); if(_etaDirty) _etaDirty.addEventListener('change',markDirty,{once:true});
 
     // Pestaña Cambios: solo visible para gestor — empresa no sabe que existe
     const _mtabC=$('mtab-cambios');
@@ -1273,8 +1292,8 @@
     const _editorId1 = _sess1?.user?.id ?? authUserId ?? null;
 
     // Payload: importe, fecha y datos de cliente — el estado ya lo gestiona autoSaveEstado
-    const tipoAccionVal=$('edit-tipo-accion')?$('edit-tipo-accion').value||null:null;
-    const payload={ importe_presupuesto:importeVal, fecha_proxima_accion:fechaAccionVal, tipo_proxima_accion:tipoAccionVal, ultimo_editor_id:_editorId1 };
+    const tipoAccVal=($('edit-tipo-accion')?.value)||null;
+    const payload={ importe_presupuesto:importeVal, fecha_proxima_accion:fechaAccionVal, tipo_proxima_accion:tipoAccVal, ultimo_editor_id:_editorId1 };
     if(editOpen) {
       const n=$('edit-nombre').value.trim(), t=$('edit-tel').value.trim();
       const em=$('edit-email').value.trim(), p=$('edit-pobl').value.trim();
@@ -1284,8 +1303,9 @@
       if(em) payload.email=em;
       if(p) payload.poblacion=p;
       if(rf) payload.tipo_reforma=rf;
-      const empM=$('edit-empresa-modal'); const empVal=empM?empM.value||null:undefined;
-      if(empVal!==undefined) payload.empresa_id=empVal;
+      // T6b: reasignar empresa (defensivo — solo si el elemento existe)
+      const _eEmpVal = document.getElementById('edit-empresa-modal')?.value;
+      if(typeof _eEmpVal !== 'undefined') payload.empresa_id = _eEmpVal || null;
     }
 
     try {
@@ -1864,7 +1884,7 @@
     if($('kpi-row')) $('kpi-row').innerHTML='<div class="kpi"><p class="kpi-lbl">Cargando…</p></div>';
     clientesConNuevoComentario=new Set();
     filtroEstado=null; filtroSector=null; filtroPapelera=false; filtroBusqueda='';
-    filtroEmpresa=null; filtroMarca=null;
+    filtroEmpresas=new Set(); filtroMarcas=new Set();
     const si=$('search-lead'); if(si) si.value='';
 
     const selectCols = rol==='empresa'
@@ -1936,8 +1956,8 @@
       if(filtroPapelera) return c.estado==='BORRADO';
       if(c.estado==='BORRADO') return false;
       if(filtroEstado  && c.estado!==filtroEstado) return false;
-      if(filtroEmpresa && c.empresa_id!==filtroEmpresa) return false;
-      if(filtroMarca   && c.marca_id!==filtroMarca)   return false;
+      if(filtroEmpresas.size>0 && !filtroEmpresas.has(c.empresa_id)) return false;
+      if(filtroMarcas.size>0   && !filtroMarcas.has(c.marca_id))   return false;
       if(filtroSector) { const s=sectorDeReforma(c.tipo_reforma); if(s!==filtroSector) return false; }
       if(q) {
         const mn=getMarcaNombre(c.marca_id).toLowerCase();
@@ -1985,22 +2005,6 @@
   }
 
 
-
-  // ─── T5: Emojis por tipo de próxima acción ────────────────────
-  const ACCION_EMOJI = {
-    'Primera llamada':                 '📞',
-    'Contactar por WhatsApp':          '💬',
-    'Agendar visita':                  '🗓️',
-    'Seguimiento tras visita':         '🔄',
-    'Enviar presupuesto':              '📋',
-    'Seguimiento de presupuesto':      '💰',
-    'Pedir documentación / fotos':     '📁',
-    'Agendar inicio de obra/servicio': '🔨',
-    'Seguimiento general':             '📌',
-    'Otro':                            '⚙️',
-  };
-  function accionEmoji(tipo) { return ACCION_EMOJI[tipo]||''; }
-
   // ─── T2: RENDER FILTROS SELECT (Estado + Empresa + Marca) ──────
   function renderFiltrosSelect() {
     // ── Select Estado ──────────────────────────────────────────
@@ -2026,60 +2030,77 @@
       if(nEl) nEl.textContent=nBorrP?nBorrP:'';
     }
 
-    // ── T1: Botones Empresa (solo gestor) ──────────────────────
-    const rowEmp=$('filtro-empresa-row');
+    // ── T3: Pills Empresa (solo gestor, multi-select defensivo) ───
+    const rowEmp = document.getElementById('filtros-emp-row');
     if(rowEmp) {
-      if(rol!=='gestor') { rowEmp.style.display='none'; }
-      else {
-        const empSet=new Map();
-        allLeads.filter(c=>c.estado!=='BORRADO').forEach(c=>{
+      if(rol !== 'gestor') {
+        rowEmp.innerHTML = '';
+      } else {
+        const empSet = new Map();
+        allLeads.filter(c => c.estado !== 'BORRADO').forEach(c => {
           if(c.empresa_id && !empSet.has(c.empresa_id)) {
             empSet.set(c.empresa_id,
-              empresasMap[c.empresa_id]||
-              empresasMap[String(c.empresa_id).trim().toLowerCase()]||
-              c.empresa_id.slice(0,8)+'…');
+              empresasMap[c.empresa_id] ||
+              empresasMap[String(c.empresa_id).trim().toLowerCase()] ||
+              c.empresa_id.slice(0,8) + '\u2026');
           }
         });
-        if(empSet.size===0) { rowEmp.style.display='none'; }
-        else {
-          rowEmp.style.display='flex';
-          let hE=`<span style="font-size:.6rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-right:2px;align-self:center">Emp:</span>`;
-          hE+=`<button class="sf-btn${!filtroEmpresa?' active':''}" onclick="window.__feEmp(null)">Todas</button>`;
-          empSet.forEach((nom,id)=>{
-            hE+=`<button class="sf-btn${filtroEmpresa===id?' active':''}" onclick="window.__feEmp('${id.replace(/'/g,"\'")}')">${esc(nom)}</button>`;
+        if(empSet.size === 0) {
+          rowEmp.innerHTML = '';
+        } else {
+          const todosAct = filtroEmpresas.size === 0 ? ' active' : '';
+          let hE = `<span class="sf-lbl">Empresa:</span>`;
+          hE += `<button class="sf-btn${todosAct}" onclick="window.__feEmp(null)">Todas</button>`;
+          empSet.forEach((nom, id) => {
+            const isActive = filtroEmpresas.has(id) ? ' sel-multi' : '';
+            const safeId  = id.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            hE += `<button class="sf-btn${isActive}" onclick="window.__feEmp('${safeId}')">${esc(nom)}</button>`;
           });
-          rowEmp.innerHTML=hE;
+          rowEmp.innerHTML = hE;
         }
       }
     }
 
-    // ── T1: Botones Marca ──────────────────────────────────────
-    const rowMrk=$('filtro-marca-row');
+    // ── T3: Pills Marca (multi-select defensivo) ────────────────
+    const rowMrk = document.getElementById('filtros-mrk-row');
     if(rowMrk) {
-      const marcaSet=new Map();
-      allLeads.filter(c=>c.estado!=='BORRADO').forEach(c=>{
+      const marcaSet = new Map();
+      allLeads.filter(c => c.estado !== 'BORRADO').forEach(c => {
         if(c.marca_id && !marcaSet.has(c.marca_id)) {
-          const nom=getMarcaNombre(c.marca_id);
+          const nom = getMarcaNombre(c.marca_id);
           if(nom) marcaSet.set(c.marca_id, nom);
         }
       });
-      if(marcaSet.size===0) { rowMrk.style.display='none'; }
-      else {
-        rowMrk.style.display='flex';
-        let hM=`<span style="font-size:.6rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-right:2px;align-self:center">Marca:</span>`;
-        hM+=`<button class="sf-btn${!filtroMarca?' active':''}" onclick="window.__feMrk(null)">Todas</button>`;
-        marcaSet.forEach((nom,id)=>{
-          hM+=`<button class="sf-btn${filtroMarca===id?' active':''}" onclick="window.__feMrk('${id.replace(/'/g,"\'")}')">${esc(nom)}</button>`;
+      if(marcaSet.size === 0) {
+        rowMrk.innerHTML = '';
+      } else {
+        const todosActM = filtroMarcas.size === 0 ? ' active' : '';
+        let hM = `<span class="sf-lbl">Marca:</span>`;
+        hM += `<button class="sf-btn${todosActM}" onclick="window.__feMrk(null)">Todas</button>`;
+        marcaSet.forEach((nom, id) => {
+          const isActive = filtroMarcas.has(id) ? ' sel-multi' : '';
+          const safeId  = id.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+          hM += `<button class="sf-btn${isActive}" onclick="window.__feMrk('${safeId}')">${esc(nom)}</button>`;
         });
-        rowMrk.innerHTML=hM;
+        rowMrk.innerHTML = hM;
       }
     }
   }
 
-  // T2: handlers de los selects
-  window.__feSel = v => { filtroEstado=v||null; filtroPapelera=false; renderDashboard(); };
-  window.__feEmp = v => { filtroEmpresa=v||null; renderDashboard(); };
-  window.__feMrk = v => { filtroMarca=v||null; renderDashboard(); };
+  // T3: handlers de filtros (defensivos — no crashean si el contenedor no existe)
+  window.__feSel = v => { filtroEstado = v||null; filtroPapelera = false; renderDashboard(); };
+  window.__feEmp = v => {
+    if(!v) { filtroEmpresas.clear(); }
+    else if(filtroEmpresas.has(v)) { filtroEmpresas.delete(v); }
+    else { filtroEmpresas.add(v); }
+    renderDashboard();
+  };
+  window.__feMrk = v => {
+    if(!v) { filtroMarcas.clear(); }
+    else if(filtroMarcas.has(v)) { filtroMarcas.delete(v); }
+    else { filtroMarcas.add(v); }
+    renderDashboard();
+  };
 
     window.__fp = () => { filtroPapelera=!filtroPapelera; filtroEstado=null; renderDashboard(); };
 
@@ -2088,12 +2109,10 @@
   // ─── SEMÁFORO DORMIDOS (U-01) ─────────────────────────────────
   // Devuelve un badge HTML si el lead lleva más de X días sin modificar
   function dormidoBadge(updated_at, estado) {
-    if(!updated_at) return '';
-    // T5: semáforo dormidos solo en PENDIENTE DE LLAMAR (2d naranja / 5d rojo)
-    if(estado !== 'PENDIENTE DE LLAMAR') return '';
-    const dias=Math.floor((Date.now()-new Date(updated_at).getTime())/(1000*60*60*24));
-    if(dias>=5) return `<span class="dormido-badge dormido-critico" title="${dias} días sin cambios">🔴 ${dias}d dormido</span>`;
-    if(dias>=2) return `<span class="dormido-badge dormido-warn"    title="${dias} días sin cambios">🟠 ${dias}d dormido</span>`;
+    if(!updated_at || estado !== 'PENDIENTE DE LLAMAR') return '';
+    const dias = Math.floor((Date.now() - new Date(updated_at).getTime()) / (1000*60*60*24));
+    if(dias > 5) return `<span class="dormido-badge dormido-critico" title="${dias} días sin contactar">🔴 ${dias}d</span>`;
+    if(dias > 2) return `<span class="dormido-badge dormido-warn"    title="${dias} días sin contactar">🟠 ${dias}d</span>`;
     return '';
   }
 
@@ -2138,9 +2157,13 @@
       const hasNew=clientesConNuevoComentario.has(c.id);
       const notif=hasNew?'<span class="new-comment-dot">nuevo comentario</span>':'<span class="row-hint">Ver ficha →</span>';
       const {txt:fechaTxt,cls:fechaCls}=semaforo(c.fecha_proxima_accion||null);
-      const tipoEmoji=accionEmoji(c.tipo_proxima_accion||'');
-      const tipoLabel=c.tipo_proxima_accion?`<span style="display:block;font-size:.68rem;color:var(--muted);margin-top:2px">${tipoEmoji} ${esc(c.tipo_proxima_accion)}</span>`:'';
       const fechaEntrada=c.created_at?fmtDate(c.created_at):'—';
+      // T5: emoji de tipo acción — null-safe
+      const _tipoAcc = c.tipo_proxima_accion || null;
+      const _emoji   = _tipoAcc ? (TIPO_ACCION_EMOJI[_tipoAcc] || '📌') : '';
+      const tipoLabel = _tipoAcc
+        ? `<span style="font-size:.63rem;color:var(--muted);display:block;margin-top:2px;white-space:normal">${_emoji} ${esc(_tipoAcc)}</span>`
+        : '';
 
       // Celda teléfono clicable
       const telClean=(c.telefono||'').replace(/\s/g,'');
@@ -2154,19 +2177,20 @@
         ?`<td style="font-size:.8rem">${esc(empNom)}</td>`
         :'';
 
-      // Botón eliminar: solo gestor Y solo si no está ya en papelera (T3)
+      // Botón eliminar: solo gestor y solo si el lead NO está ya borrado
       const delBtn=(rol==='gestor' && c.estado!=='BORRADO')
         ?`<button class="btn-row-del" onclick="event.stopPropagation();_rowDel('${esc(c.id)}')" title="Mover a papelera">🗑</button>`
         :'';
 
-      // T6a: select estado interactivo para AMBOS roles — empresa no ve BORRADO/PENDIENTE_ASIGNAR
-      const _estadosGestor=ESTADOS.filter(e=>e!=='BORRADO');
-      const _estadosEmpresa=ESTADOS.filter(e=>!['BORRADO','PENDIENTE DE ASIGNAR'].includes(e));
-      const _optsEstado=(rol==='gestor'?_estadosGestor:_estadosEmpresa)
-        .map(e=>`<option value="${e}"${e===c.estado?' selected':''}>${e}</option>`).join('');
-      const estadoCell=`<select class="estado-select ${cls}" data-id="${c.id}"
+      // Celda estado: select interactivo para AMBOS roles
+      const estadosSelectibles = rol==='gestor'
+        ? ESTADOS.filter(e => e !== 'BORRADO')
+        : ESTADOS.filter(e => !['BORRADO','PENDIENTE DE ASIGNAR'].includes(e));
+      const estadoCell = `<select class="estado-select ${cls}" data-id="${c.id}"
         onchange="event.stopPropagation();window._updateEstado('${c.id}',this)"
-        onclick="event.stopPropagation()" title="Cambiar estado">${_optsEstado}</select>`;
+        onclick="event.stopPropagation()" title="Cambiar estado">
+        ${estadosSelectibles.map(e=>`<option value="${esc(e)}"${e===c.estado?' selected':''}>${esc(e)}</option>`).join('')}
+      </select>`;
 
       // ── Fila tabla (desktop) ──
       rowsHTML.push(`
@@ -2183,12 +2207,12 @@
           <td class="td-del">${delBtn}</td>
         </tr>`);
 
-      // ── Card móvil — T6a: select para ambos roles ──
-      const _optsCardEstado=(rol==='gestor'?_estadosGestor:_estadosEmpresa)
-        .map(e=>`<option value="${esc(e)}"${e===c.estado?' selected':''}>${esc(e)}</option>`).join('');
-      const cardEstado=`<select class="estado-select ${cls}" data-id="${c.id}"
+      // ── Card móvil: select estado para AMBOS roles ──
+      const cardEstado = `<select class="estado-select ${cls}" data-id="${c.id}"
         onchange="event.stopPropagation();window._updateEstado('${c.id}',this)"
-        onclick="event.stopPropagation()">${_optsCardEstado}</select>`;
+        onclick="event.stopPropagation()">
+        ${estadosSelectibles.map(e=>`<option value="${esc(e)}"${e===c.estado?' selected':''}>${esc(e)}</option>`).join('')}
+      </select>`;
 
       cardsHTML.push(`
         <div class="lead-card" data-id="${esc(c.id)}">
@@ -2201,6 +2225,10 @@
             ${telHtml}
             ${notif}
           </div>
+          ${_tipoAcc && c.fecha_proxima_accion ? `<div class="lc-row" style="border-top:1px solid rgba(29,46,71,.35);padding-top:6px;margin-top:2px">
+            <span class="lc-lbl">Acción</span>
+            <span class="${fechaCls}" style="font-size:.74rem">${_emoji} <b>${esc(fechaTxt)}</b> · <span style="color:var(--muted);font-size:.68rem">${esc(_tipoAcc)}</span></span>
+          </div>` : ''}
         </div>`);
     });
 
@@ -2210,7 +2238,7 @@
     // Click en filas tabla → abrir modal
     $('tbl-body').querySelectorAll('tr').forEach(row=>{
       row.addEventListener('click',e=>{
-        if(e.target.closest('.tel-cell')||e.target.closest('.btn-row-del')) return;
+        if(e.target.closest('.tel-cell')||e.target.closest('.btn-row-del')||e.target.closest('.estado-select')) return;
         const id=row.dataset.id;
         const cliente=allLeads.find(c=>c.id===id);
         if(!cliente) return;
@@ -2224,7 +2252,7 @@
     // Click en cards móvil → abrir modal
     $('cards-body').querySelectorAll('.lead-card').forEach(card=>{
       card.addEventListener('click',e=>{
-        if(e.target.closest('.tel-cell')||e.target.closest('.estado-select')||e.target.closest('.btn-row-del')) return;
+        if(e.target.closest('.tel-cell')||e.target.closest('.estado-select')) return;
         const id=card.dataset.id;
         const cliente=allLeads.find(c=>c.id===id);
         if(!cliente) return;
@@ -2486,7 +2514,10 @@
     document.querySelectorAll('.bnav-btn[data-tab]').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.tab === tabId);
     });
-    // T1: ocultar FAB cuando estamos en la vista del formulario
+    // T3: mostrar btn-volver flotante solo cuando tab activa es formulario (móvil)
+    const volver = document.getElementById('btn-volver-dash');
+    if(volver) volver.classList.toggle('visible', tabId === 'tab-form');
+    // ocultar FAB cuando estamos en el formulario
     const fab = $('fab-nuevo-lead');
     if(fab) fab.classList.toggle('en-formulario', tabId === 'tab-form');
   }
