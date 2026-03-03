@@ -1527,7 +1527,7 @@
 
     if(rol==='gestor') {
       $('topbar-role-lbl').textContent='Panel Gestor';
-      $('gestor-badge-form').textContent=userName;
+      if($('gestor-badge-form')) $('gestor-badge-form').textContent=userName;
       $('user-badge').className='badge mono';
       showEl('tab-btn-form','block');
       // dispatchRoute activa la tab correcta segun URL
@@ -1541,8 +1541,7 @@
       $('tab-form').classList.remove('active');
       $('tab-btn-dash').classList.add('active');
       $('tab-dash').classList.add('active');
-      $('stats-card-title').textContent='Actividad';
-      // Ocultar KPIs y stats para empresa
+      // Ocultar KPIs para empresa (stats-wrap eliminado en v56)
       hideEl('kpi-wrap');
       // Ocultar col empresa y filtro de sector
       document.querySelectorAll('.th-empresa').forEach(th=>th.style.display='none');
@@ -2172,7 +2171,7 @@
     // Click en filas tabla → abrir modal
     $('tbl-body').querySelectorAll('tr').forEach(row=>{
       row.addEventListener('click',e=>{
-        if(e.target.closest('.tel-cell')||e.target.closest('.btn-row-del')) return;
+        if(e.target.closest('.tel-cell')||e.target.closest('.btn-row-del')||e.target.closest('.estado-select')) return;
         const id=row.dataset.id;
         const cliente=allLeads.find(c=>c.id===id);
         if(!cliente) return;
