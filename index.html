@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -602,16 +603,15 @@
               </div>
               <div class="col-span-2" style="position:relative">
                 <label class="field-label" for="f-marca-input">Marca</label>
-                <input id="f-marca-input" type="text" placeholder="Escribe para buscar marca..." class="field" autocomplete="off"
-                       onfocus="window.__filterMarcas(this.value)" 
-                       oninput="window.__filterMarcas(this.value)">
+                <input id="f-marca-input" type="text" placeholder="Escribe para buscar o haz clic..." class="field" autocomplete="off"
+                  onfocus="window.__filterMarcas('')" 
+                  oninput="window.__filterMarcas(this.value)"/>
                 <input id="f-marca" type="hidden"/>
                 <div id="marca-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:100;
                   background:var(--s2);border:1px solid var(--bd2);border-radius:9px;max-height:180px;overflow-y:auto;margin-top:3px;box-shadow:0 8px 24px rgba(0,0,0,.4)">
                 </div>
               </div>
-              </div>
-              <div class="col-span-2"><label class="field-label" for="f-empresa">Empresa</label><select id="f-empresa" class="field" disabled><option value="">— Seleccionar Marca primero —</option></select> —</option></select></div>
+              <div class="col-span-2"><label class="field-label" for="f-empresa">Empresa <span id="f-empresa-hint" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);margin-left:6px">(elige una marca primero)</span></label><select id="f-empresa" class="field" disabled style="opacity:.5;cursor:not-allowed"><option value="">— Seleccionar Marca primero —</option></select></div>
             </div>
             <div style="margin-top:16px">
               <label class="field-label" for="f-extra">
@@ -1679,6 +1679,109 @@
     sr.disabled=!subs.length;
   }
 
+
+  // ─── BUSCADOR DE MARCA (formulario nuevo lead) ───────────────
+  window.__filterMarcas = function(q) {
+    const dropdown = document.getElementById('marca-dropdown');
+    const hiddenInput = document.getElementById('f-marca');
+    if(!dropdown) return;
+    // Recopilar marcas únicas del mapa (solo claves UUID, no las normalizadas)
+    const seen = new Set(), opciones = [];
+    Object.entries(marcasMap).forEach(([k, nombre]) => {
+      if(String(k).length > 10 && !seen.has(String(nombre).toLowerCase())) {
+        seen.add(String(nombre).toLowerCase());
+        opciones.push({ id: k, nombre });
+      }
+    });
+    const filtradas = q
+      ? opciones.filter(o => o.nombre.toLowerCase().includes(String(q).toLowerCase()))
+      : opciones;
+    if(!filtradas.length) {
+      dropdown.innerHTML = '<div class="mopt-empty">Sin resultados</div>';
+      dropdown.style.display = 'block';
+      return;
+    }
+    dropdown.innerHTML = filtradas.map(o =>
+      `<div class="mopt" data-id="${esc(String(o.id))}" data-nombre="${esc(o.nombre)}">${esc(o.nombre)}</div>`
+    ).join('');
+    dropdown.style.display = 'block';
+    // Reasignar listeners (dropdown se regenera cada vez)
+    dropdown.querySelectorAll('.mopt').forEach(el => {
+      el.addEventListener('click', () => {
+        const marcaId  = el.dataset.id;
+        const marcaNom = el.dataset.nombre;
+        if(hiddenInput) hiddenInput.value = marcaId;
+        const inputVis = document.getElementById('f-marca-input');
+        if(inputVis) inputVis.value = marcaNom;
+        dropdown.style.display = 'none';
+        // Desbloquear y filtrar empresas por esta marca
+        window.__onMarcaSelected(marcaId);
+      });
+    });
+  };
+
+  // Cerrar dropdown al clicar fuera
+  document.addEventListener('click', e => {
+    if(!e.target.closest('#f-marca-input') && !e.target.closest('#marca-dropdown')) {
+      const dd = document.getElementById('marca-dropdown');
+      if(dd) dd.style.display = 'none';
+    }
+  });
+
+  // ─── DEPENDENCIA MARCA → EMPRESA ─────────────────────────────
+  window.__onMarcaSelected = async function(marcaId) {
+    const sel  = document.getElementById('f-empresa');
+    const hint = document.getElementById('f-empresa-hint');
+    if(!sel) return;
+    if(!marcaId) {
+      sel.innerHTML = '<option value="">— Seleccionar Marca primero —</option>';
+      sel.disabled  = true;
+      sel.style.opacity = '.5';
+      sel.style.cursor  = 'not-allowed';
+      if(hint) hint.style.display = '';
+      return;
+    }
+    sel.disabled = true;
+    sel.style.opacity = '.5';
+    sel.innerHTML = '<option value="">Cargando empresas…</option>';
+    try {
+      // Buscar empresas vinculadas a esta marca en empresa_marcas
+      const { data, error } = await sb
+        .from('empresa_marcas')
+        .select('empresa_id, empresas(id, nombre_comercial)')
+        .eq('marca_id', marcaId);
+      if(error) throw error;
+      const rows = (data || []).filter(r => r.empresas?.id && r.empresas?.nombre_comercial);
+      if(!rows.length) {
+        sel.innerHTML = '<option value="">— Sin empresas para esta marca —</option>';
+        sel.disabled  = true;
+        sel.style.opacity = '.5';
+        if(hint) { hint.textContent = '(sin empresas para esta marca)'; hint.style.display = ''; }
+        return;
+      }
+      sel.innerHTML = '<option value="">— Seleccionar empresa —</option>' +
+        rows.map(r =>
+          `<option value="${esc(String(r.empresas.id))}">${esc(r.empresas.nombre_comercial)}</option>`
+        ).join('');
+      sel.disabled  = false;
+      sel.style.opacity = '';
+      sel.style.cursor  = '';
+      if(hint) hint.style.display = 'none';
+      // Actualizar estado-inicial-lbl al cambiar empresa
+      sel.onchange = function() {
+        const lbl = document.getElementById('estado-inicial-lbl');
+        if(!lbl) return;
+        if(this.value) { lbl.textContent = 'PENDIENTE DE LLAMAR'; lbl.className = 'pill s-pendiente'; }
+        else           { lbl.textContent = 'PENDIENTE DE ASIGNAR'; lbl.className = 'pill s-sin-asignar'; }
+      };
+    } catch(err) {
+      console.error('Error cargando empresas:', err);
+      sel.innerHTML = '<option value="">Error al cargar empresas</option>';
+      sel.disabled  = true;
+      sel.style.opacity = '.5';
+    }
+  };
+
   $('f-sector').addEventListener('change',function(){
     if(this.value) _poblarSubs(this.value);
     else { const r=$('f-reforma'); r.innerHTML='<option value="">— Elige un sector primero —</option>'; r.disabled=true; }
@@ -1688,11 +1791,13 @@
     if($('marca-dropdown')) $('marca-dropdown').style.display='none';
   });
 
-  // Estado inicial según empresa
-  $('f-empresa').addEventListener('change',function(){
-    const lbl=$('estado-inicial-lbl');
+  // Estado inicial según empresa — listener defensivo de fallback
+  const _fEmpSel = document.getElementById('f-empresa');
+  if(_fEmpSel) _fEmpSel.addEventListener('change', function(){
+    const lbl = document.getElementById('estado-inicial-lbl');
+    if(!lbl) return;
     if(this.value) { lbl.textContent='PENDIENTE DE LLAMAR'; lbl.className='pill s-pendiente'; }
-    else { lbl.textContent='PENDIENTE DE ASIGNAR'; lbl.className='pill s-sin-asignar'; }
+    else           { lbl.textContent='PENDIENTE DE ASIGNAR'; lbl.className='pill s-sin-asignar'; }
   });
 
   // ─── DROPDOWNS ────────────────────────────────────────────────
@@ -1728,16 +1833,22 @@
   }
 
   async function loadEmpresas() {
+    // Solo carga el mapa de empresas en memoria — el select se puebla via __onMarcaSelected
     const {data}=await sb.from('empresas').select('id,nombre_comercial').order('nombre_comercial');
-    empresasMap={}; const sel=$('f-empresa');
-    // Limpiar opciones previas para evitar duplicados si se llama varias veces
-    if(sel) { while(sel.options.length>1) sel.remove(1); }
-    const seen=new Set();
+    empresasMap={};
     (data||[]).forEach(({id,nombre_comercial})=>{
+      if(!id || !nombre_comercial) return;
       empresasMap[id]=nombre_comercial;
       empresasMap[String(id).trim().toLowerCase()]=nombre_comercial;
-      if(sel && !seen.has(id)) { seen.add(id); sel.add(new Option(nombre_comercial,id)); }
     });
+    // Mantener el select bloqueado hasta que el usuario elija una marca
+    const sel=document.getElementById('f-empresa');
+    if(sel) {
+      sel.innerHTML='<option value="">— Seleccionar Marca primero —</option>';
+      sel.disabled=true;
+      sel.style.opacity='.5';
+      sel.style.cursor='not-allowed';
+    }
   }
 
   // ─── SUBMIT LEAD ──────────────────────────────────────────────
@@ -2741,3 +2852,9 @@
   </table>
 </body>
 </html>`;
+  };
+
+})();
+</script>
+</body>
+</html>
