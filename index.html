@@ -115,13 +115,7 @@
     .kpi-lbl { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 10px; }
     .kpi-val { font-family: 'Syne', sans-serif; font-size: 2.1rem; font-weight: 800; line-height: 1; }
 
-    .emp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
-    .emp-card { background: var(--s3); border: 1px solid var(--bd); border-radius: 13px; padding: 16px 18px; transition: border-color .18s; }
-    .emp-card:hover { border-color: var(--bd2); }
-    .emp-name { font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 700; color: var(--hi); margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .emp-row  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: .78rem; }
-    .emp-row:last-child { margin-bottom: 0; }
-    .estat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; display: inline-block; margin-right: 6px; }
+    /* emp-grid/card/estat-dot eliminados — charts de stats removidos en Fase 1 */
 
     /* ── Pills ── */
     .pill { font-family: 'DM Mono', monospace; font-size: .63rem; font-weight: 600; letter-spacing: .04em; border-radius: 99px; padding: 3px 9px; border: 1px solid transparent; white-space: nowrap; }
@@ -223,10 +217,10 @@
 
       /* M-01: bottom nav visible en móvil */
       #bottom-nav { display: flex; }
-      /* M-01: ocultar tab-bar en topbar en móvil (va al bottom nav) */
-      .tab-bar { display: none; }
+      /* M-01: ocultar topbar completo en móvil — nav queda al bottom */
+      .topbar { display: none; }
       /* M-01: padding inferior para no tapar contenido con bottom nav */
-      .main { padding-bottom: 80px; }
+      .main { padding-bottom: 80px; padding-top: 14px; }
 
       /* M-02: FAB visible en móvil solo cuando JS añade clase .gestor-fab */
       #fab-nuevo-lead.gestor-fab { display: flex; }
@@ -604,14 +598,7 @@
         <div id="kpi-row" class="kpi-row"><div class="kpi"><p class="kpi-lbl">Cargando…</p></div></div>
       </div>
 
-      <!-- Stats card: solo gestor -->
-      <div id="stats-wrap" class="pcard" style="margin-bottom:24px;display:none">
-        <div class="pcard-head">
-          <div class="pcard-title" id="stats-card-title">Rendimiento por Empresa</div>
-          <span style="font-size:.72rem;color:var(--muted)">Distribución de estados</span>
-        </div>
-        <div class="pcard-body"><div id="emp-grid" class="emp-grid"><div class="empty">Cargando…</div></div></div>
-      </div>
+      <!-- stats-wrap eliminado — dashboard limpio (Fase 1) -->
 
       <!-- Filtros + buscador -->
       <div style="margin-bottom:14px;display:flex;flex-direction:column;gap:8px">
@@ -1495,9 +1482,7 @@
       $('user-badge').className='badge mono';
       showEl('tab-btn-form','block');
       // dispatchRoute activa la tab correcta segun URL
-      $('stats-card-title').textContent='Rendimiento por Empresa';
       showEl('kpi-wrap','block');
-      showEl('stats-wrap','block');
       // Mostrar col empresa
       document.querySelectorAll('.th-empresa').forEach(th=>th.style.display='');
     } else {
@@ -1507,10 +1492,8 @@
       $('tab-form').classList.remove('active');
       $('tab-btn-dash').classList.add('active');
       $('tab-dash').classList.add('active');
-      $('stats-card-title').textContent='Actividad';
-      // Ocultar KPIs y stats para empresa
+      // Ocultar KPIs para empresa
       hideEl('kpi-wrap');
-      hideEl('stats-wrap');
       // Ocultar col empresa y filtro de sector
       document.querySelectorAll('.th-empresa').forEach(th=>th.style.display='none');
       const sr=$('filtros-sector-row');
@@ -1771,7 +1754,6 @@
     if($('skel-table')) $('skel-table').style.display = isMobile ? 'none' : 'block';
     if($('skel-cards')) $('skel-cards').style.display = isMobile ? 'block' : 'none';
     if($('kpi-row')) $('kpi-row').innerHTML='<div class="kpi"><p class="kpi-lbl">Cargando…</p></div>';
-    if($('emp-grid')) $('emp-grid').innerHTML='<div class="empty">Cargando…</div>';
     clientesConNuevoComentario=new Set();
     filtroEstado=null; filtroSector=null; filtroPapelera=false; filtroBusqueda='';
     const si=$('search-lead'); if(si) si.value='';
@@ -1887,7 +1869,6 @@
   function renderDashboard() {
     const vis=leadsVisibles();
     renderKPIs(vis);
-    renderEmpresaStats(allLeads.filter(c=>c.estado!=='BORRADO'));
     renderFiltrosEstado();
     renderFiltrosSector();
     renderTable(sortedLeads(vis));
@@ -1990,23 +1971,7 @@
     ].map(k=>`<div class="kpi"><p class="kpi-lbl">${esc(k.lbl)}</p><p class="kpi-val" style="color:${k.color}">${esc(String(k.val))}</p></div>`).join('');
   }
 
-  function renderEmpresaStats(data) {
-    const el=$('emp-grid'); if(!el) return;
-    if(!data.length) { el.innerHTML='<div class="empty">Sin datos.</div>'; return; }
-    const gk=rol==='gestor'?'empresa_id':'gestor_id';
-    const gl=id=>!id?null:rol==='gestor'?(empresasMap[id]||'Empresa desconocida'):'Gestor '+id.slice(0,8)+'…';
-    const byG={};
-    data.forEach(c=>{ const k=c[gk]||'__none__'; if(!byG[k]) byG[k]={}; byG[k][c.estado]=(byG[k][c.estado]||0)+1; });
-    el.innerHTML=Object.entries(byG).map(([gid,counts])=>{
-      const label=gid==='__none__'?'<em style="color:var(--muted)">Sin asignar</em>':esc(gl(gid));
-      const rows=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([e,n])=>`
-        <div class="emp-row">
-          <span style="display:flex;align-items:center"><span class="estat-dot" style="background:${ESTADO_DOT[e]||'#3d5a78'}"></span><span style="font-size:.74rem">${esc(e)}</span></span>
-          <span class="pill ${ESTADO_CLS[e]||''}">${n}</span>
-        </div>`).join('');
-      return `<div class="emp-card"><div class="emp-name">${label}</div>${rows}</div>`;
-    }).join('');
-  }
+  // renderEmpresaStats() eliminada — Fase 1
 
   function renderTable(data) {
     hideEl('tbl-loading');
