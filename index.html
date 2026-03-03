@@ -159,7 +159,7 @@
 
     /* ── Table ── */
     /* Padding lateral base */
-    .main { max-width: 1300px; margin: 0 auto; padding: 28px 24px 52px; }
+    .main { width: 100%; max-width: 1400px; margin: 0 auto; padding: 28px 24px 52px; }
 
     /* ── Tabla desktop ── */
     .tbl-wrap { overflow-x: auto; }
@@ -610,7 +610,7 @@
                   background:var(--s2);border:1px solid var(--bd2);border-radius:9px;max-height:180px;overflow-y:auto;margin-top:3px;box-shadow:0 8px 24px rgba(0,0,0,.4)">
                 </div>
               </div>
-              <div class="col-span-2"><label class="field-label" for="f-empresa">Empresa</label><select id="f-empresa" class="field"><option value="">— Seleccionar —</option></select></div>
+              <div class="col-span-2"><label class="field-label" for="f-empresa">Empresa <span id="f-empresa-hint" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);margin-left:6px">(elige una marca primero)</span></label><select id="f-empresa" class="field" disabled style="opacity:.5;cursor:not-allowed"><option value="">— Seleccionar —</option></select></div>
             </div>
             <div style="margin-top:16px">
               <label class="field-label" for="f-extra">
@@ -634,7 +634,7 @@
     </div>
 
     <!-- ══ TAB 2: DASHBOARD ══ -->
-    <div id="tab-dash" class="tab-panel">
+    <div id="tab-dash" class="tab-panel" style="width:100%">
       <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
         <button id="btn-refresh" class="btn-ghost">↻ Actualizar datos</button>
       </div>
@@ -657,6 +657,8 @@
           </select>
           <button id="filtro-papelera-btn" class="sf-btn papelera" style="display:none"
             onclick="window.__fp()">🗑 Papelera<span id="filtro-papelera-n" style="opacity:.7;margin-left:3px"></span></button>
+          <button id="filtro-nuevos-btn" class="sf-btn" style="display:none"
+            onclick="window.__fn()">💬 Nuevos<span id="filtro-nuevos-n" style="opacity:.7;margin-left:3px"></span></button>
         </div>
         <!-- Fila 2: pills empresa (solo gestor, JS la rellena) -->
         <div id="filtros-emp-row" class="filtros-emp-row"></div>
@@ -669,7 +671,7 @@
         </div>
       </div>
 
-      <div class="pcard">
+      <div class="pcard" style="width:100%">
         <div class="pcard-head">
           <div class="pcard-title">Seguimiento de Leads</div>
           <span style="font-size:.72rem;color:var(--muted)">Haz clic en una fila para abrir la ficha</span>
@@ -973,7 +975,7 @@
   let rtComments = null, rtClientes = null;
 
   // ─── FILTROS ──────────────────────────────────────────────────
-  let filtroEstado = null, filtroSector = null, filtroPapelera = false, filtroBusqueda = '';
+  let filtroEstado = null, filtroSector = null, filtroPapelera = false, filtroBusqueda = '', filtroNuevos = false;
   let filtroEmpresas = new Set(), filtroMarcas = new Set(); // T3: multi-select pills AND
   let _dashLoading = false; // H-08: evita loadDashboard() concurrentes
   let _lastSubmit  = 0;    // H-11: timestamp último envío (cooldown anti-spam)
@@ -1567,7 +1569,11 @@
       servicios=Array.isArray(gestor.servicios)?gestor.servicios.map(String):[];
     } else {
       const {data:empresa,error:eErr}=await sb.from('empresas').select('id,nombre_comercial,servicios').eq('auth_user_id',user.id).single();
-      if(eErr||!empresa) throw new Error('No se encontró gestor ni empresa para este usuario.');
+      if(eErr||!empresa) {
+        hideEl('screen-login');
+        document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#060911;color:#c5d5e8;text-align:center;padding:24px"><div><div style="font-size:2.2rem;margin-bottom:14px">⚠️</div><p style="font-size:1rem;color:#e6f0ff;font-weight:600;margin-bottom:8px">Tu cuenta no tiene un perfil asignado todavía.</p><p style="font-size:.82rem;color:#3d5a78;margin-bottom:20px">Contacta con el administrador para que te asigne como gestor o empresa.</p><button onclick="location.reload()" style="background:#172034;border:1px solid #27415f;border-radius:9px;color:#c5d5e8;padding:9px 20px;cursor:pointer;font-size:.82rem">🔄 Volver al inicio</button></div></div>';
+        return;
+      }
       rol='empresa'; userId=empresa.id; userName=empresa.nombre_comercial||user.email.split('@')[0];
       servicios=Array.isArray(empresa.servicios)?empresa.servicios.map(String):[];
     }
@@ -1653,6 +1659,54 @@
   }
 
   $('f-sector').addEventListener('change',function(){
+  // ─── BUSCADOR DE MARCA ────────────────────────────────────────
+  window.__filterMarcas = function(q) {
+    const dropdown = document.getElementById('marca-dropdown');
+    const hiddenInput = document.getElementById('f-marca');
+    if(!dropdown) return;
+    const seen = new Set(), opciones = [];
+    Object.entries(marcasMap).forEach(([k, nombre]) => {
+      if(String(k).length > 10 && !seen.has(String(nombre).toLowerCase())) {
+        seen.add(String(nombre).toLowerCase()); opciones.push({id:k, nombre});
+      }
+    });
+    const filtradas = q ? opciones.filter(o => o.nombre.toLowerCase().includes(String(q).toLowerCase())) : opciones;
+    if(!filtradas.length) { dropdown.innerHTML='<div class="mopt-empty">Sin resultados</div>'; dropdown.style.display='block'; return; }
+    dropdown.innerHTML = filtradas.map(o =>
+      `<div class="mopt" data-id="${esc(String(o.id))}" data-nombre="${esc(o.nombre)}">${esc(o.nombre)}</div>`
+    ).join('');
+    dropdown.style.display = 'block';
+    dropdown.querySelectorAll('.mopt').forEach(el => {
+      el.addEventListener('click', () => {
+        const marcaId=el.dataset.id, marcaNom=el.dataset.nombre;
+        if(hiddenInput) hiddenInput.value=marcaId;
+        const iv=document.getElementById('f-marca-input'); if(iv) iv.value=marcaNom;
+        dropdown.style.display='none';
+        if(window.__onMarcaSelected) window.__onMarcaSelected(marcaId);
+      });
+    });
+  };
+  document.addEventListener('click', e => {
+    if(!e.target.closest('#f-marca-input') && !e.target.closest('#marca-dropdown')) {
+      const dd=document.getElementById('marca-dropdown'); if(dd) dd.style.display='none';
+    }
+  });
+  // ─── DEPENDENCIA MARCA → EMPRESA ─────────────────────────────
+  window.__onMarcaSelected = async function(marcaId) {
+    const sel=document.getElementById('f-empresa'), hint=document.getElementById('f-empresa-hint');
+    if(!sel) return;
+    if(!marcaId){sel.innerHTML='<option value="">— Seleccionar —</option>';sel.disabled=true;sel.style.opacity='.5';sel.style.cursor='not-allowed';if(hint)hint.style.display='';return;}
+    sel.disabled=true;sel.style.opacity='.5';sel.innerHTML='<option value="">Cargando…</option>';
+    try {
+      const {data}=await sb.from('empresa_marcas').select('empresa_id,empresas(id,nombre_comercial)').eq('marca_id',marcaId);
+      const rows=(data||[]).filter(r=>r.empresas?.id&&r.empresas?.nombre_comercial);
+      if(!rows.length){sel.innerHTML='<option value="">— Sin empresas para esta marca —</option>';sel.disabled=true;sel.style.opacity='.5';if(hint){hint.textContent='(sin empresas para esta marca)';hint.style.display='';}return;}
+      sel.innerHTML='<option value="">— Seleccionar empresa —</option>'+rows.map(r=>`<option value="${esc(String(r.empresas.id))}">${esc(r.empresas.nombre_comercial)}</option>`).join('');
+      sel.disabled=false;sel.style.opacity='';sel.style.cursor='';if(hint)hint.style.display='none';
+      sel.onchange=function(){const lbl=document.getElementById('estado-inicial-lbl');if(!lbl)return;if(this.value){lbl.textContent='PENDIENTE DE LLAMAR';lbl.className='pill s-pendiente';}else{lbl.textContent='PENDIENTE DE ASIGNAR';lbl.className='pill s-sin-asignar';}};
+    }catch(e2){sel.innerHTML='<option value="">Error al cargar empresas</option>';sel.disabled=true;sel.style.opacity='.5';}
+  };
+
     if(this.value) _poblarSubs(this.value);
     else { const r=$('f-reforma'); r.innerHTML='<option value="">— Elige un sector primero —</option>'; r.disabled=true; }
     // Resetear marca al cambiar sector — evita mostrar marca de otro sector
@@ -1661,11 +1715,12 @@
     if($('marca-dropdown')) $('marca-dropdown').style.display='none';
   });
 
-  // Estado inicial según empresa
-  $('f-empresa').addEventListener('change',function(){
-    const lbl=$('estado-inicial-lbl');
-    if(this.value) { lbl.textContent='PENDIENTE DE LLAMAR'; lbl.className='pill s-pendiente'; }
-    else { lbl.textContent='PENDIENTE DE ASIGNAR'; lbl.className='pill s-sin-asignar'; }
+  // Estado inicial según empresa — listener defensivo (el principal en __onMarcaSelected)
+  var _fEmpSel=document.getElementById('f-empresa');
+  if(_fEmpSel) _fEmpSel.addEventListener('change',function(){
+    var lbl=document.getElementById('estado-inicial-lbl'); if(!lbl) return;
+    if(this.value){lbl.textContent='PENDIENTE DE LLAMAR';lbl.className='pill s-pendiente';}
+    else{lbl.textContent='PENDIENTE DE ASIGNAR';lbl.className='pill s-sin-asignar';}
   });
 
   // ─── DROPDOWNS ────────────────────────────────────────────────
@@ -1883,7 +1938,7 @@
     if($('skel-cards')) $('skel-cards').style.display = isMobile ? 'block' : 'none';
     if($('kpi-row')) $('kpi-row').innerHTML='<div class="kpi"><p class="kpi-lbl">Cargando…</p></div>';
     clientesConNuevoComentario=new Set();
-    filtroEstado=null; filtroSector=null; filtroPapelera=false; filtroBusqueda='';
+    filtroEstado=null; filtroSector=null; filtroPapelera=false; filtroBusqueda=''; filtroNuevos=false;
     filtroEmpresas=new Set(); filtroMarcas=new Set();
     const si=$('search-lead'); if(si) si.value='';
 
@@ -1903,10 +1958,13 @@
       const svs=subserviciosDelUsuario();
       if(svs.length) leads=leads.filter(l=>!l.tipo_reforma||svs.includes(String(l.tipo_reforma)));
       if(rol==='empresa') {
-        leads.forEach(l=>{ if(l.marcas?.id && l.marcas?.nombre) {
-          marcasMap[l.marcas.id]=l.marcas.nombre;
-          marcasMap[String(l.marcas.id).trim().toLowerCase()]=l.marcas.nombre;
-        }});
+        leads.forEach(l=>{
+          const mObj = Array.isArray(l.marcas) ? (l.marcas[0]??null) : (l.marcas??null);
+          if(mObj?.id && mObj?.nombre) {
+            marcasMap[mObj.id]    = mObj.nombre;
+            marcasMap[String(mObj.id).trim().toLowerCase()] = mObj.nombre;
+          }
+        });
       }
       return leads;
     }
@@ -1954,6 +2012,7 @@
     const q=filtroBusqueda.trim().toLowerCase();
     return allLeads.filter(c=>{
       if(filtroPapelera) return c.estado==='BORRADO';
+      if(filtroNuevos)   return clientesConNuevoComentario.has(c.id);
       if(c.estado==='BORRADO') return false;
       if(filtroEstado  && c.estado!==filtroEstado) return false;
       if(filtroEmpresas.size>0 && !filtroEmpresas.has(String(c.empresa_id))) return false;
@@ -2000,8 +2059,9 @@
   function renderDashboard() {
     const vis=leadsVisibles();
     renderKPIs(vis);
-    renderFiltrosSelect(); // T2: filtros combinados AND
+    renderFiltrosSelect();
     renderTable(sortedLeads(vis));
+    if(window.__clearLoadTimer) window.__clearLoadTimer();
   }
 
 
@@ -2028,6 +2088,16 @@
       btnP.classList.toggle('active', filtroPapelera);
       const nEl=$('filtro-papelera-n');
       if(nEl) nEl.textContent=nBorrP?nBorrP:'';
+    }
+
+    // ── Nuevos comentarios btn ──────────────────────────────────
+    const btnN=document.getElementById('filtro-nuevos-btn');
+    const nNuev=clientesConNuevoComentario.size;
+    if(btnN) {
+      btnN.style.display = nNuev > 0 ? '' : 'none';
+      btnN.classList.toggle('active', filtroNuevos);
+      const nNEl=document.getElementById('filtro-nuevos-n');
+      if(nNEl) nNEl.textContent = nNuev ? nNuev : '';
     }
 
     // ── T3: Pills Empresa (solo gestor, multi-select defensivo) ───
@@ -2111,7 +2181,8 @@
     renderDashboard();
   };
 
-    window.__fp = () => { filtroPapelera=!filtroPapelera; filtroEstado=null; renderDashboard(); };
+    window.__fp = () => { filtroPapelera=!filtroPapelera; filtroEstado=null; filtroNuevos=false; renderDashboard(); };
+    window.__fn = () => { filtroNuevos=!filtroNuevos; filtroPapelera=false; filtroEstado=null; renderDashboard(); };
 
   $('search-lead').addEventListener('input', function(){ filtroBusqueda=this.value; renderKPIs(leadsVisibles()); renderTable(leadsVisibles()); });
 
@@ -2715,6 +2786,46 @@
 </body>
 </html>`;
   };
+
+  // --- ANTI-CUELGUE ---
+  window.addEventListener('unhandledrejection', event => {
+    const msg = event && event.reason ? (event.reason.message || String(event.reason)) : '';
+    const ignorar = ['Failed to fetch','NetworkError','AbortError','WebSocket'].some(k => msg.includes(k));
+    if(ignorar) return;
+    console.error('[Panel] Error no capturado:', msg);
+    const loginEl = document.getElementById('screen-login');
+    if(loginEl && loginEl.style.display !== 'none') return;
+    if(document.getElementById('crash-banner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'crash-banner';
+    banner.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:9999;'
+      + 'background:#1d2e47;border:1px solid rgba(248,113,113,.4);border-radius:12px;'
+      + 'padding:12px 20px;display:flex;align-items:center;gap:14px;'
+      + 'box-shadow:0 8px 28px rgba(0,0,0,.6);font-size:.82rem;color:#fca5a5;max-width:90vw;';
+    banner.innerHTML = '<span>⚠️ Algo ha ido mal. Los datos pueden no estar actualizados.</span>'
+      + '<button onclick="location.reload()" style="background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.4);border-radius:7px;color:#fca5a5;padding:5px 12px;cursor:pointer;font-size:.78rem;white-space:nowrap;flex-shrink:0">🔄 Refrescar</button>'
+      + '<button onclick="document.getElementById(\'crash-banner\').remove()" style="background:none;border:none;color:#3d5a78;cursor:pointer;font-size:1rem;padding:0;flex-shrink:0">✕</button>';
+    document.body.appendChild(banner);
+    setTimeout(() => { const b=document.getElementById('crash-banner'); if(b) b.remove(); }, 15000);
+  });
+  (function(){
+    const _loadTimer = setTimeout(() => {
+      const loading = document.getElementById('tbl-loading');
+      if(loading && loading.style.display !== 'none') {
+        if(document.getElementById('crash-banner')) return;
+        const b = document.createElement('div');
+        b.id = 'crash-banner';
+        b.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:9999;'
+          + 'background:#1d2e47;border:1px solid rgba(245,166,35,.4);border-radius:12px;'
+          + 'padding:14px 22px;display:flex;align-items:center;gap:14px;'
+          + 'box-shadow:0 8px 28px rgba(0,0,0,.6);font-size:.82rem;color:#fbbf24;max-width:90vw;';
+        b.innerHTML = '<span>⏳ La carga está tardando demasiado. ¿Problemas de conexión?</span>'
+          + '<button onclick="location.reload()" style="background:rgba(245,166,35,.15);border:1px solid rgba(245,166,35,.4);border-radius:7px;color:#fbbf24;padding:5px 12px;cursor:pointer;font-size:.78rem;white-space:nowrap;flex-shrink:0">🔄 Refrescar página</button>';
+        document.body.appendChild(b);
+      }
+    }, 12000);
+    window.__clearLoadTimer = () => clearTimeout(_loadTimer);
+  })();
 
 })();
 </script>
