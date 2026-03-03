@@ -1559,26 +1559,52 @@
     finally { btn.textContent='Iniciar sesión'; btn.disabled=false; }
   });
 
-  // ─── DETECCIÓN DE ROL ─────────────────────────────────────────
+// ─── DETECCIÓN DE ROL (Versión Ultra-Estable) ──────────────────
   async function enterApp(user) {
-    authUserId = user.id; // UUID real de auth.users — usado para ultimo_editor_id
-    const {data:gestor,error:gErr}=await sb.from('gestores').select('id,nombre,servicios').eq('auth_user_id',user.id).single();
-    if(!gErr && gestor) {
-      rol='gestor'; userId=gestor.id; userName=gestor.nombre||user.email.split('@')[0];
-      servicios=Array.isArray(gestor.servicios)?gestor.servicios.map(String):[];
+    authUserId = user.id; 
+    
+    // 1. Intentamos buscar en GESTORES (usando maybeSingle para evitar error 406)
+    const { data: gestor, error: gErr } = await sb.from('gestores')
+      .select('id, nombre, servicios')
+      .eq('auth_user_id', user.id)
+      .maybeSingle();
+
+    if (gestor) {
+      rol = 'gestor'; 
+      userId = gestor.id; 
+      userName = gestor.nombre || user.email.split('@')[0];
+      servicios = Array.isArray(gestor.servicios) ? gestor.servicios.map(String) : [];
     } else {
-      const {data:empresa,error:eErr}=await sb.from('empresas').select('id,nombre_comercial,servicios').eq('auth_user_id',user.id).single();
-      if(eErr||!empresa) throw new Error('No se encontró gestor ni empresa para este usuario.');
-      rol='empresa'; userId=empresa.id; userName=empresa.nombre_comercial||user.email.split('@')[0];
-      servicios=Array.isArray(empresa.servicios)?empresa.servicios.map(String):[];
+      // 2. Si no es gestor, probamos en EMPRESAS
+      const { data: empresa, error: eErr } = await sb.from('empresas')
+        .select('id, nombre_comercial, servicios')
+        .eq('auth_user_id', user.id)
+        .maybeSingle();
+
+      if (empresa) {
+        rol = 'empresa'; 
+        userId = empresa.id; 
+        userName = empresa.nombre_comercial || user.email.split('@')[0];
+        servicios = Array.isArray(empresa.servicios) ? empresa.servicios.map(String) : [];
+      } else {
+        // 3. Plan de emergencia: Si no aparece en ninguna tabla
+        hideEl('screen-login');
+        document.body.innerHTML = `
+          <div style="min-height:100vh;display:flex;items-center;justify-content:center;background:#060911;color:#c5d5e8;text-align:center;padding:40px;font-family:sans-serif">
+            <div>
+              <p style="font-size:1.2rem">⚠️ Perfil no encontrado para: <b>${user.email}</b></p>
+              <p style="color:#3d5a78;margin-bottom:20px">Contacta con soporte para que vinculen tu usuario.</p>
+              <button onclick="location.reload()" style="background:#172034;border:1px solid #27415f;color:#fff;padding:10px 20px;border-radius:8px;cursor:pointer">🔄 Reintentar</button>
+            </div>
+          </div>`;
+        return;
+      }
     }
 
     applyRoleUI(user.email);
-    // H-02/H-04: Promise.allSettled → si RLS bloquea marcas o empresas, la app
-    // sigue montando con los datos disponibles en lugar de romper silenciosamente
+    
+    // Carga de datos secundaria (Marcas y Empresas)
     const [marcasRes, empresasRes] = await Promise.allSettled([loadMarcas(), loadEmpresas()]);
-    if(marcasRes.status==='rejected')   toast('Aviso: no se pudieron cargar las marcas.','err');
-    if(empresasRes.status==='rejected') toast('Aviso: no se pudieron cargar las empresas.','err');
     fillReformaSelector();
 
     if(rtClientes) { sb.removeChannel(rtClientes); rtClientes=null; }
