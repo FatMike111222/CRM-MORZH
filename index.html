@@ -102,6 +102,25 @@
     #search-lead::placeholder { color:var(--muted); }
     #search-lead:focus { border-color:rgba(59,125,216,.45); }
 
+    /* ── T2: Filtros select combinados ── */
+    .filtro-sel {
+      font-family:'DM Mono',monospace; font-size:.63rem; font-weight:600; letter-spacing:.04em;
+      padding:5px 28px 5px 10px; border-radius:99px;
+      border:1px solid var(--bd); background:rgba(255,255,255,.03); color:var(--muted);
+      cursor:pointer; outline:none; appearance:none; -webkit-appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%233d5a78'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 10px center;
+      transition:border-color .15s, color .15s;
+      white-space:nowrap;
+    }
+    .filtro-sel:hover  { border-color:var(--bd2); color:var(--txt); }
+    .filtro-sel:focus  { border-color:rgba(59,125,216,.45); box-shadow:0 0 0 2px rgba(59,125,216,.1); }
+    .filtro-sel.activo { background-color:var(--s3); color:var(--hi); border-color:var(--bd2); }
+    .filtro-sel option { background:var(--s1); color:var(--txt); }
+    @media(max-width:767px) {
+      .filtro-sel { font-size:.7rem; padding:7px 28px 7px 12px; }
+    }
+
     /* ── Tel popup ── */
     #tel-popup { position:fixed; background:var(--s1); border:1px solid var(--bd2); border-radius:10px; box-shadow:0 10px 28px rgba(0,0,0,.55); padding:6px 0; z-index:500; min-width:155px; display:none; }
     #tel-popup.open { display:block; animation:fadein .14s ease both; }
@@ -224,7 +243,15 @@
 
       /* M-02: FAB visible en móvil solo cuando JS añade clase .gestor-fab */
       #fab-nuevo-lead.gestor-fab { display: flex; }
+      /* M-02: FAB oculto cuando estamos en la vista formulario */
+      #fab-nuevo-lead.gestor-fab.en-formulario { display: none; }
+      /* T1: botón volver al dashboard — visible en móvil en la cabecera del form */
+      #btn-volver-dash { display: flex; }
     }
+
+    /* T1: btn-volver-dash visible solo en móvil */
+    #btn-volver-dash { display: none; }
+    @media (max-width: 767px) { #btn-volver-dash { display: flex; } }
 
     /* M-01: Bottom Navigation Bar — solo móvil */
     #bottom-nav {
@@ -512,6 +539,19 @@
 
     <!-- ══ TAB 1: FORMULARIO (solo gestores) ══ -->
     <div id="tab-form" class="tab-panel">
+      <!-- T1: botón volver — visible en móvil (topbar oculto en móvil) -->
+      <button id="btn-volver-dash" aria-label="Volver al dashboard"
+        style="align-items:center;gap:8px;margin-bottom:16px;
+               background:rgba(255,255,255,.04);border:1px solid var(--bd);
+               border-radius:9px;color:var(--txt);font-family:'DM Sans',sans-serif;
+               font-size:.82rem;font-weight:500;padding:9px 16px;cursor:pointer;
+               transition:border-color .18s,color .18s;width:fit-content;">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Volver al Dashboard
+      </button>
       <div class="pcard" style="max-width:720px;margin:0 auto">
         <div class="pcard-head">
           <div>
@@ -600,14 +640,36 @@
 
       <!-- stats-wrap eliminado — dashboard limpio (Fase 1) -->
 
-      <!-- Filtros + buscador -->
+      <!-- T2: Filtros combinados AND — Estado + Empresa + Marca + Buscador -->
       <div style="margin-bottom:14px;display:flex;flex-direction:column;gap:8px">
-        <!-- Fila estados + papelera -->
-        <div class="filtros-bar" id="filtros-estado-row"></div>
-        <!-- Fila sector (gestor) + buscador -->
-        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-          <div class="filtros-bar" id="filtros-sector-row" style="flex:1;min-width:0"></div>
-          <input id="search-lead" type="text" placeholder="Buscar: nombre, tel, población, marca…"/>
+        <!-- Fila 1: selects de filtro -->
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+          <!-- Estado -->
+          <select id="filtro-estado-sel" class="filtro-sel"
+            onchange="window.__feSel(this.value)"
+            title="Filtrar por estado">
+            <option value="">Estado: Todos</option>
+          </select>
+          <!-- Empresa (solo gestor, se muestra/oculta desde JS) -->
+          <select id="filtro-empresa-sel" class="filtro-sel" style="display:none"
+            onchange="window.__feEmp(this.value)"
+            title="Filtrar por empresa">
+            <option value="">Empresa: Todas</option>
+          </select>
+          <!-- Marca -->
+          <select id="filtro-marca-sel" class="filtro-sel"
+            onchange="window.__feMrk(this.value)"
+            title="Filtrar por marca">
+            <option value="">Marca: Todas</option>
+          </select>
+          <!-- Papelera (solo gestor) -->
+          <button id="filtro-papelera-btn" class="sf-btn papelera" style="display:none"
+            onclick="window.__fp()">🗑 Papelera<span id="filtro-papelera-n" style="opacity:.7;margin-left:3px"></span></button>
+        </div>
+        <!-- Fila 2: buscador libre -->
+        <div>
+          <input id="search-lead" type="text" placeholder="Buscar: nombre, tel, población…"
+            style="width:100%;max-width:420px"/>
         </div>
       </div>
 
@@ -874,6 +936,7 @@
 
   // ─── FILTROS ──────────────────────────────────────────────────
   let filtroEstado = null, filtroSector = null, filtroPapelera = false, filtroBusqueda = '';
+  let filtroEmpresa = null, filtroMarca = null; // T2: filtros combinados AND
   let _dashLoading = false; // H-08: evita loadDashboard() concurrentes
   let _lastSubmit  = 0;    // H-11: timestamp último envío (cooldown anti-spam)
   let _commentCooldown = false; // H-11: anti-spam comentarios
@@ -1144,7 +1207,7 @@
 
     toast('Estado → '+nuevoEstado);
     patchTableRow(activeClienteId, nuevoEstado);
-    renderFiltrosEstado();
+    renderFiltrosSelect(); // T2
   }
 
   $('modal-close-btn').addEventListener('click', closeModal);
@@ -1756,6 +1819,7 @@
     if($('kpi-row')) $('kpi-row').innerHTML='<div class="kpi"><p class="kpi-lbl">Cargando…</p></div>';
     clientesConNuevoComentario=new Set();
     filtroEstado=null; filtroSector=null; filtroPapelera=false; filtroBusqueda='';
+    filtroEmpresa=null; filtroMarca=null;
     const si=$('search-lead'); if(si) si.value='';
 
     const selectCols = rol==='empresa'
@@ -1826,7 +1890,9 @@
     return allLeads.filter(c=>{
       if(filtroPapelera) return c.estado==='BORRADO';
       if(c.estado==='BORRADO') return false;
-      if(filtroEstado && c.estado!==filtroEstado) return false;
+      if(filtroEstado  && c.estado!==filtroEstado) return false;
+      if(filtroEmpresa && c.empresa_id!==filtroEmpresa) return false;
+      if(filtroMarca   && c.marca_id!==filtroMarca)   return false;
       if(filtroSector) { const s=sectorDeReforma(c.tipo_reforma); if(s!==filtroSector) return false; }
       if(q) {
         const mn=getMarcaNombre(c.marca_id).toLowerCase();
@@ -1858,10 +1924,10 @@
       const pa = ia === -1 ? 999 : ia;
       const pb = ib === -1 ? 999 : ib;
       if (pa !== pb) return pa - pb;
-      // Sub-orden: más reciente primero
+      // Sub-orden FIFO: más antiguo primero (First In, First Out)
       const da = a.created_at || '';
       const db = b.created_at || '';
-      return da > db ? -1 : da < db ? 1 : 0;
+      return da < db ? -1 : da > db ? 1 : 0;
     });
   }
 
@@ -1869,75 +1935,92 @@
   function renderDashboard() {
     const vis=leadsVisibles();
     renderKPIs(vis);
-    renderFiltrosEstado();
-    renderFiltrosSector();
+    renderFiltrosSelect(); // T2: filtros combinados AND
     renderTable(sortedLeads(vis));
-    // (renderSortHeaders / renderMobileSortBar eliminados — orden fijo de embudo)
   }
 
-  function renderFiltrosEstado() {
-    const row=$('filtros-estado-row'); if(!row) return;
-    const activos=allLeads.filter(c=>c.estado!=='BORRADO');
-    const nBorr=allLeads.filter(c=>c.estado==='BORRADO').length;
 
-    let html=`<button class="sf-btn${!filtroEstado&&!filtroPapelera?' active':''}" onclick="window.__fe(null)">TODOS</button>`;
-    ESTADOS.filter(e=>e!=='BORRADO').forEach(e=>{
-      const n=activos.filter(c=>c.estado===e).length; if(!n) return;
-      const act=!filtroPapelera&&filtroEstado===e?' active':'';
-      html+=`<button class="sf-btn${act}" onclick="window.__fe('${e.replace(/'/g,"\\'")}')">
-        <span class="pill ${ESTADO_CLS[e]||''}" style="font-size:.55rem;padding:1px 5px;margin-right:4px">${n}</span>${esc(e)}
-      </button>`;
-    });
-    if(rol==='gestor') {
-      html+=`<button class="sf-btn papelera${filtroPapelera?' active':''}" onclick="window.__fp()">🗑 Papelera${nBorr?` <span style="opacity:.7;margin-left:3px">${nBorr}</span>`:''}</button>`;
+  // ─── T2: RENDER FILTROS SELECT (Estado + Empresa + Marca) ──────
+  function renderFiltrosSelect() {
+    // ── Select Estado ──────────────────────────────────────────
+    const selE=$('filtro-estado-sel');
+    if(selE) {
+      const activos=allLeads.filter(c=>c.estado!=='BORRADO');
+      let html='<option value="">Estado: Todos</option>';
+      ESTADOS.filter(e=>e!=='BORRADO').forEach(e=>{
+        const n=activos.filter(c=>c.estado===e).length; if(!n) return;
+        html+=`<option value="${esc(e)}"${filtroEstado===e?' selected':''}>${esc(e)} (${n})</option>`;
+      });
+      selE.innerHTML=html;
+      selE.classList.toggle('activo', !!filtroEstado);
     }
-    row.innerHTML=html;
-  }
 
-  function renderFiltrosSector() {
-    const row=$('filtros-sector-row'); if(!row||rol!=='gestor') return;
-    const sectores=sectoresDelUsuario();
-    if(sectores.length<2) { row.innerHTML=''; return; }
-    let html=`<span style="font-size:.62rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-right:4px">Sector:</span>`;
-    html+=`<button class="sf-btn${!filtroSector?' active':''}" onclick="window.__fs(null)">Todos</button>`;
-    sectores.forEach(s=>{ html+=`<button class="sf-btn${filtroSector===s?' active':''}" onclick="window.__fs('${s}')">${esc(s.charAt(0)+s.slice(1).toLowerCase())}</button>`; });
-    row.innerHTML=html;
-  }
-
-  window.__fe = s  => { filtroEstado=s; filtroPapelera=false; renderDashboard(); };
-
-  // ── Combobox de marcas ──────────────────────────────────────
-  window.__filterMarcas = function(q) {
-    const dd=$('marca-dropdown'); if(!dd) return;
-    const sectorActivo=$('f-sector')?.value||'';
-    const matches=Object.entries(marcasMap)
-      .filter(([k])=>typeof k==='string'&&k.length>10) // solo UUIDs
-      .filter(([k])=>!sectorActivo||!marcasSectorMap[k]||marcasSectorMap[k]===sectorActivo)
-      .filter(([,v])=>!q||v.toLowerCase().includes(q.toLowerCase()))
-      .slice(0,20);
-    if(!matches.length) {
-      dd.innerHTML='<div class="mopt-empty">Sin resultados</div>';
-    } else {
-      const current=$('f-marca').value;
-      dd.innerHTML=matches.map(([id,nombre])=>
-        `<div class="mopt${id===current?' selected':''}" data-id="${esc(id)}" data-nom="${esc(nombre)}"
-          onmousedown="event.preventDefault();window.__selectMarca('${esc(id)}','${esc(nombre)}')">${esc(nombre)}</div>`
-      ).join('');
+    // ── Papelera btn (solo gestor) ──────────────────────────────
+    const btnP=$('filtro-papelera-btn');
+    const nBorrP=allLeads.filter(c=>c.estado==='BORRADO').length;
+    if(btnP) {
+      btnP.style.display=rol==='gestor'?'':'none';
+      btnP.classList.toggle('active', filtroPapelera);
+      const nEl=$('filtro-papelera-n');
+      if(nEl) nEl.textContent=nBorrP?nBorrP:'';
     }
-    dd.style.display='block';
-  };
-  window.__selectMarca = function(id, nombre) {
-    $('f-marca').value=id;
-    $('f-marca-input').value=nombre;
-    $('marca-dropdown').style.display='none';
-  };
-  // Cerrar dropdown al hacer clic fuera
-  document.addEventListener('click', e=>{
-    const dd=$('marca-dropdown');
-    if(dd && !dd.contains(e.target) && e.target.id!=='f-marca-input') dd.style.display='none';
-  });
-  window.__fp = () => { filtroPapelera=!filtroPapelera; filtroEstado=null; renderDashboard(); };
-  window.__fs = s  => { filtroSector=s; renderDashboard(); };
+
+    // ── Select Empresa (solo gestor) ────────────────────────────
+    const selEmp=$('filtro-empresa-sel');
+    if(selEmp) {
+      if(rol!=='gestor') { selEmp.style.display='none'; }
+      else {
+        const empSet=new Map();
+        allLeads.filter(c=>c.estado!=='BORRADO').forEach(c=>{
+          if(c.empresa_id && !empSet.has(c.empresa_id)) {
+            empSet.set(c.empresa_id,
+              empresasMap[c.empresa_id]||
+              empresasMap[String(c.empresa_id).trim().toLowerCase()]||
+              c.empresa_id.slice(0,8)+'…');
+          }
+        });
+        if(empSet.size===0) { selEmp.style.display='none'; }
+        else {
+          selEmp.style.display='';
+          let htmlE='<option value="">Empresa: Todas</option>';
+          empSet.forEach((nom,id)=>{
+            htmlE+=`<option value="${esc(id)}"${filtroEmpresa===id?' selected':''}>${esc(nom)}</option>`;
+          });
+          selEmp.innerHTML=htmlE;
+          selEmp.classList.toggle('activo', !!filtroEmpresa);
+        }
+      }
+    }
+
+    // ── Select Marca ───────────────────────────────────────────
+    const selM=$('filtro-marca-sel');
+    if(selM) {
+      const marcaSet=new Map();
+      allLeads.filter(c=>c.estado!=='BORRADO').forEach(c=>{
+        if(c.marca_id && !marcaSet.has(c.marca_id)) {
+          const nom=getMarcaNombre(c.marca_id);
+          if(nom) marcaSet.set(c.marca_id, nom);
+        }
+      });
+      if(marcaSet.size===0) { selM.style.display='none'; }
+      else {
+        selM.style.display='';
+        let htmlM='<option value="">Marca: Todas</option>';
+        marcaSet.forEach((nom,id)=>{
+          htmlM+=`<option value="${esc(id)}"${filtroMarca===id?' selected':''}>${esc(nom)}</option>`;
+        });
+        selM.innerHTML=htmlM;
+        selM.classList.toggle('activo', !!filtroMarca);
+      }
+    }
+  }
+
+  // T2: handlers de los selects
+  window.__feSel = v => { filtroEstado=v||null; filtroPapelera=false; renderDashboard(); };
+  window.__feEmp = v => { filtroEmpresa=v||null; renderDashboard(); };
+  window.__feMrk = v => { filtroMarca=v||null; renderDashboard(); };
+
+    window.__fp = () => { filtroPapelera=!filtroPapelera; filtroEstado=null; renderDashboard(); };
 
   $('search-lead').addEventListener('input', function(){ filtroBusqueda=this.value; renderKPIs(leadsVisibles()); renderTable(leadsVisibles()); });
 
@@ -2151,7 +2234,7 @@
 
       toast('Estado actualizado → ' + nuevoEstado);
       renderKPIs(leadsVisibles());
-      renderFiltrosEstado();
+      renderFiltrosSelect(); // T2
 
     } catch (err) {
       // Revertir selección visual al estado anterior
@@ -2341,6 +2424,9 @@
     document.querySelectorAll('.bnav-btn[data-tab]').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.tab === tabId);
     });
+    // T1: ocultar FAB cuando estamos en la vista del formulario
+    const fab = $('fab-nuevo-lead');
+    if(fab) fab.classList.toggle('en-formulario', tabId === 'tab-form');
   }
   // Exponer para que activateAppTab() pueda sincronizarlo
   window.__syncBottomNav = syncBottomNav;
@@ -2361,6 +2447,9 @@
     if(fab) fab.classList.toggle('gestor-fab', isGestor);
   }
   window.__applyBottomNavRole = applyBottomNavRole;
+
+  // T1: Botón Volver al Dashboard (móvil)
+  $('btn-volver-dash')?.addEventListener('click', () => navigate('/dashboard'));
 
   // M-02: FAB → navegar a formulario
   $('fab-nuevo-lead')?.addEventListener('click', () => {
