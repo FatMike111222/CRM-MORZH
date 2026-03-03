@@ -121,6 +121,11 @@
       .filtro-sel { font-size:.7rem; padding:7px 28px 7px 12px; }
     }
 
+    /* T5: semáforo fechas de próxima acción */
+    .fecha-verde { color: #4ade80; }
+    .fecha-rojo  { color: #f87171; font-weight: 700; }
+    .fecha-nil   { color: var(--muted); }
+
     /* ── Tel popup ── */
     #tel-popup { position:fixed; background:var(--s1); border:1px solid var(--bd2); border-radius:10px; box-shadow:0 10px 28px rgba(0,0,0,.55); padding:6px 0; z-index:500; min-width:155px; display:none; }
     #tel-popup.open { display:block; animation:fadein .14s ease both; }
@@ -249,9 +254,32 @@
       #btn-volver-dash { display: flex; }
     }
 
-    /* T1: btn-volver-dash visible solo en móvil */
+    /* T2: btn-volver-dash — botón flotante fijo, solo visible en móvil */
     #btn-volver-dash { display: none; }
-    @media (max-width: 767px) { #btn-volver-dash { display: flex; } }
+    @media (max-width: 767px) {
+      #btn-volver-dash {
+        display: flex;
+        position: fixed;
+        top: 12px; left: 12px;
+        z-index: 200;
+        align-items: center; gap: 6px;
+        background: rgba(20,26,36,.88);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--bd2);
+        border-radius: 10px;
+        color: var(--txt);
+        font-family: 'DM Sans', sans-serif;
+        font-size: .82rem; font-weight: 600;
+        padding: 9px 14px;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(0,0,0,.45);
+        transition: border-color .15s, background .15s;
+      }
+      #btn-volver-dash:hover { border-color: var(--hi); background: rgba(30,38,52,.95); }
+      /* T2: padding-top extra para que el contenido del form no quede bajo el botón flotante */
+      #tab-form { padding-top: 52px; }
+    }
 
     /* M-01: Bottom Navigation Bar — solo móvil */
     #bottom-nav {
@@ -455,8 +483,6 @@
     .upload-progress { height: 3px; background: var(--bd); border-radius: 99px; margin-top: 6px; overflow: hidden; }
     .upload-progress-bar { height: 100%; background: linear-gradient(90deg, var(--blue), var(--blue2)); border-radius: 99px; transition: width .3s ease; }
 
-    .fecha-ok  { color: #4ade80; font-weight: 600; }
-    .fecha-bad { color: #f87171; font-weight: 600; }
     .fecha-nil { color: var(--muted); }
 
     .destaque-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
@@ -540,12 +566,7 @@
     <!-- ══ TAB 1: FORMULARIO (solo gestores) ══ -->
     <div id="tab-form" class="tab-panel">
       <!-- T1: botón volver — visible en móvil (topbar oculto en móvil) -->
-      <button id="btn-volver-dash" aria-label="Volver al dashboard"
-        style="align-items:center;gap:8px;margin-bottom:16px;
-               background:rgba(255,255,255,.04);border:1px solid var(--bd);
-               border-radius:9px;color:var(--txt);font-family:'DM Sans',sans-serif;
-               font-size:.82rem;font-weight:500;padding:9px 16px;cursor:pointer;
-               transition:border-color .18s,color .18s;width:fit-content;">
+      <button id="btn-volver-dash" aria-label="Volver al dashboard">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
              stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
           <polyline points="15 18 9 12 15 6"/>
@@ -650,18 +671,10 @@
             title="Filtrar por estado">
             <option value="">Estado: Todos</option>
           </select>
-          <!-- Empresa (solo gestor, se muestra/oculta desde JS) -->
-          <select id="filtro-empresa-sel" class="filtro-sel" style="display:none"
-            onchange="window.__feEmp(this.value)"
-            title="Filtrar por empresa">
-            <option value="">Empresa: Todas</option>
-          </select>
-          <!-- Marca -->
-          <select id="filtro-marca-sel" class="filtro-sel"
-            onchange="window.__feMrk(this.value)"
-            title="Filtrar por marca">
-            <option value="">Marca: Todas</option>
-          </select>
+          <!-- T1: Empresa — botones pill (solo gestor, JS gestiona visibilidad) -->
+          <div id="filtro-empresa-row" class="filtros-bar" style="display:none"></div>
+          <!-- T1: Marca — botones pill -->
+          <div id="filtro-marca-row" class="filtros-bar"></div>
           <!-- Papelera (solo gestor) -->
           <button id="filtro-papelera-btn" class="sf-btn papelera" style="display:none"
             onclick="window.__fp()">🗑 Papelera<span id="filtro-papelera-n" style="opacity:.7;margin-left:3px"></span></button>
@@ -753,6 +766,9 @@
             <span class="destaque-val" id="destaque-fecha">—</span>
             <span class="destaque-sub" id="destaque-fecha-sub"></span>
             <input id="edit-proxima-accion" type="date" class="info-item-input" style="margin-top:8px"/>
+            <select id="edit-tipo-accion" class="info-item-input" style="margin-top:6px;font-size:.75rem">
+              <option value="">— Seleccionar tipo —</option><option value="Primera llamada">Primera llamada</option><option value="Contactar por WhatsApp">Contactar por WhatsApp</option><option value="Agendar visita">Agendar visita</option><option value="Seguimiento tras visita">Seguimiento tras visita</option><option value="Enviar presupuesto">Enviar presupuesto</option><option value="Seguimiento de presupuesto">Seguimiento de presupuesto</option><option value="Pedir documentación / fotos">Pedir documentación / fotos</option><option value="Agendar inicio de obra/servicio">Agendar inicio de obra/servicio</option><option value="Seguimiento general">Seguimiento general</option><option value="Otro">Otro</option>
+            </select>
           </div>
           <div class="destaque-card importe">
             <span class="destaque-lbl">💶 Importe Presupuesto</span>
@@ -785,6 +801,11 @@
             <div>
               <label class="field-label" style="font-size:.6rem">Subservicio</label>
               <select id="edit-reforma" class="edit-field"><option value="">— Sin cambio —</option></select>
+            </div>
+            <!-- T6b: reasignación empresa — solo gestor -->
+            <div id="edit-empresa-wrap">
+              <label class="field-label" style="font-size:.6rem">Empresa asignada</label>
+              <select id="edit-empresa-modal" class="edit-field"><option value="">— Sin empresa —</option></select>
             </div>
           </div>
         </div>
@@ -972,8 +993,10 @@
     const h=new Date().toISOString().slice(0,10), atrasado=v<h;
     const [y,m,d]=v.split('-');
     const leg=new Date(+y,+m-1,+d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'});
-    return atrasado?{txt:leg,cls:'fecha-bad',sub:'⚠ Atrasado'}:{txt:leg,cls:'fecha-ok',sub:'✓ A tiempo'};
+    // T5: rojo si caducada, verde si hoy o futuro
+    return atrasado ? {txt:leg,cls:'fecha-rojo',sub:'⚠️ Caducada'} : {txt:leg,cls:'fecha-verde',sub:v===h?'Hoy':'Próximamente'};
   }
+   }
 
   // Resolución de marca con normalización de ID
   function getMarcaNombre(marcaId) {
@@ -1044,6 +1067,7 @@
     const fv=cliente.fecha_proxima_accion||null, {txt,cls:fc,sub}=semaforo(fv);
     $('destaque-fecha').textContent=txt; $('destaque-fecha').className='destaque-val '+fc;
     $('destaque-fecha-sub').textContent=sub; $('edit-proxima-accion').value=fv||'';
+    if($('edit-tipo-accion')) $('edit-tipo-accion').value=cliente.tipo_proxima_accion||'';
 
     // Importe
     const imp=cliente.importe_presupuesto;
@@ -1064,6 +1088,24 @@
     $('edit-pobl').value=cliente.poblacion||'';
 
     // Poblar subservicio del modal
+    // T6b: poblar select empresa (solo gestor)
+    const empSelModal=$('edit-empresa-modal');
+    const empWrap=$('edit-empresa-wrap');
+    if(empSelModal && empWrap) {
+      if(rol!=='gestor') { empWrap.style.display='none'; }
+      else {
+        empWrap.style.display='';
+        let htmlEmp='<option value="">— Sin empresa —</option>';
+        Object.entries(empresasMap).forEach(([id,nom])=>{
+          if(typeof id==='string' && id.length>10) { // solo UUIDs, no aliases
+            htmlEmp+=`<option value="${esc(id)}"${cliente.empresa_id===id?' selected':''}>${esc(nom)}</option>`;
+          }
+        });
+        empSelModal.innerHTML=htmlEmp;
+        empSelModal.addEventListener('change', markDirty, {once:true});
+      }
+    }
+
     const erSel=$('edit-reforma');
     if(erSel) {
       const allSubs=Object.values(SECTOR_MAP).flat();
@@ -1071,7 +1113,7 @@
         allSubs.map(s=>`<option value="${esc(s)}"${s===cliente.tipo_reforma?' selected':''}>${esc(s)}</option>`).join('');
     }
 
-    const editFields=['edit-nombre','edit-tel','edit-email','edit-pobl','edit-reforma'];
+    const editFields=['edit-nombre','edit-tel','edit-email','edit-pobl','edit-reforma','edit-empresa-modal'];
     if(rol==='gestor') {
       $('btn-modal-edit').style.display='';
       $('btn-modal-del').style.display='';
@@ -1087,7 +1129,7 @@
     // Save bar
     $('save-bar').classList.remove('visible');
     $('save-ok').style.display='none'; $('save-err').style.display='none';
-    ['edit-importe','edit-proxima-accion'].forEach(id=>$(id).addEventListener('input',markDirty,{once:true}));
+    ['edit-importe','edit-proxima-accion','edit-tipo-accion'].forEach(id=>{const _e=$(id);if(_e)_e.addEventListener('change',markDirty,{once:true});});
 
     // Pestaña Cambios: solo visible para gestor — empresa no sabe que existe
     const _mtabC=$('mtab-cambios');
@@ -1231,7 +1273,8 @@
     const _editorId1 = _sess1?.user?.id ?? authUserId ?? null;
 
     // Payload: importe, fecha y datos de cliente — el estado ya lo gestiona autoSaveEstado
-    const payload={ importe_presupuesto:importeVal, fecha_proxima_accion:fechaAccionVal, ultimo_editor_id:_editorId1 };
+    const tipoAccionVal=$('edit-tipo-accion')?$('edit-tipo-accion').value||null:null;
+    const payload={ importe_presupuesto:importeVal, fecha_proxima_accion:fechaAccionVal, tipo_proxima_accion:tipoAccionVal, ultimo_editor_id:_editorId1 };
     if(editOpen) {
       const n=$('edit-nombre').value.trim(), t=$('edit-tel').value.trim();
       const em=$('edit-email').value.trim(), p=$('edit-pobl').value.trim();
@@ -1241,6 +1284,8 @@
       if(em) payload.email=em;
       if(p) payload.poblacion=p;
       if(rf) payload.tipo_reforma=rf;
+      const empM=$('edit-empresa-modal'); const empVal=empM?empM.value||null:undefined;
+      if(empVal!==undefined) payload.empresa_id=empVal;
     }
 
     try {
@@ -1823,8 +1868,8 @@
     const si=$('search-lead'); if(si) si.value='';
 
     const selectCols = rol==='empresa'
-      ? 'id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion,marcas(id,nombre)'
-      : 'id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion';
+      ? 'id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion,tipo_proxima_accion,marcas(id,nombre)'
+      : 'id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion,tipo_proxima_accion';
 
     function buildQ(limit=null) {
       let q=sb.from('clientes').select(selectCols).order('created_at',{ascending:false});
@@ -1940,6 +1985,22 @@
   }
 
 
+
+  // ─── T5: Emojis por tipo de próxima acción ────────────────────
+  const ACCION_EMOJI = {
+    'Primera llamada':                 '📞',
+    'Contactar por WhatsApp':          '💬',
+    'Agendar visita':                  '🗓️',
+    'Seguimiento tras visita':         '🔄',
+    'Enviar presupuesto':              '📋',
+    'Seguimiento de presupuesto':      '💰',
+    'Pedir documentación / fotos':     '📁',
+    'Agendar inicio de obra/servicio': '🔨',
+    'Seguimiento general':             '📌',
+    'Otro':                            '⚙️',
+  };
+  function accionEmoji(tipo) { return ACCION_EMOJI[tipo]||''; }
+
   // ─── T2: RENDER FILTROS SELECT (Estado + Empresa + Marca) ──────
   function renderFiltrosSelect() {
     // ── Select Estado ──────────────────────────────────────────
@@ -1965,10 +2026,10 @@
       if(nEl) nEl.textContent=nBorrP?nBorrP:'';
     }
 
-    // ── Select Empresa (solo gestor) ────────────────────────────
-    const selEmp=$('filtro-empresa-sel');
-    if(selEmp) {
-      if(rol!=='gestor') { selEmp.style.display='none'; }
+    // ── T1: Botones Empresa (solo gestor) ──────────────────────
+    const rowEmp=$('filtro-empresa-row');
+    if(rowEmp) {
+      if(rol!=='gestor') { rowEmp.style.display='none'; }
       else {
         const empSet=new Map();
         allLeads.filter(c=>c.estado!=='BORRADO').forEach(c=>{
@@ -1979,22 +2040,22 @@
               c.empresa_id.slice(0,8)+'…');
           }
         });
-        if(empSet.size===0) { selEmp.style.display='none'; }
+        if(empSet.size===0) { rowEmp.style.display='none'; }
         else {
-          selEmp.style.display='';
-          let htmlE='<option value="">Empresa: Todas</option>';
+          rowEmp.style.display='flex';
+          let hE=`<span style="font-size:.6rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-right:2px;align-self:center">Emp:</span>`;
+          hE+=`<button class="sf-btn${!filtroEmpresa?' active':''}" onclick="window.__feEmp(null)">Todas</button>`;
           empSet.forEach((nom,id)=>{
-            htmlE+=`<option value="${esc(id)}"${filtroEmpresa===id?' selected':''}>${esc(nom)}</option>`;
+            hE+=`<button class="sf-btn${filtroEmpresa===id?' active':''}" onclick="window.__feEmp('${id.replace(/'/g,"\'")}')">${esc(nom)}</button>`;
           });
-          selEmp.innerHTML=htmlE;
-          selEmp.classList.toggle('activo', !!filtroEmpresa);
+          rowEmp.innerHTML=hE;
         }
       }
     }
 
-    // ── Select Marca ───────────────────────────────────────────
-    const selM=$('filtro-marca-sel');
-    if(selM) {
+    // ── T1: Botones Marca ──────────────────────────────────────
+    const rowMrk=$('filtro-marca-row');
+    if(rowMrk) {
       const marcaSet=new Map();
       allLeads.filter(c=>c.estado!=='BORRADO').forEach(c=>{
         if(c.marca_id && !marcaSet.has(c.marca_id)) {
@@ -2002,15 +2063,15 @@
           if(nom) marcaSet.set(c.marca_id, nom);
         }
       });
-      if(marcaSet.size===0) { selM.style.display='none'; }
+      if(marcaSet.size===0) { rowMrk.style.display='none'; }
       else {
-        selM.style.display='';
-        let htmlM='<option value="">Marca: Todas</option>';
+        rowMrk.style.display='flex';
+        let hM=`<span style="font-size:.6rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-right:2px;align-self:center">Marca:</span>`;
+        hM+=`<button class="sf-btn${!filtroMarca?' active':''}" onclick="window.__feMrk(null)">Todas</button>`;
         marcaSet.forEach((nom,id)=>{
-          htmlM+=`<option value="${esc(id)}"${filtroMarca===id?' selected':''}>${esc(nom)}</option>`;
+          hM+=`<button class="sf-btn${filtroMarca===id?' active':''}" onclick="window.__feMrk('${id.replace(/'/g,"\'")}')">${esc(nom)}</button>`;
         });
-        selM.innerHTML=htmlM;
-        selM.classList.toggle('activo', !!filtroMarca);
+        rowMrk.innerHTML=hM;
       }
     }
   }
@@ -2028,12 +2089,11 @@
   // Devuelve un badge HTML si el lead lleva más de X días sin modificar
   function dormidoBadge(updated_at, estado) {
     if(!updated_at) return '';
-    // Solo alertar en estados activos (no cerrados ni borrados)
-    const estadosActivos=['PENDIENTE DE LLAMAR','VISITA PROGRAMADA','SEGUIMIENTO','PRESUPUESTO ENVIADO'];
-    if(!estadosActivos.includes(estado)) return '';
+    // T5: semáforo dormidos solo en PENDIENTE DE LLAMAR (2d naranja / 5d rojo)
+    if(estado !== 'PENDIENTE DE LLAMAR') return '';
     const dias=Math.floor((Date.now()-new Date(updated_at).getTime())/(1000*60*60*24));
-    if(dias>=15) return `<span class="dormido-badge dormido-critico" title="${dias} días sin cambios">🔴 ${dias}d</span>`;
-    if(dias>=7)  return `<span class="dormido-badge dormido-warn"    title="${dias} días sin cambios">🟠 ${dias}d</span>`;
+    if(dias>=5) return `<span class="dormido-badge dormido-critico" title="${dias} días sin cambios">🔴 ${dias}d dormido</span>`;
+    if(dias>=2) return `<span class="dormido-badge dormido-warn"    title="${dias} días sin cambios">🟠 ${dias}d dormido</span>`;
     return '';
   }
 
@@ -2078,6 +2138,8 @@
       const hasNew=clientesConNuevoComentario.has(c.id);
       const notif=hasNew?'<span class="new-comment-dot">nuevo comentario</span>':'<span class="row-hint">Ver ficha →</span>';
       const {txt:fechaTxt,cls:fechaCls}=semaforo(c.fecha_proxima_accion||null);
+      const tipoEmoji=accionEmoji(c.tipo_proxima_accion||'');
+      const tipoLabel=c.tipo_proxima_accion?`<span style="display:block;font-size:.68rem;color:var(--muted);margin-top:2px">${tipoEmoji} ${esc(c.tipo_proxima_accion)}</span>`:'';
       const fechaEntrada=c.created_at?fmtDate(c.created_at):'—';
 
       // Celda teléfono clicable
@@ -2092,16 +2154,19 @@
         ?`<td style="font-size:.8rem">${esc(empNom)}</td>`
         :'';
 
-      // Botón eliminar solo gestor
-      const delBtn=rol==='gestor'
+      // Botón eliminar: solo gestor Y solo si no está ya en papelera (T3)
+      const delBtn=(rol==='gestor' && c.estado!=='BORRADO')
         ?`<button class="btn-row-del" onclick="event.stopPropagation();_rowDel('${esc(c.id)}')" title="Mover a papelera">🗑</button>`
         :'';
 
-      // Celda estado: select interactivo para empresa, pill estático para gestor
-      const estadosEmpresa=ESTADOS.filter(e=>!['BORRADO','PENDIENTE DE ASIGNAR'].includes(e));
-      const estadoCell=rol==='empresa'
-        ? `<select class="estado-select ${cls}" data-id="${c.id}" onchange="event.stopPropagation();window._updateEstado('${c.id}',this)" onclick="event.stopPropagation()" title="Cambiar estado">${estadosEmpresa.map(e=>`<option value="${e}"${e===c.estado?' selected':''}>${e}</option>`).join('')}</select>`
-        : `<span class="pill ${cls}">${esc(c.estado||'—')}</span>`;
+      // T6a: select estado interactivo para AMBOS roles — empresa no ve BORRADO/PENDIENTE_ASIGNAR
+      const _estadosGestor=ESTADOS.filter(e=>e!=='BORRADO');
+      const _estadosEmpresa=ESTADOS.filter(e=>!['BORRADO','PENDIENTE DE ASIGNAR'].includes(e));
+      const _optsEstado=(rol==='gestor'?_estadosGestor:_estadosEmpresa)
+        .map(e=>`<option value="${e}"${e===c.estado?' selected':''}>${e}</option>`).join('');
+      const estadoCell=`<select class="estado-select ${cls}" data-id="${c.id}"
+        onchange="event.stopPropagation();window._updateEstado('${c.id}',this)"
+        onclick="event.stopPropagation()" title="Cambiar estado">${_optsEstado}</select>`;
 
       // ── Fila tabla (desktop) ──
       rowsHTML.push(`
@@ -2113,20 +2178,17 @@
           ${empCell}
           <td class="td-marca">${marcaNom}</td>
           <td class="td-estado">${estadoCell}</td>
-          <td class="td-fecha"><span class="${fechaCls}" style="font-size:.78rem;white-space:nowrap">${esc(fechaTxt)}</span></td>
+          <td class="td-fecha"><span class="${fechaCls}" style="font-size:.78rem;white-space:nowrap">${esc(fechaTxt)}</span>${tipoLabel}</td>
           <td class="td-notif">${notif}</td>
           <td class="td-del">${delBtn}</td>
         </tr>`);
 
-      // ── Card móvil ──
-      const cardEstado = rol==='empresa'
-        ? `<select class="estado-select ${cls}" data-id="${c.id}"
-             onchange="event.stopPropagation();window._updateEstado('${c.id}',this)"
-             onclick="event.stopPropagation()">${
-               ESTADOS.filter(e=>!['BORRADO','PENDIENTE DE ASIGNAR'].includes(e))
-                 .map(e=>`<option value="${esc(e)}"${e===c.estado?' selected':''}>${esc(e)}</option>`).join('')
-             }</select>`
-        : `<span class="pill ${cls}">${esc(c.estado||'—')}</span>`;
+      // ── Card móvil — T6a: select para ambos roles ──
+      const _optsCardEstado=(rol==='gestor'?_estadosGestor:_estadosEmpresa)
+        .map(e=>`<option value="${esc(e)}"${e===c.estado?' selected':''}>${esc(e)}</option>`).join('');
+      const cardEstado=`<select class="estado-select ${cls}" data-id="${c.id}"
+        onchange="event.stopPropagation();window._updateEstado('${c.id}',this)"
+        onclick="event.stopPropagation()">${_optsCardEstado}</select>`;
 
       cardsHTML.push(`
         <div class="lead-card" data-id="${esc(c.id)}">
@@ -2162,7 +2224,7 @@
     // Click en cards móvil → abrir modal
     $('cards-body').querySelectorAll('.lead-card').forEach(card=>{
       card.addEventListener('click',e=>{
-        if(e.target.closest('.tel-cell')||e.target.closest('.estado-select')) return;
+        if(e.target.closest('.tel-cell')||e.target.closest('.estado-select')||e.target.closest('.btn-row-del')) return;
         const id=card.dataset.id;
         const cliente=allLeads.find(c=>c.id===id);
         if(!cliente) return;
