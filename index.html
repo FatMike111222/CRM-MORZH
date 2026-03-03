@@ -1685,6 +1685,7 @@
     const dropdown = document.getElementById('marca-dropdown');
     const hiddenInput = document.getElementById('f-marca');
     if(!dropdown) return;
+
     // Recopilar marcas únicas del mapa (solo claves UUID, no las normalizadas)
     const seen = new Set(), opciones = [];
     Object.entries(marcasMap).forEach(([k, nombre]) => {
@@ -1693,9 +1694,28 @@
         opciones.push({ id: k, nombre });
       }
     });
+
+    // ── FILTRO POR ROL ────────────────────────────────────────────
+    // Replica la misma lógica de processLeads() / subserviciosDelUsuario():
+    //   · rol === 'empresa': marcasMap ya viene filtrado desde loadMarcas()
+    //     (solo las marcas vinculadas a esa empresa via empresa_marcas) → sin filtro extra
+    //   · rol === 'gestor' con servicios[]: marcasSectorMap[id] indica el sector
+    //     de cada marca; solo mostramos las cuyo sector está en servicios del gestor
+    //   · rol === 'gestor' sin servicios (gestor global): ve todas las marcas
+    let opcionesFiltradas = opciones;
+    if(rol === 'gestor' && servicios.length > 0) {
+      const sectoresPermitidos = new Set(sectoresDelUsuario());
+      opcionesFiltradas = opciones.filter(o => {
+        const sectorMarca = marcasSectorMap[o.id] || marcasSectorMap[String(o.id)];
+        // Si la marca no tiene sector asignado en el mapa, la incluimos (safe default)
+        if(!sectorMarca) return true;
+        return sectoresPermitidos.has(sectorMarca);
+      });
+    }
+
     const filtradas = q
-      ? opciones.filter(o => o.nombre.toLowerCase().includes(String(q).toLowerCase()))
-      : opciones;
+      ? opcionesFiltradas.filter(o => o.nombre.toLowerCase().includes(String(q).toLowerCase()))
+      : opcionesFiltradas;
     if(!filtradas.length) {
       dropdown.innerHTML = '<div class="mopt-empty">Sin resultados</div>';
       dropdown.style.display = 'block';
