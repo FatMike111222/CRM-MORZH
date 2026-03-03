@@ -115,7 +115,6 @@
     .kpi-lbl { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 10px; }
     .kpi-val { font-family: 'Syne', sans-serif; font-size: 2.1rem; font-weight: 800; line-height: 1; }
 
-    .emp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
     .emp-card { background: var(--s3); border: 1px solid var(--bd); border-radius: 13px; padding: 16px 18px; transition: border-color .18s; }
     .emp-card:hover { border-color: var(--bd2); }
     .emp-name { font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 700; color: var(--hi); margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -604,23 +603,18 @@
         <div id="kpi-row" class="kpi-row"><div class="kpi"><p class="kpi-lbl">Cargando…</p></div></div>
       </div>
 
-      <!-- Stats card: solo gestor -->
-      <div id="stats-wrap" class="pcard" style="margin-bottom:24px;display:none">
-        <div class="pcard-head">
-          <div class="pcard-title" id="stats-card-title">Rendimiento por Empresa</div>
-          <span style="font-size:.72rem;color:var(--muted)">Distribución de estados</span>
-        </div>
-        <div class="pcard-body"><div id="emp-grid" class="emp-grid"><div class="empty">Cargando…</div></div></div>
-      </div>
+      <!-- (stats-wrap eliminado — vista limpia de leads) -->
 
-      <!-- Filtros + buscador -->
+      <!-- Filtros combinados (AND) + buscador -->
       <div style="margin-bottom:14px;display:flex;flex-direction:column;gap:8px">
-        <!-- Fila estados + papelera -->
+        <!-- Línea 1: Estados -->
         <div class="filtros-bar" id="filtros-estado-row"></div>
-        <!-- Fila sector (gestor) + buscador -->
+        <!-- Línea 2: Empresas (solo gestor) -->
+        <div class="filtros-bar" id="filtros-empresa-row" style="display:none"></div>
+        <!-- Línea 3: Marcas + buscador -->
         <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-          <div class="filtros-bar" id="filtros-sector-row" style="flex:1;min-width:0"></div>
-          <input id="search-lead" type="text" placeholder="Buscar: nombre, tel, población, marca…"/>
+          <div class="filtros-bar" id="filtros-marca-row" style="flex:1;min-width:0"></div>
+          <input id="search-lead" type="text" placeholder="Buscar: nombre, tel, población…"/>
         </div>
       </div>
 
@@ -675,6 +669,8 @@
         <div style="display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap">
           <span id="modal-estado-pill" class="pill s-pendiente">—</span>
           <span id="modal-empresa-lbl" style="font-size:.75rem;color:var(--muted)"></span>
+        <!-- Reasignación empresa: solo gestor, se muestra inline -->
+        <select id="modal-empresa-select" style="display:none;font-family:'DM Mono',monospace;font-size:.68rem;border:1px solid var(--bd2);background:var(--s2);color:var(--txt);border-radius:7px;padding:3px 8px;cursor:pointer"></select>
         </div>
         <div id="modal-subline"></div>
       </div>
@@ -703,7 +699,17 @@
             <span class="destaque-lbl">📅 Próxima Acción</span>
             <span class="destaque-val" id="destaque-fecha">—</span>
             <span class="destaque-sub" id="destaque-fecha-sub"></span>
-            <input id="edit-proxima-accion" type="date" class="info-item-input" style="margin-top:8px"/>
+            <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+              <input id="edit-proxima-accion" type="date" class="info-item-input" style="flex:1;min-width:100px"/>
+              <select id="edit-tipo-accion" class="info-item-input" style="flex:1;min-width:130px;cursor:pointer">
+                <option value="">— Tipo de acción —</option>
+                <option value="LLAMAR">📞 Llamar</option>
+                <option value="WHATSAPP">💬 Enviar WhatsApp</option>
+                <option value="PRESUPUESTO">📄 Enviar Presupuesto</option>
+                <option value="VISITAR">🏠 Visitar</option>
+                <option value="SEGUIMIENTO">🔄 Seguimiento</option>
+              </select>
+            </div>
           </div>
           <div class="destaque-card importe">
             <span class="destaque-lbl">💶 Importe Presupuesto</span>
@@ -887,6 +893,7 @@
 
   // ─── FILTROS ──────────────────────────────────────────────────
   let filtroEstado = null, filtroSector = null, filtroPapelera = false, filtroBusqueda = '';
+  let filtroEmpresa = null, filtroMarca = null; // filtros combinados
   let _dashLoading = false; // H-08: evita loadDashboard() concurrentes
   let _lastSubmit  = 0;    // H-11: timestamp último envío (cooldown anti-spam)
   let _commentCooldown = false; // H-11: anti-spam comentarios
@@ -922,7 +929,7 @@
     const h=new Date().toISOString().slice(0,10), atrasado=v<h;
     const [y,m,d]=v.split('-');
     const leg=new Date(+y,+m-1,+d).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'});
-    return atrasado?{txt:leg,cls:'fecha-bad',sub:'⚠ Atrasado'}:{txt:leg,cls:'fecha-ok',sub:'✓ A tiempo'};
+    return atrasado?{txt:'⚠️ '+leg,cls:'fecha-bad',sub:'Fecha caducada'}:{txt:'✓ '+leg,cls:'fecha-ok',sub:'A tiempo'};
   }
 
   // Resolución de marca con normalización de ID
@@ -975,6 +982,31 @@
     $('modal-estado-pill').textContent = cliente.estado||'—';
     $('modal-estado-pill').className   = 'pill '+(ESTADO_CLS[cliente.estado]||'s-pendiente');
     $('modal-empresa-lbl').textContent = '';
+    // Reasignación empresa (solo gestor)
+    const esel=$('modal-empresa-select');
+    if(esel && rol==='gestor') {
+      esel.style.display='';
+      esel.innerHTML=`<option value="">— Sin empresa —</option>`+
+        Object.entries(empresasMap)
+          .filter(([k])=>typeof k==='string'&&k.length>10) // solo UUIDs
+          .map(([id,nom])=>`<option value="${esc(id)}"${id===cliente.empresa_id?' selected':''}>${esc(nom)}</option>`)
+          .join('');
+      // Guardar al cambiar
+      esel.onchange = async () => {
+        const nuevoEmpresaId = esel.value || null;
+        if(nuevoEmpresaId===activeClienteData.empresa_id) return;
+        esel.disabled=true;
+        const {error}=await sb.from('clientes').update({empresa_id:nuevoEmpresaId}).eq('id',activeClienteId);
+        esel.disabled=false;
+        if(error){ toast('Error al reasignar empresa: '+error.message,'err'); esel.value=activeClienteData.empresa_id||''; return; }
+        activeClienteData.empresa_id=nuevoEmpresaId;
+        const idx=allLeads.findIndex(l=>l.id===activeClienteId);
+        if(idx!==-1) allLeads[idx].empresa_id=nuevoEmpresaId;
+        toast('Empresa reasignada ✓');
+        // Ocultar empresa-lbl si hay select activo
+        $('modal-empresa-lbl').textContent='';
+      };
+    } else if(esel) { esel.style.display='none'; }
 
     // Subline: Tel | Email | Población | Marca — con links interactivos
     const marcaNomModal = getMarcaNombre(cliente.marca_id);
@@ -994,6 +1026,8 @@
     const fv=cliente.fecha_proxima_accion||null, {txt,cls:fc,sub}=semaforo(fv);
     $('destaque-fecha').textContent=txt; $('destaque-fecha').className='destaque-val '+fc;
     $('destaque-fecha-sub').textContent=sub; $('edit-proxima-accion').value=fv||'';
+    // Tipo de acción
+    if($('edit-tipo-accion')) $('edit-tipo-accion').value=cliente.tipo_proxima_accion||'';
 
     // Importe
     const imp=cliente.importe_presupuesto;
@@ -1037,7 +1071,7 @@
     // Save bar
     $('save-bar').classList.remove('visible');
     $('save-ok').style.display='none'; $('save-err').style.display='none';
-    ['edit-importe','edit-proxima-accion'].forEach(id=>$(id).addEventListener('input',markDirty,{once:true}));
+    ['edit-importe','edit-proxima-accion','edit-tipo-accion'].forEach(id=>$(id)?.addEventListener('input',markDirty,{once:true}));
 
     // Pestaña Cambios: solo visible para gestor — empresa no sabe que existe
     const _mtabC=$('mtab-cambios');
@@ -1181,7 +1215,8 @@
     const _editorId1 = _sess1?.user?.id ?? authUserId ?? null;
 
     // Payload: importe, fecha y datos de cliente — el estado ya lo gestiona autoSaveEstado
-    const payload={ importe_presupuesto:importeVal, fecha_proxima_accion:fechaAccionVal, ultimo_editor_id:_editorId1 };
+    const tipoAccionVal=$('edit-tipo-accion')?$('edit-tipo-accion').value||null:null;
+    const payload={ importe_presupuesto:importeVal, fecha_proxima_accion:fechaAccionVal, tipo_proxima_accion:tipoAccionVal, ultimo_editor_id:_editorId1 };
     if(editOpen) {
       const n=$('edit-nombre').value.trim(), t=$('edit-tel').value.trim();
       const em=$('edit-email').value.trim(), p=$('edit-pobl').value.trim();
@@ -1198,6 +1233,7 @@
       if(error) throw error;
 
       activeClienteData={...activeClienteData,...payload};
+      if($('edit-tipo-accion')) activeClienteData.tipo_proxima_accion=tipoAccionVal;
       const idx=allLeads.findIndex(c=>c.id===activeClienteId);
       if(idx!==-1) allLeads[idx]={...allLeads[idx],...payload};
 
@@ -1495,9 +1531,7 @@
       $('user-badge').className='badge mono';
       showEl('tab-btn-form','block');
       // dispatchRoute activa la tab correcta segun URL
-      $('stats-card-title').textContent='Rendimiento por Empresa';
       showEl('kpi-wrap','block');
-      showEl('stats-wrap','block');
       // Mostrar col empresa
       document.querySelectorAll('.th-empresa').forEach(th=>th.style.display='');
     } else {
@@ -1510,7 +1544,6 @@
       $('stats-card-title').textContent='Actividad';
       // Ocultar KPIs y stats para empresa
       hideEl('kpi-wrap');
-      hideEl('stats-wrap');
       // Ocultar col empresa y filtro de sector
       document.querySelectorAll('.th-empresa').forEach(th=>th.style.display='none');
       const sr=$('filtros-sector-row');
@@ -1771,14 +1804,14 @@
     if($('skel-table')) $('skel-table').style.display = isMobile ? 'none' : 'block';
     if($('skel-cards')) $('skel-cards').style.display = isMobile ? 'block' : 'none';
     if($('kpi-row')) $('kpi-row').innerHTML='<div class="kpi"><p class="kpi-lbl">Cargando…</p></div>';
-    if($('emp-grid')) $('emp-grid').innerHTML='<div class="empty">Cargando…</div>';
     clientesConNuevoComentario=new Set();
     filtroEstado=null; filtroSector=null; filtroPapelera=false; filtroBusqueda='';
+    filtroEmpresa=null; filtroMarca=null;
     const si=$('search-lead'); if(si) si.value='';
 
     const selectCols = rol==='empresa'
-      ? 'id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion,marcas(id,nombre)'
-      : 'id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion';
+      ? 'id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion,tipo_proxima_accion,marcas(id,nombre)'
+      : 'id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion,tipo_proxima_accion';
 
     function buildQ(limit=null) {
       let q=sb.from('clientes').select(selectCols).order('created_at',{ascending:false});
@@ -1846,6 +1879,8 @@
       if(c.estado==='BORRADO') return false;
       if(filtroEstado && c.estado!==filtroEstado) return false;
       if(filtroSector) { const s=sectorDeReforma(c.tipo_reforma); if(s!==filtroSector) return false; }
+      if(filtroEmpresa && c.empresa_id!==filtroEmpresa) return false;
+      if(filtroMarca   && c.marca_id  !==filtroMarca)   return false;
       if(q) {
         const mn=getMarcaNombre(c.marca_id).toLowerCase();
         const campos=[(c.nombre_cliente||'').toLowerCase(),(c.telefono||'').toLowerCase(),(c.poblacion||'').toLowerCase(),mn];
@@ -1876,10 +1911,10 @@
       const pa = ia === -1 ? 999 : ia;
       const pb = ib === -1 ? 999 : ib;
       if (pa !== pb) return pa - pb;
-      // Sub-orden: más reciente primero
+      // Sub-orden FIFO: más antiguo primero (los que esperan más, antes)
       const da = a.created_at || '';
       const db = b.created_at || '';
-      return da > db ? -1 : da < db ? 1 : 0;
+      return da < db ? -1 : da > db ? 1 : 0;
     });
   }
 
@@ -1887,9 +1922,10 @@
   function renderDashboard() {
     const vis=leadsVisibles();
     renderKPIs(vis);
-    renderEmpresaStats(allLeads.filter(c=>c.estado!=='BORRADO'));
     renderFiltrosEstado();
     renderFiltrosSector();
+    renderFiltrosEmpresa();
+    renderFiltrosMarca();
     renderTable(sortedLeads(vis));
     // (renderSortHeaders / renderMobileSortBar eliminados — orden fijo de embudo)
   }
@@ -1923,7 +1959,50 @@
     row.innerHTML=html;
   }
 
-  window.__fe = s  => { filtroEstado=s; filtroPapelera=false; renderDashboard(); };
+  // ─── FILTRO EMPRESAS (línea 2) ─────────────────────────────
+  function renderFiltrosEmpresa() {
+    const row=$('filtros-empresa-row'); if(!row||rol!=='gestor') return;
+    // Obtener empresas presentes en los leads visibles (allLeads sin filtro de empresa)
+    const empresasPresentes=new Map();
+    allLeads.filter(l=>l.estado!=='BORRADO').forEach(l=>{
+      if(l.empresa_id && !empresasPresentes.has(l.empresa_id)) {
+        const nom=empresasMap[l.empresa_id]||empresasMap[String(l.empresa_id).trim().toLowerCase()]||null;
+        if(nom) empresasPresentes.set(l.empresa_id, nom);
+      }
+    });
+    if(empresasPresentes.size<1) { row.style.display='none'; return; }
+    row.style.display='flex';
+    const lbl=`<span style="font-size:.62rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-right:4px;flex-shrink:0">Empresa:</span>`;
+    let html=lbl+`<button class="sf-btn${!filtroEmpresa?' active':''}" onclick="window.__fep(null)">Todas</button>`;
+    empresasPresentes.forEach((nom,id)=>{
+      html+=`<button class="sf-btn${filtroEmpresa===id?' active':''}" onclick="window.__fep('${id}')">${esc(nom)}</button>`;
+    });
+    row.innerHTML=html;
+  }
+
+  // ─── FILTRO MARCAS (línea 3) ─────────────────────────────────
+  function renderFiltrosMarca() {
+    const row=$('filtros-marca-row'); if(!row) return;
+    // Marcas presentes en allLeads (sin filtrar por marca)
+    const marcasPresentes=new Map();
+    allLeads.filter(l=>l.estado!=='BORRADO').forEach(l=>{
+      if(l.marca_id && !marcasPresentes.has(l.marca_id)) {
+        const nom=marcasMap[l.marca_id]||marcasMap[String(l.marca_id).trim().toLowerCase()]||null;
+        if(nom) marcasPresentes.set(l.marca_id, nom);
+      }
+    });
+    if(marcasPresentes.size<1) { row.innerHTML=''; return; }
+    const lbl=`<span style="font-size:.62rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-right:4px;flex-shrink:0">Marca:</span>`;
+    let html=lbl+`<button class="sf-btn${!filtroMarca?' active':''}" onclick="window.__fmk(null)">Todas</button>`;
+    marcasPresentes.forEach((nom,id)=>{
+      html+=`<button class="sf-btn${filtroMarca===id?' active':''}" onclick="window.__fmk('${id}')">${esc(nom)}</button>`;
+    });
+    row.innerHTML=html;
+  }
+
+  window.__fe  = s  => { filtroEstado=s; filtroPapelera=false; renderDashboard(); };
+  window.__fep = id => { filtroEmpresa=id; renderDashboard(); };
+  window.__fmk = id => { filtroMarca=id;  renderDashboard(); };
 
   // ── Combobox de marcas ──────────────────────────────────────
   window.__filterMarcas = function(q) {
@@ -1960,6 +2039,13 @@
 
   $('search-lead').addEventListener('input', function(){ filtroBusqueda=this.value; renderKPIs(leadsVisibles()); renderTable(leadsVisibles()); });
 
+  // ─── HELPER: etiqueta corta de tipo de acción ────────────────
+  const TIPO_ACCION_LABEL = {
+    'LLAMAR':'📞 Llamar', 'WHATSAPP':'💬 WhatsApp',
+    'PRESUPUESTO':'📄 Presupuesto', 'VISITAR':'🏠 Visitar', 'SEGUIMIENTO':'🔄 Seguimiento',
+  };
+  function _tipoAccionLabel(v) { return TIPO_ACCION_LABEL[v] || v || ''; }
+
   // ─── SEMÁFORO DORMIDOS (U-01) ─────────────────────────────────
   // Devuelve un badge HTML si el lead lleva más de X días sin modificar
   function dormidoBadge(updated_at, estado) {
@@ -1968,8 +2054,8 @@
     const estadosActivos=['PENDIENTE DE LLAMAR','VISITA PROGRAMADA','SEGUIMIENTO','PRESUPUESTO ENVIADO'];
     if(!estadosActivos.includes(estado)) return '';
     const dias=Math.floor((Date.now()-new Date(updated_at).getTime())/(1000*60*60*24));
-    if(dias>=15) return `<span class="dormido-badge dormido-critico" title="${dias} días sin cambios">🔴 ${dias}d</span>`;
-    if(dias>=7)  return `<span class="dormido-badge dormido-warn"    title="${dias} días sin cambios">🟠 ${dias}d</span>`;
+    if(dias>=5) return `<span class="dormido-badge dormido-critico" title="${dias} días sin actividad — URGENTE">🔴 ${dias}d</span>`;
+    if(dias>=2) return `<span class="dormido-badge dormido-warn"    title="${dias} días sin actividad">🟠 ${dias}d</span>`;
     return '';
   }
 
@@ -1990,24 +2076,7 @@
     ].map(k=>`<div class="kpi"><p class="kpi-lbl">${esc(k.lbl)}</p><p class="kpi-val" style="color:${k.color}">${esc(String(k.val))}</p></div>`).join('');
   }
 
-  function renderEmpresaStats(data) {
-    const el=$('emp-grid'); if(!el) return;
-    if(!data.length) { el.innerHTML='<div class="empty">Sin datos.</div>'; return; }
-    const gk=rol==='gestor'?'empresa_id':'gestor_id';
-    const gl=id=>!id?null:rol==='gestor'?(empresasMap[id]||'Empresa desconocida'):'Gestor '+id.slice(0,8)+'…';
-    const byG={};
-    data.forEach(c=>{ const k=c[gk]||'__none__'; if(!byG[k]) byG[k]={}; byG[k][c.estado]=(byG[k][c.estado]||0)+1; });
-    el.innerHTML=Object.entries(byG).map(([gid,counts])=>{
-      const label=gid==='__none__'?'<em style="color:var(--muted)">Sin asignar</em>':esc(gl(gid));
-      const rows=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([e,n])=>`
-        <div class="emp-row">
-          <span style="display:flex;align-items:center"><span class="estat-dot" style="background:${ESTADO_DOT[e]||'#3d5a78'}"></span><span style="font-size:.74rem">${esc(e)}</span></span>
-          <span class="pill ${ESTADO_CLS[e]||''}">${n}</span>
-        </div>`).join('');
-      return `<div class="emp-card"><div class="emp-name">${label}</div>${rows}</div>`;
-    }).join('');
-  }
-
+  // (renderEmpresaStats eliminado — bloque 1)
   function renderTable(data) {
     hideEl('tbl-loading');
     if(!data.length) { showEl('tbl-empty','block'); hideEl('tbl-wrap'); return; }
@@ -2049,11 +2118,11 @@
         ?`<button class="btn-row-del" onclick="event.stopPropagation();_rowDel('${esc(c.id)}')" title="Mover a papelera">🗑</button>`
         :'';
 
-      // Celda estado: select interactivo para empresa, pill estático para gestor
-      const estadosEmpresa=ESTADOS.filter(e=>!['BORRADO','PENDIENTE DE ASIGNAR'].includes(e));
-      const estadoCell=rol==='empresa'
-        ? `<select class="estado-select ${cls}" data-id="${c.id}" onchange="event.stopPropagation();window._updateEstado('${c.id}',this)" onclick="event.stopPropagation()" title="Cambiar estado">${estadosEmpresa.map(e=>`<option value="${e}"${e===c.estado?' selected':''}>${e}</option>`).join('')}</select>`
-        : `<span class="pill ${cls}">${esc(c.estado||'—')}</span>`;
+      // Celda estado: ambos roles pueden cambiar estado via select inline
+      const estadosGestor  = ESTADOS.filter(e=>e!=='BORRADO');
+      const estadosEmpresa = ESTADOS.filter(e=>!['BORRADO','PENDIENTE DE ASIGNAR'].includes(e));
+      const estadosParaSelect = rol==='gestor' ? estadosGestor : estadosEmpresa;
+      const estadoCell=`<select class="estado-select ${cls}" data-id="${c.id}" onchange="event.stopPropagation();window._updateEstado('${c.id}',this)" onclick="event.stopPropagation()" title="Cambiar estado">${estadosParaSelect.map(e=>`<option value="${e}"${e===c.estado?' selected':''}>${e}</option>`).join('')}</select>`;
 
       // ── Fila tabla (desktop) ──
       rowsHTML.push(`
@@ -2065,20 +2134,20 @@
           ${empCell}
           <td class="td-marca">${marcaNom}</td>
           <td class="td-estado">${estadoCell}</td>
-          <td class="td-fecha"><span class="${fechaCls}" style="font-size:.78rem;white-space:nowrap">${esc(fechaTxt)}</span></td>
+          <td class="td-fecha">
+            <span class="${fechaCls}" style="font-size:.78rem;white-space:nowrap">${esc(fechaTxt)}</span>
+            ${c.tipo_proxima_accion?`<span style="font-size:.62rem;color:var(--muted);margin-left:4px;white-space:nowrap">${esc(_tipoAccionLabel(c.tipo_proxima_accion))}</span>`:''}
+          </td>
           <td class="td-notif">${notif}</td>
           <td class="td-del">${delBtn}</td>
         </tr>`);
 
       // ── Card móvil ──
-      const cardEstado = rol==='empresa'
-        ? `<select class="estado-select ${cls}" data-id="${c.id}"
-             onchange="event.stopPropagation();window._updateEstado('${c.id}',this)"
-             onclick="event.stopPropagation()">${
-               ESTADOS.filter(e=>!['BORRADO','PENDIENTE DE ASIGNAR'].includes(e))
-                 .map(e=>`<option value="${esc(e)}"${e===c.estado?' selected':''}>${esc(e)}</option>`).join('')
-             }</select>`
-        : `<span class="pill ${cls}">${esc(c.estado||'—')}</span>`;
+      const cardEstado=`<select class="estado-select ${cls}" data-id="${c.id}"
+           onchange="event.stopPropagation();window._updateEstado('${c.id}',this)"
+           onclick="event.stopPropagation()">${
+             estadosParaSelect.map(e=>`<option value="${esc(e)}"${e===c.estado?' selected':''}>${esc(e)}</option>`).join('')
+           }</select>`;
 
       cardsHTML.push(`
         <div class="lead-card" data-id="${esc(c.id)}">
@@ -2086,6 +2155,9 @@
           ${marcaNomTxt?`<div class="lc-row"><span class="lc-lbl">Marca</span><span class="lc-val">${esc(marcaNomTxt)}</span></div>`:''}
           <div class="lc-row"><span class="lc-lbl">Estado</span>${cardEstado}</div>
           ${c.poblacion?`<div class="lc-row"><span class="lc-lbl">Lugar</span><span class="lc-val">${esc(c.poblacion)}</span></div>`:''}
+          ${c.tipo_proxima_accion||c.fecha_proxima_accion?`<div class="lc-row"><span class="lc-lbl">Acción</span><span class="lc-val ${c.fecha_proxima_accion?semaforo(c.fecha_proxima_accion).cls:''}">
+            ${c.tipo_proxima_accion?esc(_tipoAccionLabel(c.tipo_proxima_accion))+' — ':''}${semaforo(c.fecha_proxima_accion||null).txt}
+          </span></div>`:''}
           ${c.email?`<div class="lc-row"><span class="lc-lbl">Email</span><a class="email-link lc-val" href="mailto:${esc(c.email)}" onclick="event.stopPropagation()">${esc(c.email)}</a></div>`:''}
           <div class="lc-footer">
             ${telHtml}
