@@ -2741,39 +2741,41 @@
 </body>
 </html>`;
 };
-})();
+})(); 
 
-// ─── MOTOR DE MARCAS Y EMPRESAS ───
+// ─── MOTOR DE MARCAS Y EMPRESAS (BLOQUE INDEPENDIENTE) ───
 window.__filterMarcas = function(q) {
   const dd = document.getElementById('marca-dropdown');
   if (!dd) return;
   dd.innerHTML = '';
   const text = (q || '').toLowerCase();
   
-  const matches = Array.from(marcasMap.values()).filter(m => m.nombre.toLowerCase().includes(text));
-  
-  if (matches.length === 0) {
-    dd.style.display = 'none';
-    return;
-  }
-  
-  matches.forEach(m => {
-    const div = document.createElement('div');
-    div.style.padding = '10px 14px';
-    div.style.cursor = 'pointer';
-    div.style.color = 'var(--txt)';
-    div.textContent = m.nombre;
-    div.onmouseover = () => div.style.background = 'var(--s3)';
-    div.onmouseout = () => div.style.background = 'transparent';
-    div.onclick = () => {
-      document.getElementById('f-marca-input').value = m.nombre;
-      document.getElementById('f-marca').value = m.id;
+  try {
+    const matches = Array.from(marcasMap.values()).filter(m => m.nombre.toLowerCase().includes(text));
+    
+    if (matches.length === 0) {
       dd.style.display = 'none';
-      window.__activarEmpresas(m.id);
-    };
-    dd.appendChild(div);
-  });
-  dd.style.display = 'block';
+      return;
+    }
+    
+    matches.forEach(m => {
+      const div = document.createElement('div');
+      div.style.padding = '10px 14px';
+      div.style.cursor = 'pointer';
+      div.style.color = 'var(--txt)';
+      div.textContent = m.nombre;
+      div.onmouseover = () => div.style.background = 'var(--s3)';
+      div.onmouseout = () => div.style.background = 'transparent';
+      div.onclick = () => {
+        document.getElementById('f-marca-input').value = m.nombre;
+        document.getElementById('f-marca').value = m.id;
+        dd.style.display = 'none';
+        window.__activarEmpresas(m.id);
+      };
+      dd.appendChild(div);
+    });
+    dd.style.display = 'block';
+  } catch(e) { console.error("Error filtrando marcas:", e); }
 };
 
 window.__activarEmpresas = function(marcaId) {
@@ -2786,22 +2788,22 @@ window.__activarEmpresas = function(marcaId) {
     return;
   }
   
-  const empresasDeMarca = empresasData.filter(e => e.marcas && e.marcas.includes(marcaId));
-  
-  empresasDeMarca.forEach(e => {
-    const opt = document.createElement('option');
-    opt.value = e.id;
-    opt.textContent = e.nombre_comercial;
-    selEmpresa.appendChild(opt);
-  });
-  
-  selEmpresa.disabled = false;
+  try {
+    const empresasDeMarca = empresasData.filter(e => e.marcas && e.marcas.includes(marcaId));
+    empresasDeMarca.forEach(e => {
+      const opt = document.createElement('option');
+      opt.value = e.id;
+      opt.textContent = e.nombre_comercial;
+      selEmpresa.appendChild(opt);
+    });
+    selEmpresa.disabled = false;
+  } catch(e) { console.error("Error activando empresas:", e); }
 };
 
 document.addEventListener('click', (e) => {
-  if (!e.target.closest('#f-marca-input') && !e.target.closest('#marca-dropdown')) {
-    const dd = document.getElementById('marca-dropdown');
-    if (dd) dd.style.display = 'none';
+  const dd = document.getElementById('marca-dropdown');
+  if (dd && !e.target.closest('#f-marca-input') && !e.target.closest('#marca-dropdown')) {
+    dd.style.display = 'none';
   }
 });
 </script>
