@@ -226,7 +226,55 @@
 
       /* Quitar scroll horizontal global */
       body { overflow-x: hidden; }
+
+      /* M-01: bottom nav visible en móvil */
+      #bottom-nav { display: flex; }
+      /* M-01: ocultar tab-bar en topbar en móvil (va al bottom nav) */
+      .tab-bar { display: none; }
+      /* M-01: padding inferior para no tapar contenido con bottom nav */
+      .main { padding-bottom: 80px; }
+
+      /* M-02: FAB visible en móvil (solo gestor — se controla via JS) */
+      #fab-nuevo-lead { display: flex; }
     }
+
+    /* M-01: Bottom Navigation Bar — solo móvil */
+    #bottom-nav {
+      display: none; /* oculto en desktop */
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+      background: rgba(6,9,17,.95);
+      border-top: 1px solid var(--bd);
+      backdrop-filter: blur(20px);
+      height: 58px;
+      align-items: stretch;
+      justify-content: space-around;
+    }
+    .bnav-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 3px;
+      background: none; border: none; color: var(--muted);
+      font-family: 'DM Sans', sans-serif; font-size: .6rem; font-weight: 600;
+      letter-spacing: .04em; text-transform: uppercase; cursor: pointer;
+      transition: color .15s; padding: 0; border-top: 2px solid transparent;
+    }
+    .bnav-btn:hover { color: var(--txt); }
+    .bnav-btn.active { color: var(--hi); border-top-color: var(--blue); }
+    .bnav-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none;
+                    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* M-02: FAB — Floating Action Button (solo móvil) */
+    #fab-nuevo-lead {
+      display: none; /* visible solo en móvil via media query */
+      position: fixed; bottom: 70px; right: 18px; z-index: 190;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--blue); border: none; cursor: pointer;
+      align-items: center; justify-content: center;
+      box-shadow: 0 4px 18px rgba(59,125,216,.55);
+      transition: transform .18s, box-shadow .18s;
+      color: #fff; font-size: 1.5rem; font-weight: 300; line-height: 1;
+    }
+    #fab-nuevo-lead:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(59,125,216,.7); }
+    #fab-nuevo-lead:active { transform: scale(.95); }
 
     /* ── Select estado inline (empresa) ── */
     .estado-select {
@@ -263,6 +311,10 @@
     .new-comment-dot { display: inline-flex; align-items: center; gap: 5px; background: rgba(239,68,68,.13); border: 1px solid rgba(239,68,68,.35); color: #f87171; font-size: .62rem; font-weight: 700; letter-spacing: .04em; padding: 2px 7px; border-radius: 99px; animation: pulse-red 2s ease-in-out infinite; white-space: nowrap; }
     .new-comment-dot::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,.8); }
     @keyframes pulse-red { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } 50% { box-shadow: 0 0 0 3px rgba(239,68,68,.15); } }
+    /* U-01: badges de leads dormidos */
+    .dormido-badge { font-family:'DM Mono',monospace; font-size:.58rem; font-weight:700; border-radius:99px; padding:2px 7px; white-space:nowrap; margin-left:5px; vertical-align:middle; }
+    .dormido-critico { background:rgba(239,68,68,.18); border:1px solid rgba(239,68,68,.4); color:#f87171; animation:pulse-red 2s infinite; }
+    .dormido-warn    { background:rgba(245,166,35,.15); border:1px solid rgba(245,166,35,.35); color:#f5a623; }
 
     .spin    { width: 20px; height: 20px; border: 2px solid rgba(59,125,216,.2); border-top-color: var(--blue); border-radius: 50%; animation: spin .65s linear infinite; margin: 40px auto; }
     .spin-sm { width: 14px; height: 14px; border: 2px solid rgba(59,125,216,.2); border-top-color: var(--blue); border-radius: 50%; animation: spin .65s linear infinite; display: inline-block; vertical-align: middle; }
@@ -483,6 +535,11 @@
             <span id="form-err-txt"></span>
           </div>
           <form id="form-lead" novalidate>
+            <!-- H-13: campo honeypot anti-bot — oculto para humanos, los bots lo rellenan -->
+            <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none" aria-hidden="true">
+              <label for="f-website">Website</label>
+              <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off"/>
+            </div>
             <div class="form-2col">
               <div><label class="field-label" for="f-nombre">Nombre cliente</label><input id="f-nombre" type="text" placeholder="Ej: Carmen Rivas" class="field"/></div>
               <div>
@@ -750,17 +807,48 @@
   <a id="tel-wa"   href="#" target="_blank" rel="noopener"><span>💬</span> WhatsApp</a>
 </div>
 
+<!-- M-01: Bottom Navigation Bar (móvil) — visible solo en <768px via CSS -->
+<nav id="bottom-nav" aria-label="Navegación principal">
+  <button class="bnav-btn active" id="bnav-dash" data-tab="tab-dash">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </button>
+  <button class="bnav-btn" id="bnav-form" data-tab="tab-form" style="display:none">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Nuevo Lead
+  </button>
+  <button class="bnav-btn" id="bnav-logout">
+    <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Salir
+  </button>
+</nav>
+
+<!-- M-02: FAB — Floating Action Button (solo móvil, solo gestor) -->
+<button id="fab-nuevo-lead" aria-label="Registrar nuevo lead" title="Registrar nuevo lead" style="display:none">
+  +
+</button>
+
 <div id="toast"></div>
 
 <!-- ════════════════════════ JAVASCRIPT ════════════════════════ -->
 <script>
 (() => {
+  // ─── CONFIGURACIÓN (inyectable via bundler/Vercel env vars) ──
+  // Para producción con Vite/Next: import.meta.env.VITE_SB_URL, etc.
+  const APP_CONFIG = {
+    supabaseUrl: 'https://uzmlyawikzqvdoeubrwy.supabase.co',
+    supabaseKey: 'sb_publishable_-mdEhWbnK-ampAx3EoxrYQ_n7Bu4Dr1',
+    bucket:      'documentos_clientes',
+    maxFileSize: 5 * 1024 * 1024,
+    allowedExt:  ['.pdf', '.jpg', '.jpeg', '.png'],
+  };
+
   // ─── CONSTANTES ───────────────────────────────────────────────
-  const SB_URL      = 'https://uzmlyawikzqvdoeubrwy.supabase.co';
-  const SB_KEY      = 'sb_publishable_-mdEhWbnK-ampAx3EoxrYQ_n7Bu4Dr1';
-  const BUCKET      = 'documentos_clientes';
-  const MAX_SIZE    = 5 * 1024 * 1024;
-  const ALLOWED_EXT = ['.pdf', '.jpg', '.jpeg', '.png'];
+  const SB_URL      = APP_CONFIG.supabaseUrl;
+  const SB_KEY      = APP_CONFIG.supabaseKey;
+  const BUCKET      = APP_CONFIG.bucket;
+  const MAX_SIZE    = APP_CONFIG.maxFileSize;
+  const ALLOWED_EXT = APP_CONFIG.allowedExt;
 
   const ESTADOS = [
     'PENDIENTE DE ASIGNAR',
@@ -790,6 +878,11 @@
   const { createClient } = supabase;
   const sb = createClient(SB_URL, SB_KEY);
 
+  // ─── LOGGING (solo visible en localhost) ─────────────────────
+  const isDev = ['localhost','127.0.0.1'].includes(window.location.hostname);
+  const dbg  = (...a) => { if(isDev) console.log(...a); };
+  const dbgE = (...a) => console.error(...a); // errores siempre visibles
+
   // ─── SESIÓN ───────────────────────────────────────────────────
   let rol = null, userId = null, authUserId = null, userName = '', servicios = [];
   let allLeads = [], marcasMap = {}, marcasSectorMap = {}, empresasMap = {};
@@ -799,6 +892,9 @@
 
   // ─── FILTROS ──────────────────────────────────────────────────
   let filtroEstado = null, filtroSector = null, filtroPapelera = false, filtroBusqueda = '';
+  let _dashLoading = false; // H-08: evita loadDashboard() concurrentes
+  let _lastSubmit  = 0;    // H-11: timestamp último envío (cooldown anti-spam)
+  let _commentCooldown = false; // H-11: anti-spam comentarios
   let sortCol = 'created_at', sortDir = 'desc'; // ordenación de tabla
 
   // ─── HELPERS ──────────────────────────────────────────────────
@@ -1160,10 +1256,10 @@
     // ── Obtener UUID de auth.users en tiempo real ────────────────
     const { data: { session: _sess3 } } = await sb.auth.getSession();
     const _editorId3 = _sess3?.user?.id ?? authUserId ?? null;
-    console.log('═══ [SOFT DELETE] ultimo_editor_id que se enviará:', _editorId3,
+    dbg('═══ [SOFT DELETE] ultimo_editor_id que se enviará:', _editorId3,
       '| authUserId en memoria:', authUserId,
       '| session.user.id:', _sess3?.user?.id ?? 'NO SESSION');
-    if (!_editorId3) console.error('⛔ _editorId3 es NULL — el campo llegará vacío a Supabase');
+    if (!_editorId3) dbgE('⛔ _editorId3 es NULL — el campo llegará vacío a Supabase');
     const {error}=await sb.from('clientes').update({estado:'BORRADO',notas_internas:motivo,ultimo_editor_id:_editorId3}).eq('id',id);
     if(error) { toast('Error al borrar: '+error.message,'err'); return; }
     const lead=allLeads.find(c=>c.id===id);
@@ -1279,6 +1375,8 @@
 
   // Activa un tab de la app por su panel-id
   function activateAppTab(tabId) {
+    // M-01: sincronizar estado del bottom nav
+    if(window.__syncBottomNav) window.__syncBottomNav(tabId);
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     const btn = document.querySelector(`.tab[data-tab="${tabId}"]`);
@@ -1356,7 +1454,11 @@
     }
 
     applyRoleUI(user.email);
-    await Promise.all([loadMarcas(),loadEmpresas()]);
+    // H-02/H-04: Promise.allSettled → si RLS bloquea marcas o empresas, la app
+    // sigue montando con los datos disponibles en lugar de romper silenciosamente
+    const [marcasRes, empresasRes] = await Promise.allSettled([loadMarcas(), loadEmpresas()]);
+    if(marcasRes.status==='rejected')   toast('Aviso: no se pudieron cargar las marcas.','err');
+    if(empresasRes.status==='rejected') toast('Aviso: no se pudieron cargar las empresas.','err');
     fillReformaSelector();
 
     if(rtClientes) { sb.removeChannel(rtClientes); rtClientes=null; }
@@ -1372,6 +1474,8 @@
 
     hideEl('screen-login');
     showEl('screen-app', 'flex');
+    // M-01/M-02: configurar bottom nav y FAB según rol
+    if(window.__applyBottomNavRole) window.__applyBottomNavRole();
     // App montada: despachar ruta actual sin volver a ejecutar el guard
     dispatchRoute();
   }
@@ -1563,6 +1667,13 @@
 
   $('form-lead').addEventListener('submit', async e => {
     e.preventDefault(); if(rol!=='gestor') return;
+    // H-13: honeypot — si el campo oculto está relleno, es un bot
+    if($('f-website')?.value) { dbg('Honeypot activado — envío bloqueado'); return; }
+    // H-11: cooldown de 3s entre envíos para evitar spam de API
+    const now=Date.now();
+    if(now-_lastSubmit < 3000) {
+      toast('Espera un momento antes de registrar otro lead.','err'); return;
+    }
     clearAlert('form-ok'); clearAlert('form-err');
     const btn=$('btn-lead-submit'); btn.textContent='Guardando…'; btn.disabled=true;
 
@@ -1600,6 +1711,7 @@
 
     try {
       const nc=await insertLeadOnline(payload);
+      _lastSubmit=Date.now(); // H-11: resetear cooldown
       resetForm();
       showSuccessAlert(nc);
       toast('Lead registrado · '+payload.estado);
@@ -1644,7 +1756,11 @@
   });
 
   // ─── DASHBOARD ────────────────────────────────────────────────
-  async function loadDashboard() {
+  async function loadDashboard(force=false) {
+    // H-08: guard contra llamadas concurrentes
+    if(_dashLoading && !force) return;
+    _dashLoading = true;
+    try {
     showEl('tbl-loading','block'); hideEl('tbl-wrap'); hideEl('tbl-empty');
     // Mostrar skeleton correcto según viewport
     const isMobile = window.innerWidth < 768;
@@ -1695,10 +1811,11 @@
     // ── FASE 1: primeros 20 leads (rápido) ─────────────────────
     const [fase1Res, commentsRes] = await Promise.all([
       buildQ(20),
-      sb.from('comentarios_clientes').select('cliente_id,created_at,autor_id').order('created_at',{ascending:false}),
+      // H-06: límite 300 para evitar cargar miles de filas en dashboards grandes
+      sb.from('comentarios_clientes').select('cliente_id,created_at,autor_id').order('created_at',{ascending:false}).limit(300),
     ]);
     hideEl('tbl-loading');
-    if(fase1Res.error) { console.error(fase1Res.error); return; }
+    if(fase1Res.error) { dbgE('Dashboard fase1 error:', fase1Res.error); return; }
 
     allLeads = processLeads(fase1Res.data);
     applyComments(commentsRes.data);
@@ -1714,6 +1831,7 @@
       applyComments(commentsRes.data);
       renderDashboard();
     }
+    } finally { _dashLoading = false; } // H-08: liberar flag
   }
 
   // ─── LEADS VISIBLES ───────────────────────────────────────────
@@ -1862,6 +1980,19 @@
 
   $('search-lead').addEventListener('input', function(){ filtroBusqueda=this.value; renderKPIs(leadsVisibles()); renderTable(leadsVisibles()); });
 
+  // ─── SEMÁFORO DORMIDOS (U-01) ─────────────────────────────────
+  // Devuelve un badge HTML si el lead lleva más de X días sin modificar
+  function dormidoBadge(updated_at, estado) {
+    if(!updated_at) return '';
+    // Solo alertar en estados activos (no cerrados ni borrados)
+    const estadosActivos=['PENDIENTE DE LLAMAR','VISITA PROGRAMADA','SEGUIMIENTO','PRESUPUESTO ENVIADO'];
+    if(!estadosActivos.includes(estado)) return '';
+    const dias=Math.floor((Date.now()-new Date(updated_at).getTime())/(1000*60*60*24));
+    if(dias>=15) return `<span class="dormido-badge dormido-critico" title="${dias} días sin cambios">🔴 ${dias}d</span>`;
+    if(dias>=7)  return `<span class="dormido-badge dormido-warn"    title="${dias} días sin cambios">🟠 ${dias}d</span>`;
+    return '';
+  }
+
   // ─── RENDERS ──────────────────────────────────────────────────
   function renderKPIs(data) {
     const el=$('kpi-row'); if(!el||rol!=='gestor') return;
@@ -1947,7 +2078,7 @@
       // ── Fila tabla (desktop) ──
       rowsHTML.push(`
         <tr data-id="${esc(c.id)}" title="Clic para abrir la ficha">
-          <td>${esc(c.nombre_cliente||'—')}</td>
+          <td>${esc(c.nombre_cliente||'—')}${dormidoBadge(c.updated_at,c.estado)}</td>
           <td class="td-tel">${telHtml}</td>
           <td>${esc(c.poblacion||'—')}</td>
           <td style="font-size:.76rem;color:var(--muted)">${esc(fechaEntrada)}</td>
@@ -1971,7 +2102,7 @@
 
       cardsHTML.push(`
         <div class="lead-card" data-id="${esc(c.id)}">
-          <div class="lc-nombre">${esc(c.nombre_cliente||'Sin nombre')}</div>
+          <div class="lc-nombre">${esc(c.nombre_cliente||'Sin nombre')}${dormidoBadge(c.updated_at,c.estado)}</div>
           ${marcaNomTxt?`<div class="lc-row"><span class="lc-lbl">Marca</span><span class="lc-val">${esc(marcaNomTxt)}</span></div>`:''}
           <div class="lc-row"><span class="lc-lbl">Estado</span>${cardEstado}</div>
           ${c.poblacion?`<div class="lc-row"><span class="lc-lbl">Lugar</span><span class="lc-val">${esc(c.poblacion)}</span></div>`:''}
@@ -2034,10 +2165,10 @@
       // ── Obtener UUID de auth.users en tiempo real ────────────────
       const { data: { session: _sess2 } } = await sb.auth.getSession();
       const _editorId2 = _sess2?.user?.id ?? authUserId ?? null;
-      console.log('═══ [_updateEstado] ultimo_editor_id que se enviará:', _editorId2,
+      dbg('═══ [_updateEstado] ultimo_editor_id que se enviará:', _editorId2,
         '| authUserId en memoria:', authUserId,
         '| session.user.id:', _sess2?.user?.id ?? 'NO SESSION');
-      if (!_editorId2) console.error('⛔ _editorId2 es NULL — el campo llegará vacío a Supabase');
+      if (!_editorId2) dbgE('⛔ _editorId2 es NULL — el campo llegará vacío a Supabase');
 
       const { data: updData, error } = await sb
         .from('clientes')
@@ -2045,14 +2176,14 @@
         .eq('id', id)
         .select('id,estado,ultimo_editor_id');
 
-      console.log('═══ [_updateEstado] Respuesta Supabase:', {
+      dbg('═══ [_updateEstado] Respuesta Supabase:', {
         filaActualizada: updData?.[0] ?? null,
         ultimo_editor_id_guardado: updData?.[0]?.ultimo_editor_id ?? 'NULL ⚠',
         error: error ?? 'ninguno'
       });
       if (error) throw error;
       if (updData?.[0] && !updData[0].ultimo_editor_id) {
-        console.error('⛔ Supabase devolvió ultimo_editor_id=NULL — causas posibles: columna no existe, RLS bloquea la escritura o la columna no está en el SELECT de la política');
+        dbgE('⛔ Supabase devolvió ultimo_editor_id=NULL — causas posibles: columna no existe, RLS bloquea escritura o columna no está en SELECT de la política');
       }
 
       // Actualiza memoria local
@@ -2113,7 +2244,8 @@
   // ─── COMENTARIOS ──────────────────────────────────────────────
   async function loadComments(clienteId) {
     showEl('comments-loading','block'); hideEl('comments-list'); hideEl('comments-empty');
-    const {data,error}=await sb.from('comentarios_clientes').select('id,texto,nombre_autor,autor_id,created_at').eq('cliente_id',clienteId).order('created_at',{ascending:true});
+    // H-06: últimos 100 comentarios por lead (más que suficiente)  
+    const {data,error}=await sb.from('comentarios_clientes').select('id,texto,nombre_autor,autor_id,created_at').eq('cliente_id',clienteId).order('created_at',{ascending:true}).limit(100);
     hideEl('comments-loading');
     if(error) { toast('Error al cargar comentarios: '+error.message,'err'); return; }
     if(!data||!data.length) { showEl('comments-empty','block'); return; }
@@ -2133,6 +2265,7 @@
   }
 
   $('btn-send-comment').addEventListener('click', async () => {
+    if(_commentCooldown) { toast('Espera antes de enviar otro comentario.','err'); return; }
     clearAlert('comment-err');
     const texto=$('comment-input').value.trim();
     if(!texto) { setAlert('comment-err','comment-err-txt','Escribe algo antes de enviar.'); return; }
@@ -2141,7 +2274,10 @@
     try {
       const {error}=await sb.from('comentarios_clientes').insert([{cliente_id:activeClienteId,texto,nombre_autor:userName,autor_id:userId}]);
       if(error) throw error;
-      $('comment-input').value=''; await loadComments(activeClienteId); toast('Comentario guardado');
+      $('comment-input').value='';
+      // H-11: cooldown de 2s antes de permitir otro comentario
+      _commentCooldown=true; setTimeout(()=>{ _commentCooldown=false; }, 2000);
+      await loadComments(activeClienteId); toast('Comentario guardado');
     } catch(err) { setAlert('comment-err','comment-err-txt','Error: '+(err.message||JSON.stringify(err))); }
     finally { btn.textContent='Enviar'; btn.disabled=false; }
   });
@@ -2156,22 +2292,29 @@
     const files=(data||[]).filter(f=>f.name&&f.name!=='.emptyFolderPlaceholder');
     if(!files.length) { showEl('docs-empty','block'); return; }
     showEl('doc-list','flex'); $('doc-list').style.flexDirection='column';
+    // H-01: sin onclick inline — usamos data-attributes para evitar XSS via nombre de archivo
     $('doc-list').innerHTML=files.map(f=>`
       <div class="doc-item">
         <span class="doc-icon">${docIcon(f.name)}</span>
         <span class="doc-name" title="${esc(f.name)}">${esc(f.name)}</span>
         <span class="doc-size">${f.metadata?.size?fmtBytes(f.metadata.size):''}</span>
-        <button class="btn-sm btn-sm-green" onclick="window.__dl('${esc(clienteId)}','${esc(f.name)}',this)">↓ Descargar</button>
+        <button class="btn-sm btn-sm-green dl-btn" data-cid="${esc(clienteId)}" data-fn="${esc(f.name)}">↓ Descargar</button>
       </div>`).join('');
   }
-  window.__dl=async(cId,fn,btn)=>{
+  // H-01: delegación de eventos en doc-list — evita onclick inline con datos de DB
+  $('doc-list').addEventListener('click', async e => {
+    const btn = e.target.closest('.dl-btn'); if(!btn) return;
+    const cId = btn.dataset.cid, fn = btn.dataset.fn;
+    if(!cId || !fn) return;
     btn.textContent='…'; btn.disabled=true;
-    const {data,error}=await sb.storage.from(BUCKET).createSignedUrl(`${cId}/${fn}`,60);
-    btn.textContent='↓ Descargar'; btn.disabled=false;
-    if(error) { toast('Error al generar enlace: '+error.message,'err'); return; }
-    const a=document.createElement('a'); a.href=data.signedUrl; a.download=fn; a.target='_blank';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  };
+    try {
+      const {data,error}=await sb.storage.from(BUCKET).createSignedUrl(`${cId}/${fn}`,60);
+      if(error) throw error;
+      const a=document.createElement('a'); a.href=data.signedUrl; a.download=fn; a.target='_blank';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    } catch(err) { toast('Error al generar enlace: '+(err.message||err),'err'); }
+    finally { btn.textContent='↓ Descargar'; btn.disabled=false; }
+  });
 
   const dz=$('drop-zone'), fi=$('file-input');
   dz.addEventListener('dragover',e=>{ e.preventDefault(); dz.classList.add('dragover'); });
@@ -2212,7 +2355,7 @@
           f = new File([compressed], f.name, { type: compressed.type });
           lbl.textContent=`Subiendo ${i+1} de ${valid.length}: ${f.name} (${(f.size/1024).toFixed(0)} KB)`;
         } catch(compErr) {
-          console.warn('Compresión fallida, subiendo original:', compErr.message);
+          dbg('Compresión fallida, subiendo original:', compErr.message);
         }
       }
 
@@ -2231,9 +2374,9 @@
             nombre_autor: userName,
             texto:        `Ha subido un nuevo archivo: ${f.name}`,
           });
-          if(cErr) console.error('Error al registrar subida en comentarios:', cErr.message);
+          if(cErr) dbgE('Error al registrar subida en comentarios:', cErr.message);
         } else {
-          console.error('⛔ actualUserId es null — comentario de subida no registrado');
+          dbgE('⛔ actualUserId es null — comentario de subida no registrado');
         }
         // Refrescar comentarios si la pestaña está activa
         const tabComments = document.querySelector('[data-mpanel="mp-comments"]');
@@ -2247,6 +2390,52 @@
 
   // ─── REFRESH & LOGOUT ─────────────────────────────────────────
   $('btn-refresh').addEventListener('click',()=>{ if(userId) loadDashboard(); });
+
+  // ─── M-01: Bottom Nav — sincroniza estado activo con las tabs ─
+  function syncBottomNav(tabId) {
+    document.querySelectorAll('.bnav-btn[data-tab]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabId);
+    });
+  }
+  // Exponer para que activateAppTab() pueda sincronizarlo
+  window.__syncBottomNav = syncBottomNav;
+
+  $('bnav-dash')?.addEventListener('click', () => navigate('/dashboard'));
+  $('bnav-form')?.addEventListener('click', () => navigate('/formulario'));
+  $('bnav-logout')?.addEventListener('click', () => $('btn-logout').click());
+
+  // M-01: mostrar/ocultar botón "Nuevo Lead" en bottom nav según rol
+  function applyBottomNavRole() {
+    const isGestor = (rol === 'gestor');
+    const bnavForm = $('bnav-form');
+    if(bnavForm) bnavForm.style.display = isGestor ? '' : 'none';
+    // M-02: FAB solo para gestores
+    const fab = $('fab-nuevo-lead');
+    if(fab) fab.style.display = isGestor ? '' : 'none';
+  }
+  window.__applyBottomNavRole = applyBottomNavRole;
+
+  // M-02: FAB → navegar a formulario
+  $('fab-nuevo-lead')?.addEventListener('click', () => {
+    navigate('/formulario');
+    // Foco en primer campo tras transición
+    setTimeout(() => $('f-nombre')?.focus(), 200);
+  });
+
+  // P-03: Atajo de teclado Ctrl+N / Cmd+N → nuevo lead ─────────
+  document.addEventListener('keydown', e => {
+    // Solo si no está escribiendo en un input/textarea/select
+    const tag = document.activeElement?.tagName?.toLowerCase();
+    if(['input','textarea','select'].includes(tag)) return;
+    // Ctrl+N (Windows/Linux) o Cmd+N (Mac) — pero Cmd+N en Mac abre ventana nueva,
+    // por lo que usamos Ctrl+N en todos los sistemas para no interferir
+    if(e.ctrlKey && e.key === 'n' && !e.metaKey) {
+      if(rol !== 'gestor') return;
+      e.preventDefault(); // P-03: evitar apertura de ventana nueva en algunos navegadores
+      navigate('/formulario');
+      setTimeout(() => $('f-nombre')?.focus(), 200);
+    }
+  });
 
   $('btn-logout').addEventListener('click', async () => {
     if(rtComments) { sb.removeChannel(rtComments); rtComments=null; }
