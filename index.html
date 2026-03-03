@@ -602,13 +602,14 @@
               </div>
               <div class="col-span-2" style="position:relative">
                 <label class="field-label" for="f-marca-input">Marca</label>
-                <input id="f-marca-input" type="text" placeholder="Escribe para buscar o haz clic..." class="field" autocomplete="off"
-                  onfocus="window.__filterMarcas('')" 
-                  oninput="window.__filterMarcas(this.value)"/>
+                <input id="f-marca-input" type="text" placeholder="Escribe para buscar marca..." class="field" autocomplete="off"
+                       onfocus="window.__filterMarcas(this.value)" 
+                       oninput="window.__filterMarcas(this.value)">
                 <input id="f-marca" type="hidden"/>
                 <div id="marca-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:100;
                   background:var(--s2);border:1px solid var(--bd2);border-radius:9px;max-height:180px;overflow-y:auto;margin-top:3px;box-shadow:0 8px 24px rgba(0,0,0,.4)">
                 </div>
+              </div>
               </div>
               <div class="col-span-2"><label class="field-label" for="f-empresa">Empresa</label><select id="f-empresa" class="field" disabled><option value="">— Seleccionar Marca primero —</option></select> —</option></select></div>
             </div>
@@ -2740,72 +2741,3 @@
   </table>
 </body>
 </html>`;
-};
-})(); 
-
-// ─── MOTOR DE MARCAS Y EMPRESAS (BLOQUE INDEPENDIENTE) ───
-window.__filterMarcas = function(q) {
-  const dd = document.getElementById('marca-dropdown');
-  if (!dd) return;
-  dd.innerHTML = '';
-  const text = (q || '').toLowerCase();
-  
-  try {
-    const matches = Array.from(marcasMap.values()).filter(m => m.nombre.toLowerCase().includes(text));
-    
-    if (matches.length === 0) {
-      dd.style.display = 'none';
-      return;
-    }
-    
-    matches.forEach(m => {
-      const div = document.createElement('div');
-      div.style.padding = '10px 14px';
-      div.style.cursor = 'pointer';
-      div.style.color = 'var(--txt)';
-      div.textContent = m.nombre;
-      div.onmouseover = () => div.style.background = 'var(--s3)';
-      div.onmouseout = () => div.style.background = 'transparent';
-      div.onclick = () => {
-        document.getElementById('f-marca-input').value = m.nombre;
-        document.getElementById('f-marca').value = m.id;
-        dd.style.display = 'none';
-        window.__activarEmpresas(m.id);
-      };
-      dd.appendChild(div);
-    });
-    dd.style.display = 'block';
-  } catch(e) { console.error("Error filtrando marcas:", e); }
-};
-
-window.__activarEmpresas = function(marcaId) {
-  const selEmpresa = document.getElementById('f-empresa');
-  if (!selEmpresa) return;
-  selEmpresa.innerHTML = '<option value="">— Seleccionar Empresa —</option>';
-  
-  if (!marcaId) {
-    selEmpresa.disabled = true;
-    return;
-  }
-  
-  try {
-    const empresasDeMarca = empresasData.filter(e => e.marcas && e.marcas.includes(marcaId));
-    empresasDeMarca.forEach(e => {
-      const opt = document.createElement('option');
-      opt.value = e.id;
-      opt.textContent = e.nombre_comercial;
-      selEmpresa.appendChild(opt);
-    });
-    selEmpresa.disabled = false;
-  } catch(e) { console.error("Error activando empresas:", e); }
-};
-
-document.addEventListener('click', (e) => {
-  const dd = document.getElementById('marca-dropdown');
-  if (dd && !e.target.closest('#f-marca-input') && !e.target.closest('#marca-dropdown')) {
-    dd.style.display = 'none';
-  }
-});
-</script>
-</body>
-</html>
