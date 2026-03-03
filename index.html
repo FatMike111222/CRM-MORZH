@@ -969,6 +969,7 @@
   // ─── SESIÓN ───────────────────────────────────────────────────
   let rol = null, userId = null, authUserId = null, userName = '', servicios = [];
   let allLeads = [], marcasMap = {}, marcasSectorMap = {}, empresasMap = {};
+  let marcasPermitidasGestor = new Set(); // IDs de marcas asignadas al gestor via gestor_marcas
   let activeClienteId = null, activeClienteData = null, pendingEstado = null;
   let clientesConNuevoComentario = new Set();
   let rtComments = null, rtClientes = null;
@@ -1696,21 +1697,16 @@
     });
 
     // ── FILTRO POR ROL ────────────────────────────────────────────
-    // Replica la misma lógica de processLeads() / subserviciosDelUsuario():
     //   · rol === 'empresa': marcasMap ya viene filtrado desde loadMarcas()
-    //     (solo las marcas vinculadas a esa empresa via empresa_marcas) → sin filtro extra
-    //   · rol === 'gestor' con servicios[]: marcasSectorMap[id] indica el sector
-    //     de cada marca; solo mostramos las cuyo sector está en servicios del gestor
-    //   · rol === 'gestor' sin servicios (gestor global): ve todas las marcas
+    //     (solo las marcas de esa empresa via empresa_marcas) → sin filtro extra
+    //   · rol === 'gestor': filtramos por marcasPermitidasGestor (Set de IDs
+    //     cargado desde gestor_marcas al hacer login). Si el set está vacío
+    //     (gestor global sin restricciones), se muestran todas las marcas.
     let opcionesFiltradas = opciones;
-    if(rol === 'gestor' && servicios.length > 0) {
-      const sectoresPermitidos = new Set(sectoresDelUsuario());
-      opcionesFiltradas = opciones.filter(o => {
-        const sectorMarca = marcasSectorMap[o.id] || marcasSectorMap[String(o.id)];
-        // Si la marca no tiene sector asignado en el mapa, la incluimos (safe default)
-        if(!sectorMarca) return true;
-        return sectoresPermitidos.has(sectorMarca);
-      });
+    if(rol === 'gestor' && marcasPermitidasGestor.size > 0) {
+      opcionesFiltradas = opciones.filter(o =>
+        marcasPermitidasGestor.has(String(o.id))
+      );
     }
 
     const filtradas = q
@@ -1834,17 +1830,18 @@
         marcasMap[String(m.id).trim().toLowerCase()]=m.nombre;
       });
     } else {
-      // Gestor: todas las marcas + inferir sector via empresa_marcas
-      const [mRes, emRes] = await Promise.all([
+      // Gestor: carga sus marcas permitidas desde gestor_marcas
+      // y todas las marcas para el mapa de nombres (para la tabla de leads)
+      const [gmRes, mRes] = await Promise.all([
+        sb.from('gestor_marcas').select('marca_id').eq('gestor_id', userId),
         sb.from('marcas').select('id,nombre').order('nombre'),
-        sb.from('empresa_marcas').select('marca_id,empresas(servicios)'),
       ]);
-      marcasSectorMap = {};
-      (emRes.data||[]).forEach(row=>{
-        const svs=Array.isArray(row.empresas?.servicios)?row.empresas.servicios:[];
-        const sector=svs.find(s=>Object.keys(SECTOR_MAP).includes(s))||null;
-        if(sector && row.marca_id) marcasSectorMap[row.marca_id]=sector;
-      });
+      // Poblar set de IDs permitidos para este gestor
+      marcasPermitidasGestor = new Set(
+        (gmRes.data||[]).map(r => String(r.marca_id)).filter(Boolean)
+      );
+      // Poblar mapa completo de nombres (necesario para mostrar nombres en la tabla)
+      marcasSectorMap = {}; // ya no se usa para filtrar, se mantiene vacío
       (mRes.data||[]).forEach(({id,nombre})=>{
         marcasMap[id]=nombre;
         marcasMap[String(id).trim().toLowerCase()]=nombre;
@@ -2738,6 +2735,7 @@
     if(rtClientes) { sb.removeChannel(rtClientes); rtClientes=null; }
     await sb.auth.signOut();
     rol=null; userId=null; authUserId=null; userName=''; servicios=[]; allLeads=[];
+    marcasPermitidasGestor=new Set();
     closeModal();
     $('screen-app').style.display='none';
     showEl('screen-login','flex');
