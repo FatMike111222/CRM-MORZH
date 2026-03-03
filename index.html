@@ -969,6 +969,7 @@
   // ─── SESIÓN ───────────────────────────────────────────────────
   let rol = null, userId = null, authUserId = null, userName = '', servicios = [];
   let allLeads = [], marcasMap = {}, marcasSectorMap = {}, empresasMap = {};
+  let marcasDescMap = {};  // id -> descripcion de la tabla marcas ('reformas' / 'Limpiezas')
   let marcasPermitidasGestor = new Set(); // IDs de marcas asignadas al gestor via gestor_marcas
   let activeClienteId = null, activeClienteData = null, pendingEstado = null;
   let clientesConNuevoComentario = new Set();
@@ -1696,7 +1697,7 @@
       }
     });
 
-    // ── FILTRO POR ROL ────────────────────────────────────────────
+    // ── FILTRO 1: POR ROL / gestor_marcas ────────────────────────
     //   · rol === 'empresa': marcasMap ya viene filtrado desde loadMarcas()
     //     (solo las marcas de esa empresa via empresa_marcas) → sin filtro extra
     //   · rol === 'gestor': filtramos por marcasPermitidasGestor (Set de IDs
@@ -1709,6 +1710,19 @@
       );
     }
 
+    // ── FILTRO 2: POR SECTOR (marca.descripcion) ──────────────────
+    // El select #f-sector contiene valores como 'reformas' o 'Limpiezas'.
+    // La columna `descripcion` de la tabla marcas almacena ese mismo texto.
+    // Comparación case-insensitive para tolerar variaciones de mayúsculas.
+    const sectorSel = (document.getElementById('f-sector')?.value || '').trim().toLowerCase();
+    if(sectorSel) {
+      opcionesFiltradas = opcionesFiltradas.filter(o => {
+        const desc = (marcasDescMap[String(o.id)] || '').trim().toLowerCase();
+        return desc === sectorSel;
+      });
+    }
+
+    // ── FILTRO 3: POR TEXTO LIBRE (input del usuario) ────────────
     const filtradas = q
       ? opcionesFiltradas.filter(o => o.nombre.toLowerCase().includes(String(q).toLowerCase()))
       : opcionesFiltradas;
@@ -1805,6 +1819,12 @@
     if($('f-marca'))       $('f-marca').value='';
     if($('f-marca-input')) $('f-marca-input').value='';
     if($('marca-dropdown')) $('marca-dropdown').style.display='none';
+    // Re-abrir el dropdown filtrado por el sector recién seleccionado
+    // solo si el campo de marca tiene texto o si ya estaba abierto
+    const inp = document.getElementById('f-marca-input');
+    if(inp && document.activeElement === inp) {
+      window.__filterMarcas(inp.value || '');
+    }
   });
 
   // Estado inicial según empresa — listener defensivo de fallback
@@ -1822,29 +1842,31 @@
     if(rol==='empresa') {
       // Empresa: solo marcas vinculadas a través de empresa_marcas
       const {data}=await sb.from('empresa_marcas')
-        .select('marca_id, marcas(id, nombre)')
+        .select('marca_id, marcas(id, nombre, descripcion)')
         .eq('empresa_id', userId);
       (data||[]).forEach(row=>{
         const m=row.marcas; if(!m) return;
         marcasMap[m.id]=m.nombre;
         marcasMap[String(m.id).trim().toLowerCase()]=m.nombre;
+        if(m.descripcion) marcasDescMap[String(m.id)]=m.descripcion;
       });
     } else {
       // Gestor: carga sus marcas permitidas desde gestor_marcas
-      // y todas las marcas para el mapa de nombres (para la tabla de leads)
+      // y todas las marcas (con descripcion) para mapa de nombres + filtro sector
       const [gmRes, mRes] = await Promise.all([
         sb.from('gestor_marcas').select('marca_id').eq('gestor_id', userId),
-        sb.from('marcas').select('id,nombre').order('nombre'),
+        sb.from('marcas').select('id,nombre,descripcion').order('nombre'),
       ]);
       // Poblar set de IDs permitidos para este gestor
       marcasPermitidasGestor = new Set(
         (gmRes.data||[]).map(r => String(r.marca_id)).filter(Boolean)
       );
-      // Poblar mapa completo de nombres (necesario para mostrar nombres en la tabla)
+      // Poblar mapa de nombres y mapa de descripciones
       marcasSectorMap = {}; // ya no se usa para filtrar, se mantiene vacío
-      (mRes.data||[]).forEach(({id,nombre})=>{
+      (mRes.data||[]).forEach(({id, nombre, descripcion})=>{
         marcasMap[id]=nombre;
         marcasMap[String(id).trim().toLowerCase()]=nombre;
+        if(descripcion) marcasDescMap[String(id)]=descripcion;
       });
     }
   }
@@ -2736,6 +2758,7 @@
     await sb.auth.signOut();
     rol=null; userId=null; authUserId=null; userName=''; servicios=[]; allLeads=[];
     marcasPermitidasGestor=new Set();
+    marcasDescMap={};
     closeModal();
     $('screen-app').style.display='none';
     showEl('screen-login','flex');
