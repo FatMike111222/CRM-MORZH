@@ -143,11 +143,7 @@
     .tbl-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; min-width: 700px; }
     thead th { background: rgba(12,19,34,.98); color: var(--muted); font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; padding: 11px 16px; border-bottom: 1px solid var(--bd); text-align: left; white-space: nowrap; }
-    thead th.sortable { cursor: pointer; user-select: none; }
-    thead th.sortable:hover { color: var(--txt); }
-    .sort-icon { margin-left: 4px; opacity: .4; font-style: normal; font-size: .7rem; }
-    thead th.sort-asc .sort-icon,
-    thead th.sort-desc .sort-icon { opacity: 1; color: var(--blue); }
+    /* (sortable CSS eliminado — orden fijo de embudo) */
     tbody tr { border-bottom: 1px solid rgba(29,46,71,.5); transition: background .14s; cursor: pointer; }
     tbody tr:last-child { border-bottom: none; }
     tbody tr:hover { background: rgba(59,125,216,.07); }
@@ -157,12 +153,14 @@
     .btn-row-del:hover { color:#f87171; }
     .tel-cell { cursor:pointer; color:var(--muted); font-family:'DM Mono',monospace; font-size:.76rem; text-decoration:underline dotted; text-underline-offset:3px; transition:color .14s; }
     .tel-cell:hover { color:var(--txt); }
+    /* Contactos interactivos — email link */
+    a.email-link { color:var(--muted); font-family:'DM Mono',monospace; font-size:.76rem; text-decoration:underline dotted; text-underline-offset:3px; transition:color .14s; }
+    a.email-link:hover { color:var(--txt); }
 
     /* ── Cards móvil (< 768px) ── */
     /* Desktop: mostrar tabla, ocultar cards */
     #cards-body { display: none; }
     /* Sort bar — visible solo en móvil */
-    #mobile-sort-bar { display: none; }
 
     @media (max-width: 767px) {
       .main { padding: 16px 14px 52px; }
@@ -171,11 +169,7 @@
 
       /* Ocultar tabla, mostrar cards */
       #leads-table { display: none; }
-      #mobile-sort-bar { display: flex; align-items: center; gap: 8px; padding: 12px 14px 0; flex-wrap: wrap; }
-      #mobile-sort-bar .msort-lbl { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); flex-shrink: 0; }
-      #mobile-sort-bar .msort-btn { font-size: .7rem; font-weight: 600; font-family: 'DM Sans',sans-serif; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--bd); background: var(--s2); color: var(--muted); cursor: pointer; transition: all .15s; }
-      #mobile-sort-bar .msort-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
-      #mobile-sort-bar .msort-dir { font-size: .65rem; margin-left: 2px; }
+      /* (mobile-sort-bar CSS eliminado) */
       #cards-body  { display: flex; flex-direction: column; gap: 10px; padding: 10px 14px 14px; }
 
       /* Card individual */
@@ -234,8 +228,8 @@
       /* M-01: padding inferior para no tapar contenido con bottom nav */
       .main { padding-bottom: 80px; }
 
-      /* M-02: FAB visible en móvil (solo gestor — se controla via JS) */
-      #fab-nuevo-lead { display: flex; }
+      /* M-02: FAB visible en móvil solo cuando JS añade clase .gestor-fab */
+      #fab-nuevo-lead.gestor-fab { display: flex; }
     }
 
     /* M-01: Bottom Navigation Bar — solo móvil */
@@ -262,9 +256,10 @@
     .bnav-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none;
                     stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* M-02: FAB — Floating Action Button (solo móvil) */
+    /* M-02: FAB — Floating Action Button (solo móvil, solo gestor)
+       Base: siempre oculto. Media query + clase .gestor-fab lo activa. */
     #fab-nuevo-lead {
-      display: none; /* visible solo en móvil via media query */
+      display: none;
       position: fixed; bottom: 70px; right: 18px; z-index: 190;
       width: 52px; height: 52px; border-radius: 50%;
       background: var(--blue); border: none; cursor: pointer;
@@ -275,6 +270,12 @@
     }
     #fab-nuevo-lead:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(59,125,216,.7); }
     #fab-nuevo-lead:active { transform: scale(.95); }
+
+    /* M-01/M-02: visibilidad del bottom-nav y FAB
+       - .mob-hidden: oculta elementos dentro del nav (bnav-form si no es gestor)
+       - .gestor-fab: clase que JS añade al FAB cuando rol=gestor
+       La media query activa la visibilidad del FAB solo en móvil + gestor. */
+    .mob-hidden { display: none !important; }
 
     /* ── Select estado inline (empresa) ── */
     .estado-select {
@@ -644,23 +645,17 @@
           <table id="leads-table">
             <thead>
               <tr id="tbl-head">
-                <th class="sortable" data-col="nombre" onclick="window.__sort('nombre')">Cliente <em class="sort-icon">↕</em></th>
+                <th>Cliente</th>
                 <th>Teléfono</th><th>Población</th>
-                <th class="sortable" data-col="created_at" onclick="window.__sort('created_at')">Fecha entrada <em class="sort-icon">↓</em></th>
+                <th>Fecha entrada</th>
                 <th class="th-empresa">Empresa</th><th>Marca</th>
-                <th class="sortable" data-col="estado" onclick="window.__sort('estado')">Estado <em class="sort-icon">↕</em></th>
+                <th>Estado</th>
                 <th>Próxima Acción</th><th></th><th class="th-acciones"></th>
               </tr>
             </thead>
             <tbody id="tbl-body"></tbody>
           </table>
-          <!-- Sort bar móvil — visible solo en pantallas pequeñas -->
-          <div id="mobile-sort-bar">
-            <span class="msort-lbl">Ordenar:</span>
-            <button class="msort-btn" id="msort-nombre" onclick="window.__sortMobile('nombre')">Nombre <span class="msort-dir" id="msort-nombre-dir"></span></button>
-            <button class="msort-btn" id="msort-created_at" onclick="window.__sortMobile('created_at')">Fecha <span class="msort-dir" id="msort-created_at-dir">↓</span></button>
-            <button class="msort-btn" id="msort-estado" onclick="window.__sortMobile('estado')">Estado <span class="msort-dir" id="msort-estado-dir"></span></button>
-          </div>
+          <!-- (mobile-sort-bar eliminado — orden fijo de embudo) -->
           <!-- Cards móvil — renderizado en paralelo por renderTable() -->
           <div id="cards-body"></div>
         </div>
@@ -813,7 +808,7 @@
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     Dashboard
   </button>
-  <button class="bnav-btn" id="bnav-form" data-tab="tab-form" style="display:none">
+  <button class="bnav-btn mob-hidden" id="bnav-form" data-tab="tab-form">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
     Nuevo Lead
   </button>
@@ -824,7 +819,7 @@
 </nav>
 
 <!-- M-02: FAB — Floating Action Button (solo móvil, solo gestor) -->
-<button id="fab-nuevo-lead" aria-label="Registrar nuevo lead" title="Registrar nuevo lead" style="display:none">
+<button id="fab-nuevo-lead" aria-label="Registrar nuevo lead" title="Registrar nuevo lead">
   +
 </button>
 
@@ -895,7 +890,7 @@
   let _dashLoading = false; // H-08: evita loadDashboard() concurrentes
   let _lastSubmit  = 0;    // H-11: timestamp último envío (cooldown anti-spam)
   let _commentCooldown = false; // H-11: anti-spam comentarios
-  let sortCol = 'created_at', sortDir = 'desc'; // ordenación de tabla
+  // (sortCol/sortDir eliminados — orden fijo de embudo)
 
   // ─── HELPERS ──────────────────────────────────────────────────
   const $      = id => document.getElementById(id);
@@ -981,10 +976,19 @@
     $('modal-estado-pill').className   = 'pill '+(ESTADO_CLS[cliente.estado]||'s-pendiente');
     $('modal-empresa-lbl').textContent = '';
 
-    // Subline: Tel | Email | Población | Marca
+    // Subline: Tel | Email | Población | Marca — con links interactivos
     const marcaNomModal = getMarcaNombre(cliente.marca_id);
-    const subItems=[cliente.telefono,cliente.email,cliente.poblacion,marcaNomModal||null].filter(Boolean);
-    $('modal-subline').innerHTML=subItems.map((v,i)=>(i>0?'<span class="sep">|</span>':'')+esc(v)).join('');
+    const _subParts = [];
+    if(cliente.telefono) {
+      const telC=(cliente.telefono||'').replace(/\s/g,'');
+      _subParts.push(`<span class="tel-cell" onclick="event.stopPropagation();_openTelPopup(event,'${esc(telC)}')" title="Llamar o WhatsApp">${esc(cliente.telefono)}</span>`);
+    }
+    if(cliente.email) {
+      _subParts.push(`<a class="email-link" href="mailto:${esc(cliente.email)}" onclick="event.stopPropagation()" title="Enviar email">${esc(cliente.email)}</a>`);
+    }
+    if(cliente.poblacion) _subParts.push(esc(cliente.poblacion));
+    if(marcaNomModal)      _subParts.push(esc(marcaNomModal));
+    $('modal-subline').innerHTML=_subParts.map((v,i)=>(i>0?'<span class="sep">|</span>':'')+v).join('');
 
     // Próxima acción
     const fv=cliente.fecha_proxima_accion||null, {txt,cls:fc,sub}=semaforo(fv);
@@ -1769,7 +1773,7 @@
     if($('kpi-row')) $('kpi-row').innerHTML='<div class="kpi"><p class="kpi-lbl">Cargando…</p></div>';
     if($('emp-grid')) $('emp-grid').innerHTML='<div class="empty">Cargando…</div>';
     clientesConNuevoComentario=new Set();
-    filtroEstado=null; filtroSector=null; filtroPapelera=false; filtroBusqueda=''; sortCol='created_at'; sortDir='desc';
+    filtroEstado=null; filtroSector=null; filtroPapelera=false; filtroBusqueda='';
     const si=$('search-lead'); if(si) si.value='';
 
     const selectCols = rol==='empresa'
@@ -1851,58 +1855,35 @@
     });
   }
 
-  // ─── RENDER DASHBOARD ─────────────────────────────────────────
-  // ─── SORT ────────────────────────────────────────────────────
-  window.__sort = function(col) {
-    if(sortCol===col) { sortDir=sortDir==='asc'?'desc':'asc'; }
-    else { sortCol=col; sortDir='asc'; }
-    // Aplicar sort + limpiar + repintar
-    renderTable(sortedLeads(leadsVisibles()));
-    renderSortHeaders();
-    renderMobileSortBar();
-  };
-
-  // Sort bar para móvil — misma lógica que __sort pero actualiza botones móvil
-  window.__sortMobile = function(col) {
-    window.__sort(col); // reutilizar lógica completa
-  };
-
-  function renderMobileSortBar() {
-    ['nombre','created_at','estado'].forEach(col=>{
-      const btn=document.getElementById('msort-'+col);
-      const dir=document.getElementById('msort-'+col+'-dir');
-      if(!btn) return;
-      if(sortCol===col) {
-        btn.classList.add('active');
-        if(dir) dir.textContent=sortDir==='asc'?'↑':'↓';
-      } else {
-        btn.classList.remove('active');
-        if(dir) dir.textContent='';
-      }
-    });
-  }
+  // ─── ORDENACIÓN POR EMBUDO (fija, automática) ─────────────────
+  // Estados ordenados de más frío a más caliente.
+  // Dentro de cada estado, sub-orden por fecha de entrada (más recientes primero).
+  const FUNNEL_ORDER = [
+    'PENDIENTE DE ASIGNAR',
+    'PENDIENTE DE LLAMAR',
+    'VISITA PROGRAMADA',
+    'SEGUIMIENTO',
+    'PRESUPUESTO ENVIADO',
+    'OBRA ACEPTADA',
+    'TRABAJANDO',
+    'RECHAZADO',
+  ];
 
   function sortedLeads(data) {
-    return [...data].sort((a,b)=>{
-      let va='', vb='';
-      if(sortCol==='nombre')  { va=(a.nombre_cliente||'').toLowerCase(); vb=(b.nombre_cliente||'').toLowerCase(); }
-      if(sortCol==='estado')  { va=a.estado||''; vb=b.estado||''; }
-      if(sortCol==='created_at') { va=a.created_at||''; vb=b.created_at||''; }
-      if(va<vb) return sortDir==='asc'?-1:1;
-      if(va>vb) return sortDir==='asc'?1:-1;
-      return 0;
+    return [...data].sort((a, b) => {
+      const ia = FUNNEL_ORDER.indexOf(a.estado ?? '');
+      const ib = FUNNEL_ORDER.indexOf(b.estado ?? '');
+      const pa = ia === -1 ? 999 : ia;
+      const pb = ib === -1 ? 999 : ib;
+      if (pa !== pb) return pa - pb;
+      // Sub-orden: más reciente primero
+      const da = a.created_at || '';
+      const db = b.created_at || '';
+      return da > db ? -1 : da < db ? 1 : 0;
     });
   }
 
-  function renderSortHeaders() {
-    document.querySelectorAll('thead th.sortable').forEach(th=>{
-      th.classList.remove('sort-asc','sort-desc');
-      if(th.dataset.col===sortCol) th.classList.add('sort-'+sortDir);
-      const icon=th.querySelector('.sort-icon');
-      if(icon) icon.textContent = th.dataset.col===sortCol ? (sortDir==='asc'?'↑':'↓') : '↕';
-    });
-  }
-
+  // ─── RENDER DASHBOARD ─────────────────────────────────────────
   function renderDashboard() {
     const vis=leadsVisibles();
     renderKPIs(vis);
@@ -1910,8 +1891,7 @@
     renderFiltrosEstado();
     renderFiltrosSector();
     renderTable(sortedLeads(vis));
-    renderSortHeaders();
-    renderMobileSortBar();
+    // (renderSortHeaders / renderMobileSortBar eliminados — orden fijo de embudo)
   }
 
   function renderFiltrosEstado() {
@@ -2106,6 +2086,7 @@
           ${marcaNomTxt?`<div class="lc-row"><span class="lc-lbl">Marca</span><span class="lc-val">${esc(marcaNomTxt)}</span></div>`:''}
           <div class="lc-row"><span class="lc-lbl">Estado</span>${cardEstado}</div>
           ${c.poblacion?`<div class="lc-row"><span class="lc-lbl">Lugar</span><span class="lc-val">${esc(c.poblacion)}</span></div>`:''}
+          ${c.email?`<div class="lc-row"><span class="lc-lbl">Email</span><a class="email-link lc-val" href="mailto:${esc(c.email)}" onclick="event.stopPropagation()">${esc(c.email)}</a></div>`:''}
           <div class="lc-footer">
             ${telHtml}
             ${notif}
@@ -2116,7 +2097,6 @@
     $('tbl-body').innerHTML  = rowsHTML.join('');
     $('cards-body').innerHTML = cardsHTML.join('');
 
-    renderSortHeaders();
     // Click en filas tabla → abrir modal
     $('tbl-body').querySelectorAll('tr').forEach(row=>{
       row.addEventListener('click',e=>{
@@ -2407,11 +2387,13 @@
   // M-01: mostrar/ocultar botón "Nuevo Lead" en bottom nav según rol
   function applyBottomNavRole() {
     const isGestor = (rol === 'gestor');
+    // bnav-form: dentro del nav que ya es display:none en desktop, mob-hidden lo
+    // oculta en móvil si no es gestor.
     const bnavForm = $('bnav-form');
-    if(bnavForm) bnavForm.style.display = isGestor ? '' : 'none';
-    // M-02: FAB solo para gestores
+    if(bnavForm) bnavForm.classList.toggle('mob-hidden', !isGestor);
+    // FAB: clase .gestor-fab activa la visibilidad vía media query (sin !important conflicts)
     const fab = $('fab-nuevo-lead');
-    if(fab) fab.style.display = isGestor ? '' : 'none';
+    if(fab) fab.classList.toggle('gestor-fab', isGestor);
   }
   window.__applyBottomNavRole = applyBottomNavRole;
 
