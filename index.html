@@ -2745,5 +2745,68 @@
 
 })();
 </script>
+// ─── MOTOR DE MARCAS Y EMPRESAS ───
+window.__filterMarcas = function(q) {
+  const dd = document.getElementById('marca-dropdown');
+  dd.innerHTML = '';
+  const text = (q || '').toLowerCase();
+  
+  // Buscar las marcas que coincidan
+  const matches = Array.from(marcasMap.values()).filter(m => m.nombre.toLowerCase().includes(text));
+  
+  if (matches.length === 0) {
+    dd.style.display = 'none';
+    return;
+  }
+  
+  // Dibujar las opciones en el desplegable
+  matches.forEach(m => {
+    const div = document.createElement('div');
+    div.style.padding = '10px 14px';
+    div.style.cursor = 'pointer';
+    div.style.color = 'var(--txt)';
+    div.textContent = m.nombre;
+    div.onmouseover = () => div.style.background = 'var(--s3)';
+    div.onmouseout = () => div.style.background = 'transparent';
+    div.onclick = () => {
+      document.getElementById('f-marca-input').value = m.nombre;
+      document.getElementById('f-marca').value = m.id;
+      dd.style.display = 'none';
+      window.__activarEmpresas(m.id); // Desbloquear empresas al hacer clic
+    };
+    dd.appendChild(div);
+  });
+  dd.style.display = 'block';
+};
+
+window.__activarEmpresas = function(marcaId) {
+  const selEmpresa = document.getElementById('f-empresa');
+  selEmpresa.innerHTML = '<option value="">— Seleccionar Empresa —</option>';
+  
+  if (!marcaId) {
+    selEmpresa.disabled = true;
+    return;
+  }
+  
+  // Buscar empresas vinculadas a esta marca
+  const empresasDeMarca = empresasData.filter(e => e.marcas && e.marcas.includes(marcaId));
+  
+  empresasDeMarca.forEach(e => {
+    const opt = document.createElement('option');
+    opt.value = e.id;
+    opt.textContent = e.nombre_comercial;
+    selEmpresa.appendChild(opt);
+  });
+  
+  selEmpresa.disabled = false; // Desbloqueamos el selector
+};
+
+// Ocultar el desplegable si haces clic fuera
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#f-marca-input') && !e.target.closest('#marca-dropdown')) {
+    const dd = document.getElementById('marca-dropdown');
+    if (dd) dd.style.display = 'none';
+  }
+});
 </body>
 </html>
