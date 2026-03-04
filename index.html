@@ -543,6 +543,7 @@
         </div>
         <div style="width:1px;height:20px;background:var(--bd);margin:0 4px"></div>
         <div class="tab-bar">
+          <button id="tab-btn-pendientes" class="tab" data-tab="tab-pendientes" style="display:none"><span style="margin-right:5px">🕐</span>Pendientes</button>
           <button id="tab-btn-form" class="tab" data-tab="tab-form" style="display:none"><span style="margin-right:5px">✦</span>Registrar Lead</button>
           <button id="tab-btn-dash" class="tab" data-tab="tab-dash"><span style="margin-right:5px">◈</span>Dashboard</button>
         </div>
@@ -555,6 +556,36 @@
   </nav>
 
   <div class="main">
+
+    <!-- ══ TAB 0: PENDIENTES (solo gestores) ══ -->
+    <div id="tab-pendientes" class="tab-panel">
+      <div class="pcard" style="width:100%">
+        <div class="pcard-head">
+          <div>
+            <div class="pcard-title">🕐 Sala de Espera &mdash; Pendientes</div>
+            <p style="font-size:.76rem;color:var(--muted);margin-top:3px">Leads web sin procesar y clientes sin empresa asignada</p>
+          </div>
+          <button class="btn-ghost" onclick="loadPendientes()">&#x21BB; Actualizar</button>
+        </div>
+        <div id="pendientes-loading" style="padding:32px;text-align:center"><div class="spin"></div></div>
+        <div id="pendientes-empty" class="empty" style="display:none">No hay leads pendientes. &#x1F389;</div>
+        <div id="pendientes-wrap" style="display:none">
+          <div class="tbl-wrap">
+            <table style="width:100%">
+              <thead>
+                <tr>
+                  <th>Fecha</th><th>Nombre</th><th>Tel&eacute;fono</th><th>Email</th>
+                  <th>Marca</th><th>Comentario / Mensaje</th>
+                  <th style="text-align:center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="pendientes-body"></tbody>
+            </table>
+          </div>
+          <div id="pendientes-cards"></div>
+        </div>
+      </div>
+    </div>
 
     <!-- ══ TAB 1: FORMULARIO (solo gestores) ══ -->
     <div id="tab-form" class="tab-panel">
@@ -623,6 +654,20 @@
                 style="width:100%;background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:9px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:.875rem;padding:10px 13px;outline:none;resize:vertical;transition:border-color .18s,box-shadow .18s;"
                 onfocus="this.style.borderColor='rgba(59,125,216,.55)';this.style.boxShadow='0 0 0 3px rgba(59,125,216,.1)'"
                 onblur="this.style.borderColor='';this.style.boxShadow=''"></textarea>
+            </div>
+            <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div>
+                <label class="field-label" for="f-hora-visita">Hora de visita</label>
+                <input id="f-hora-visita" type="time" class="field"/>
+              </div>
+              <div>
+                <label class="field-label" for="f-tel-secundario">Tel&#xe9;fono secundario</label>
+                <input id="f-tel-secundario" type="text" placeholder="+34 6XX XXX XXX" class="field"/>
+              </div>
+              <div style="grid-column:1/-1">
+                <label class="field-label" for="f-direccion-obra">Direcci&#xf3;n de obra</label>
+                <input id="f-direccion-obra" type="text" placeholder="Calle, n&#xfa;mero, ciudad&hellip;" class="field"/>
+              </div>
             </div>
             <hr class="sec-divider"/>
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
@@ -694,6 +739,7 @@
                 <th>Cliente</th>
                 <th>Teléfono</th><th>Población</th>
                 <th>Fecha entrada</th>
+                <th>Hora visita</th>
                 <th class="th-empresa">Empresa</th><th>Marca</th>
                 <th>Estado</th>
                 <th>Próxima Acción</th><th></th><th class="th-acciones"></th>
@@ -802,6 +848,18 @@
                 <option value="">— Sin empresa —</option>
               </select>
             </div>
+            <div>
+              <label class="field-label" style="font-size:.6rem">Hora de visita</label>
+              <input id="edit-hora-visita" type="time" class="edit-field"/>
+            </div>
+            <div>
+              <label class="field-label" style="font-size:.6rem">Tel&#xe9;fono secundario</label>
+              <input id="edit-tel-secundario" type="text" class="edit-field" placeholder="6XX XXX XXX"/>
+            </div>
+            <div style="grid-column:1/-1">
+              <label class="field-label" style="font-size:.6rem">Direcci&#xf3;n de obra</label>
+              <input id="edit-direccion-obra" type="text" class="edit-field" placeholder="Calle, número…"/>
+            </div>
           </div>
         </div>
 
@@ -881,6 +939,10 @@
   <button class="bnav-btn active" id="bnav-dash" data-tab="tab-dash">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     Dashboard
+  </button>
+  <button class="bnav-btn mob-hidden" id="bnav-pendientes" data-tab="tab-pendientes">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+    Pendientes
   </button>
   <button class="bnav-btn mob-hidden" id="bnav-form" data-tab="tab-form">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
@@ -972,6 +1034,7 @@
   let marcasDescMap = {};  // id -> descripcion de la tabla marcas ('reformas' / 'Limpiezas')
   let marcasPermitidasGestor = new Set(); // IDs de marcas asignadas al gestor via gestor_marcas
   let activeClienteId = null, activeClienteData = null, pendingEstado = null;
+  let _pendienteLeadId = null; // ID del lead web en leads_pendientes que se está validando
   let clientesConNuevoComentario = new Set();
   let rtComments = null, rtClientes = null;
 
@@ -1041,9 +1104,10 @@
     btn.addEventListener('click', () => {
       const targetTab = btn.dataset.tab;
       activateAppTab(targetTab);          // usa el mismo helper que el router
-      const urlMap = { 'tab-dash': '/dashboard', 'tab-form': '/formulario' };
+      const urlMap = { 'tab-dash': '/dashboard', 'tab-form': '/formulario', 'tab-pendientes': '/pendientes' };
       window.history.pushState(null, '', urlMap[targetTab] || '/dashboard');
       if(targetTab === 'tab-dash') loadDashboard();
+      if(targetTab === 'tab-pendientes') loadPendientes();
     });
   });
   document.querySelectorAll('.mtab').forEach(btn => {
@@ -1108,6 +1172,9 @@
     $('edit-tel').value=cliente.telefono||'';
     $('edit-email').value=cliente.email||'';
     $('edit-pobl').value=cliente.poblacion||'';
+    const _ehv=document.getElementById('edit-hora-visita'); if(_ehv) _ehv.value=cliente.hora_visita||'';
+    const _ets=document.getElementById('edit-tel-secundario'); if(_ets) _ets.value=cliente.telefono_secundario||'';
+    const _edo=document.getElementById('edit-direccion-obra'); if(_edo) _edo.value=cliente.direccion_obra||'';
 
     // Poblar subservicio del modal
     const erSel=$('edit-reforma');
@@ -1134,7 +1201,7 @@
       }
     }
 
-    const editFields=['edit-nombre','edit-tel','edit-email','edit-pobl','edit-reforma','edit-empresa-modal'];
+    const editFields=['edit-nombre','edit-tel','edit-email','edit-pobl','edit-reforma','edit-empresa-modal','edit-hora-visita','edit-tel-secundario','edit-direccion-obra'];
     if(rol==='gestor') {
       $('btn-modal-edit').style.display='';
       $('btn-modal-del').style.display='';
@@ -1309,6 +1376,13 @@
       // T6b: reasignar empresa (defensivo — solo si el elemento existe)
       const _eEmpVal = document.getElementById('edit-empresa-modal')?.value;
       if(typeof _eEmpVal !== 'undefined') payload.empresa_id = _eEmpVal || null;
+      // Nuevos campos siempre incluidos (también cuando editOpen=false para actualizarlos desde Pendientes)
+      const _hvVal = (document.getElementById('edit-hora-visita')?.value)||null;
+      payload.hora_visita = _hvVal || null;
+      const _tsVal = (document.getElementById('edit-tel-secundario')?.value||'').trim();
+      payload.telefono_secundario = _tsVal || null;
+      const _doVal = (document.getElementById('edit-direccion-obra')?.value||'').trim();
+      payload.direccion_obra = _doVal || null;
     }
 
     try {
@@ -1332,6 +1406,12 @@
       setTimeout(()=>{ $('save-ok').style.display='none'; },3000);
       $('save-bar').classList.remove('visible');
       $('edit-panel').classList.remove('open');
+      // Si venía de validar un lead web, eliminar de la tabla de cuarentena
+      if(_pendienteLeadId) {
+        await sb.from('leads_pendientes').delete().eq('id', _pendienteLeadId);
+        _pendienteLeadId = null;
+        loadPendientes();
+      }
       toast('Cambios guardados');
 
     } catch(err) {
@@ -1488,6 +1568,14 @@
         navigate('/dashboard');
       }
 
+    } else if (route.view === 'pendientes') {
+      if (rol === 'gestor') {
+        activateAppTab('tab-pendientes');
+        loadPendientes();
+      } else {
+        navigate('/dashboard');
+      }
+
     } else {
       // /dashboard o / — vista por defecto
       activateAppTab('tab-dash');
@@ -1637,6 +1725,7 @@
       $('topbar-role-lbl').textContent='Panel Gestor';
       $('gestor-badge-form').textContent=userName;
       $('user-badge').className='badge mono';
+      showEl('tab-btn-pendientes','block');
       showEl('tab-btn-form','block');
       // dispatchRoute activa la tab correcta segun URL
       showEl('kpi-wrap','block');
@@ -1645,6 +1734,7 @@
     } else {
       $('topbar-role-lbl').textContent='Panel Empresa';
       $('user-badge').className='badge badge-empresa mono';
+      hideEl('tab-btn-pendientes');
       hideEl('tab-btn-form');
       $('tab-form').classList.remove('active');
       $('tab-btn-dash').classList.add('active');
@@ -1902,6 +1992,9 @@
       poblacion:str('f-pobl'), tipo_reforma:str('f-reforma'), marca_id:str('f-marca'),
       empresa_id:empresaId, gestor_id:userId,
       estado:empresaId?'PENDIENTE DE LLAMAR':'PENDIENTE DE ASIGNAR',
+      hora_visita:str('f-hora-visita')||null,
+      telefono_secundario:str('f-tel-secundario')||null,
+      direccion_obra:str('f-direccion-obra')||null,
       _extra:$('f-extra').value.trim(), _ts:Date.now(),
     };
   }
@@ -1917,7 +2010,12 @@
   }
 
   function resetForm() {
+    _pendienteLeadId = null;
     $('form-lead').reset(); $('f-tel').value='+34'; $('f-extra').value='';
+    // Limpiar campos nuevos (reset() los cubre pero por seguridad)
+    const _fhv=document.getElementById('f-hora-visita'); if(_fhv) _fhv.value='';
+    const _fts=document.getElementById('f-tel-secundario'); if(_fts) _fts.value='';
+    const _fdo=document.getElementById('f-direccion-obra'); if(_fdo) _fdo.value='';
     fillReformaSelector();
     $('estado-inicial-lbl').textContent='PENDIENTE DE ASIGNAR';
     $('estado-inicial-lbl').className='pill s-sin-asignar';
@@ -2004,6 +2102,12 @@
     try {
       const nc=await insertLeadOnline(payload);
       _lastSubmit=Date.now(); // H-11: resetear cooldown
+      // Si venía de validar un lead web, eliminar de la tabla de cuarentena
+      if(_pendienteLeadId) {
+        await sb.from('leads_pendientes').delete().eq('id', _pendienteLeadId);
+        _pendienteLeadId = null;
+        loadPendientes();
+      }
       resetForm();
       showSuccessAlert(nc);
       toast('Lead registrado · '+payload.estado);
@@ -2047,6 +2151,176 @@
     }, 600);
   });
 
+  // ════════════════════════════════════════════════════════════
+  // SALA DE ESPERA — PENDIENTES
+  // ════════════════════════════════════════════════════════════
+  async function loadPendientes() {
+    const loading = $('pendientes-loading');
+    const empty   = $('pendientes-empty');
+    const wrap    = $('pendientes-wrap');
+    if(!wrap) return;
+    loading.style.display='block'; wrap.style.display='none'; empty.style.display='none';
+
+    try {
+      // A) Leads web sin procesar (tabla leads_pendientes)
+      const {data: webLeads, error: e1} = await sb
+        .from('leads_pendientes')
+        .select('id,nombre,telefono,email,marca_id,mensaje_web,created_at')
+        .order('created_at', {ascending: false});
+      if(e1) throw e1;
+
+      // B) Leads manuales: clientes del gestor sin empresa asignada y no borrados
+      const {data: sinEmp, error: e2} = await sb
+        .from('clientes')
+        .select('id,nombre_cliente,telefono,email,marca_id,created_at,estado')
+        .eq('gestor_id', userId)
+        .is('empresa_id', null)
+        .neq('estado', 'BORRADO')
+        .order('created_at', {ascending: false});
+      if(e2) throw e2;
+
+      const filas = [
+        ...(webLeads||[]).map(r => ({...r, _tipo:'web',    nombre:r.nombre,          comentario:r.mensaje_web||''})),
+        ...(sinEmp||[]).map(r  => ({...r, _tipo:'manual', nombre:r.nombre_cliente,   comentario:'Sin empresa asignada'})),
+      ];
+
+      loading.style.display = 'none';
+      if(!filas.length){ empty.style.display='block'; return; }
+      wrap.style.display = 'block';
+      renderPendientesTable(filas);
+
+    } catch(err) {
+      loading.style.display = 'none';
+      empty.textContent = 'Error al cargar pendientes: ' + err.message;
+      empty.style.display = 'block';
+    }
+  }
+
+  function renderPendientesTable(filas) {
+    const tbody = $('pendientes-body');
+    const cards = $('pendientes-cards');
+    if(!tbody) return;
+    const rows=[], cardArr=[];
+
+    filas.forEach(r => {
+      const fecha    = r.created_at ? fmtDate(r.created_at) : '—';
+      const marcaNom = getMarcaNombre(r.marca_id) || '—';
+      const telClean = (r.telefono||'').replace(/\s/g,'');
+      const telHtml  = telClean
+        ? `<span class="tel-cell" onclick="event.stopPropagation();_openTelPopup(event,'${esc(telClean)}')">${esc(r.telefono)}</span>`
+        : '—';
+      const tipoBadge = r._tipo === 'web'
+        ? '<span class="pill" style="background:rgba(59,125,216,.18);color:#7db4f0;font-size:.63rem;vertical-align:middle">WEB</span>'
+        : '<span class="pill" style="background:rgba(245,166,35,.15);color:#fbbf24;font-size:.63rem;vertical-align:middle">MANUAL</span>';
+
+      // Botones de acción
+      let accBtns = '';
+      if(r._tipo === 'web') {
+        const safeNombre  = (r.nombre||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        const safeTel     = (r.telefono||'').replace(/'/g,"\\'");
+        const safeEmail   = (r.email||'').replace(/'/g,"\\'");
+        const safeMarcaId = String(r.marca_id||'').replace(/'/g,"\\'");
+        const safeMsg     = (r.mensaje_web||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ');
+        const safeId      = String(r.id||'').replace(/'/g,"\\'");
+        accBtns +=
+          `<button class="btn-primary" style="font-size:.72rem;padding:5px 10px;background:#16a34a;border-color:#16a34a;margin-right:4px"` +
+          ` onclick="_validarLeadWeb('${safeId}','${safeNombre}','${safeTel}','${safeEmail}','${safeMarcaId}','${safeMsg}')">` +
+          `&#x2713; Validar</button>`;
+      } else {
+        const safeId = String(r.id||'').replace(/'/g,"\\'");
+        accBtns +=
+          `<button class="btn-primary" style="font-size:.72rem;padding:5px 10px;background:#1d4ed8;border-color:#1d4ed8;margin-right:4px"` +
+          ` onclick="_asignarManual('${safeId}')">` +
+          `&#x2197; Asignar</button>`;
+      }
+      // Botón Descartar (ambos tipos)
+      const safeId2  = String(r.id||'').replace(/'/g,"\\'");
+      const safeTipo = r._tipo;
+      accBtns +=
+        `<button class="btn-primary" style="font-size:.72rem;padding:5px 10px;background:#dc2626;border-color:#dc2626"` +
+        ` onclick="_descartarPendiente('${safeTipo}','${safeId2}')">` +
+        `&#x2715; Descartar</button>`;
+
+      rows.push(`
+        <tr>
+          <td style="font-size:.76rem;color:var(--muted);white-space:nowrap">${esc(fecha)}&nbsp;${tipoBadge}</td>
+          <td>${esc(r.nombre||'—')}</td>
+          <td class="td-tel">${telHtml}</td>
+          <td style="font-size:.78rem">${r.email ? `<a class="email-link" href="mailto:${esc(r.email)}" onclick="event.stopPropagation()">${esc(r.email)}</a>` : '—'}</td>
+          <td style="font-size:.8rem">${esc(marcaNom)}</td>
+          <td style="font-size:.76rem;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.comentario||'')}">${esc(r.comentario||'—')}</td>
+          <td style="text-align:center;white-space:nowrap">${accBtns}</td>
+        </tr>`);
+
+      cardArr.push(`
+        <div class="lead-card">
+          <div class="lc-nombre">${esc(r.nombre||'Sin nombre')}&nbsp;${tipoBadge}</div>
+          <div class="lc-row"><span class="lc-lbl">Marca</span><span class="lc-val">${esc(marcaNom)}</span></div>
+          ${r.telefono ? `<div class="lc-row"><span class="lc-lbl">Tel</span>${telHtml}</div>` : ''}
+          ${r.email    ? `<div class="lc-row"><span class="lc-lbl">Email</span><a class="email-link lc-val" href="mailto:${esc(r.email)}" onclick="event.stopPropagation()">${esc(r.email)}</a></div>` : ''}
+          ${r.comentario ? `<div class="lc-row"><span class="lc-lbl">Msg</span><span class="lc-val" style="font-size:.72rem">${esc(r.comentario)}</span></div>` : ''}
+          <div class="lc-footer" style="flex-wrap:wrap;gap:6px">${accBtns}</div>
+        </div>`);
+    });
+
+    tbody.innerHTML  = rows.join('');
+    if(cards) cards.innerHTML = cardArr.join('');
+  }
+
+  // ── Validar lead web → autocompleta formulario ────────────────
+  window._validarLeadWeb = function(id, nombre, telefono, email, marcaId, msg) {
+    _pendienteLeadId = id;
+    navigate('/formulario');
+    setTimeout(() => {
+      const _fn = $('f-nombre');       if(_fn) _fn.value = nombre;
+      const _ft = $('f-tel');          if(_ft) _ft.value = telefono || '+34';
+      const _fe = $('f-email');        if(_fe) _fe.value = email;
+      const _fx = $('f-extra');        if(_fx) _fx.value = msg;
+      if(marcaId) {
+        const hid = $('f-marca');      if(hid) hid.value = marcaId;
+        const nom = getMarcaNombre(marcaId);
+        const inp = $('f-marca-input'); if(inp) inp.value = nom || marcaId;
+        if(window.__onMarcaSelected) window.__onMarcaSelected(marcaId);
+      }
+      // Actualizar estado-inicial-lbl
+      const lbl = $('estado-inicial-lbl');
+      if(lbl) { lbl.textContent='PENDIENTE DE ASIGNAR'; lbl.className='pill s-sin-asignar'; }
+      toast('Formulario autocompletado — revisa y registra el lead');
+    }, 300);
+  };
+
+  // ── Asignar lead manual → abrir ficha ────────────────────────
+  window._asignarManual = function(clienteId) {
+    const cliente = allLeads.find(c => c.id === clienteId);
+    if(cliente) { openModal(cliente); return; }
+    // Si no está en memoria, recargar dashboard y abrir
+    loadDashboard().then(() => {
+      const c2 = allLeads.find(c => c.id === clienteId);
+      if(c2) openModal(c2);
+      else toast('No se encontró el cliente. Recarga el Dashboard.');
+    });
+  };
+
+  // ── Descartar pendiente ───────────────────────────────────────
+  window._descartarPendiente = async function(tipo, id) {
+    if(!confirm('¿Seguro que quieres descartar este lead?')) return;
+    try {
+      if(tipo === 'web') {
+        const {error} = await sb.from('leads_pendientes').delete().eq('id', id);
+        if(error) throw error;
+      } else {
+        const {error} = await sb.from('clientes').update({estado: 'BORRADO'}).eq('id', id);
+        if(error) throw error;
+        const idx = allLeads.findIndex(c => c.id === id);
+        if(idx !== -1) allLeads[idx].estado = 'BORRADO';
+      }
+      toast('Lead descartado correctamente');
+      loadPendientes();
+    } catch(err) {
+      toast('Error al descartar: ' + err.message);
+    }
+  };
+
   // ─── DASHBOARD ────────────────────────────────────────────────
   async function loadDashboard(force=false) {
     // H-08: guard contra llamadas concurrentes
@@ -2065,8 +2339,8 @@
     const si=$('search-lead'); if(si) si.value='';
 
     const selectCols = rol==='empresa'
-      ? 'id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion,tipo_proxima_accion,marcas(id,nombre)'
-      : 'id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion,tipo_proxima_accion';
+      ? 'id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion,tipo_proxima_accion,hora_visita,marcas(id,nombre)'
+      : 'id,nombre_cliente,telefono,email,poblacion,tipo_reforma,marca_id,empresa_id,gestor_id,estado,created_at,updated_at,importe_presupuesto,fecha_proxima_accion,tipo_proxima_accion,hora_visita';
 
     function buildQ(limit=null) {
       let q=sb.from('clientes').select(selectCols).order('created_at',{ascending:false});
@@ -2385,6 +2659,7 @@
           <td class="td-tel">${telHtml}</td>
           <td>${esc(c.poblacion||'—')}</td>
           <td style="font-size:.76rem;color:var(--muted)">${esc(fechaEntrada)}</td>
+          <td style="font-size:.76rem;color:var(--muted)">${c.hora_visita ? esc(c.hora_visita.slice(0,5)) : '<span style="color:var(--muted)">—</span>'}</td>
           ${empCell}
           <td class="td-marca">${marcaNom}</td>
           <td class="td-estado">${estadoCell}</td>
@@ -2711,6 +2986,7 @@
   window.__syncBottomNav = syncBottomNav;
 
   $('bnav-dash')?.addEventListener('click', () => navigate('/dashboard'));
+  $('bnav-pendientes')?.addEventListener('click', () => navigate('/pendientes'));
   $('bnav-form')?.addEventListener('click', () => navigate('/formulario'));
   $('bnav-logout')?.addEventListener('click', () => $('btn-logout').click());
 
@@ -2719,6 +2995,8 @@
     const isGestor = (rol === 'gestor');
     // bnav-form: dentro del nav que ya es display:none en desktop, mob-hidden lo
     // oculta en móvil si no es gestor.
+    const bnavPend = $('bnav-pendientes');
+    if(bnavPend) bnavPend.classList.toggle('mob-hidden', !isGestor);
     const bnavForm = $('bnav-form');
     if(bnavForm) bnavForm.classList.toggle('mob-hidden', !isGestor);
     // FAB: clase .gestor-fab activa la visibilidad vía media query (sin !important conflicts)
@@ -2759,6 +3037,7 @@
     rol=null; userId=null; authUserId=null; userName=''; servicios=[]; allLeads=[];
     marcasPermitidasGestor=new Set();
     marcasDescMap={};
+    _pendienteLeadId=null;
     closeModal();
     $('screen-app').style.display='none';
     showEl('screen-login','flex');
