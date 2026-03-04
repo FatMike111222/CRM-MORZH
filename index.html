@@ -668,6 +668,52 @@
       /* Empujar contenido bajo la barra */
       .main { padding-top: 66px !important; }
     }
+
+    /* V57: FILE PREVIEW MODAL */
+    #file-preview-backdrop {
+      display: none; position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,.88); backdrop-filter: blur(8px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    #file-preview-backdrop.open { display: flex; animation: fadein .18s ease both; }
+    #file-preview-box {
+      position: relative; background: var(--s1); border: 1px solid var(--bd2);
+      border-radius: 16px; width: 100%; max-width: 900px; max-height: 90vh;
+      display: flex; flex-direction: column;
+      box-shadow: 0 40px 80px rgba(0,0,0,.75); overflow: hidden;
+    }
+    #file-preview-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 18px; border-bottom: 1px solid var(--bd); flex-shrink: 0;
+    }
+    #file-preview-name {
+      font-family: 'DM Mono', monospace; font-size: .8rem; color: var(--txt);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; margin-right: 12px;
+    }
+    #file-preview-close {
+      background: rgba(255,255,255,.06); border: 1px solid var(--bd);
+      color: var(--muted); border-radius: 7px; width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 1rem; flex-shrink: 0; transition: color .15s, background .15s;
+    }
+    #file-preview-close:hover { background: rgba(248,113,113,.15); color: #f87171; border-color: rgba(248,113,113,.3); }
+    #file-preview-content {
+      flex: 1; overflow: hidden; display: flex;
+      align-items: center; justify-content: center;
+      min-height: 300px; background: rgba(0,0,0,.3);
+    }
+    #file-preview-content img { max-width: 100%; max-height: 75vh; object-fit: contain; display: block; }
+    #file-preview-content iframe { width: 100%; height: 75vh; border: none; display: block; }
+    .file-preview-dl-btn {
+      font-family: 'DM Sans', sans-serif; font-size: .875rem; font-weight: 600;
+      background: linear-gradient(135deg, var(--blue), var(--blue2));
+      border: none; border-radius: 10px; color: #fff; padding: 14px 28px; cursor: pointer;
+      display: flex; align-items: center; gap: 9px; transition: transform .15s, box-shadow .18s;
+    }
+    .file-preview-dl-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(91,110,240,.4); }
+    .file-preview-dl-btn svg { width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round; }
+    .doc-item { cursor: pointer; transition: border-color .15s, background .15s; }
+    .doc-item:hover { border-color: var(--bd2); background: rgba(59,125,216,.06); }
   </style>
 </head>
 <body>
@@ -825,18 +871,36 @@
               <label for="f-website">Website</label>
               <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off"/>
             </div>
+            <!-- V57: campos reordenados, sin hora_visita visible -->
             <div class="form-2col">
-              <div><label class="field-label" for="f-nombre">Nombre cliente</label><input id="f-nombre" type="text" placeholder="Ej: Carmen Rivas" class="field"/></div>
               <div>
-                <label class="field-label" for="f-tel">Teléfono</label>
+                <label class="field-label" for="f-nombre">Nombre cliente</label>
+                <input id="f-nombre" type="text" placeholder="Ej: Carmen Rivas" class="field"/>
+              </div>
+              <div>
+                <label class="field-label" for="f-tel">Tel&eacute;fono principal</label>
                 <input id="f-tel" type="text" placeholder="+34 6XX XXX XXX" value="+34" class="field"/>
                 <div id="tel-dup-warn" style="display:none" class="tel-dup-warn">
                   <span id="tel-dup-txt"></span>
                   <button id="tel-dup-btn" type="button">Ver ficha</button>
                 </div>
               </div>
-              <div><label class="field-label" for="f-email">Email</label><input id="f-email" type="email" placeholder="cliente@email.com" class="field"/></div>
-              <div><label class="field-label" for="f-pobl">Población</label><input id="f-pobl" type="text" placeholder="Ciudad o municipio" class="field"/></div>
+              <div>
+                <label class="field-label" for="f-tel-secundario">Tel&eacute;fono secundario</label>
+                <input id="f-tel-secundario" type="text" placeholder="+34 6XX XXX XXX" class="field"/>
+              </div>
+              <div>
+                <label class="field-label" for="f-email">Email</label>
+                <input id="f-email" type="email" placeholder="cliente@email.com" class="field"/>
+              </div>
+              <div>
+                <label class="field-label" for="f-pobl">Poblaci&oacute;n</label>
+                <input id="f-pobl" type="text" placeholder="Ciudad o municipio" class="field"/>
+              </div>
+              <div>
+                <label class="field-label" for="f-direccion-obra">Direcci&oacute;n de obra</label>
+                <input id="f-direccion-obra" type="text" placeholder="Calle, n&uacute;mero, ciudad&hellip;" class="field"/>
+              </div>
               <div>
                 <label class="field-label" for="f-sector">Sector</label>
                 <select id="f-sector" class="field"><option value="">— Seleccionar —</option></select>
@@ -848,19 +912,22 @@
               <div class="col-span-2" style="position:relative">
                 <label class="field-label" for="f-marca-input">Marca</label>
                 <input id="f-marca-input" type="text" placeholder="Escribe para buscar o haz clic..." class="field" autocomplete="off"
-                  onfocus="window.__filterMarcas('')" 
+                  onfocus="window.__filterMarcas('')"
                   oninput="window.__filterMarcas(this.value)"/>
                 <input id="f-marca" type="hidden"/>
                 <div id="marca-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:100;
                   background:var(--s2);border:1px solid var(--bd2);border-radius:9px;max-height:180px;overflow-y:auto;margin-top:3px;box-shadow:0 8px 24px rgba(0,0,0,.4)">
                 </div>
               </div>
-              <div class="col-span-2"><label class="field-label" for="f-empresa">Empresa <span id="f-empresa-hint" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);margin-left:6px">(elige una marca primero)</span></label><select id="f-empresa" class="field" disabled style="opacity:.5;cursor:not-allowed"><option value="">— Seleccionar Marca primero —</option></select></div>
+              <div class="col-span-2">
+                <label class="field-label" for="f-empresa">Empresa <span id="f-empresa-hint" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);margin-left:6px">(elige una marca primero)</span></label>
+                <select id="f-empresa" class="field" disabled style="opacity:.5;cursor:not-allowed"><option value="">— Seleccionar Marca primero —</option></select>
+              </div>
             </div>
             <div style="margin-top:16px">
               <label class="field-label" for="f-extra">
-                Información extra para la empresa
-                <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);margin-left:6px">(opcional · se guardará como nota interna)</span>
+                Informaci&oacute;n extra para la empresa
+                <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);margin-left:6px">(opcional &middot; se guardar&aacute; como nota interna)</span>
               </label>
               <textarea id="f-extra" rows="3"
                 placeholder="Escribe aquí cualquier detalle adicional que deba ver la empresa…"
@@ -868,20 +935,8 @@
                 onfocus="this.style.borderColor='rgba(59,125,216,.55)';this.style.boxShadow='0 0 0 3px rgba(59,125,216,.1)'"
                 onblur="this.style.borderColor='';this.style.boxShadow=''"></textarea>
             </div>
-            <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <div>
-                <label class="field-label" for="f-hora-visita">Hora de visita</label>
-                <input id="f-hora-visita" type="time" class="field"/>
-              </div>
-              <div>
-                <label class="field-label" for="f-tel-secundario">Tel&#xe9;fono secundario</label>
-                <input id="f-tel-secundario" type="text" placeholder="+34 6XX XXX XXX" class="field"/>
-              </div>
-              <div style="grid-column:1/-1">
-                <label class="field-label" for="f-direccion-obra">Direcci&#xf3;n de obra</label>
-                <input id="f-direccion-obra" type="text" placeholder="Calle, n&#xfa;mero, ciudad&hellip;" class="field"/>
-              </div>
-            </div>
+            <!-- V57: f-hora-visita hidden — se mantiene para que buildLeadPayload lo recoja via edit-modal -->
+            <input id="f-hora-visita" type="hidden"/>
             <hr class="sec-divider"/>
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
               <p style="font-size:.75rem;color:var(--muted)">Estado inicial: <span id="estado-inicial-lbl" class="pill s-sin-asignar" style="margin-left:4px">PENDIENTE DE ASIGNAR</span></p>
@@ -1008,6 +1063,21 @@
 
       <!-- ── Panel: Información ── -->
       <div id="mp-info" class="mpanel active">
+
+        <!-- V57: fecha entrada + hora visita info-grid -->
+        <div class="info-grid" id="mp-info-dates" style="margin-bottom:16px">
+          <div class="info-item">
+            <div class="info-item-lbl">&#x1F4C5; Fecha de Entrada</div>
+            <div class="info-item-val" id="mp-fecha-entrada" style="font-family:'DM Mono',monospace">&#x2014;</div>
+          </div>
+          <div class="info-item" id="mp-hora-wrap">
+            <div class="info-item-lbl" style="display:flex;align-items:center;gap:5px">
+              <svg style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+              Hora de Visita
+            </div>
+            <div class="info-item-val" id="mp-hora-visita" style="font-family:'DM Mono',monospace;font-size:1.15rem;font-weight:700;color:var(--blue)">&#x2014;</div>
+          </div>
+        </div>
 
         <div class="destaque-row">
           <div class="destaque-card accion">
@@ -1179,6 +1249,23 @@
 <button id="fab-nuevo-lead" aria-label="Registrar nuevo lead" title="Registrar nuevo lead">
   +
 </button>
+
+<!-- V57: File Preview Modal -->
+<div id="file-preview-backdrop">
+  <div id="file-preview-box">
+    <div id="file-preview-header">
+      <span id="file-preview-name">&mdash;</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="file-preview-dl" class="file-preview-dl-btn" style="font-size:.78rem;padding:7px 14px">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descargar
+        </button>
+        <button id="file-preview-close">&#x2715;</button>
+      </div>
+    </div>
+    <div id="file-preview-content"><div class="spin"></div></div>
+  </div>
+</div>
 
 <div id="toast"></div>
 
@@ -1376,6 +1463,16 @@
       const hv = cliente.hora_visita||null;
       _hvVal.textContent = hv ? hv.slice(0,5) : '—';
       _hvWrap.classList.toggle('visible', !!hv);
+    }
+    // V57: info-grid fechas en panel información
+    const _mpFecha=document.getElementById('mp-fecha-entrada');
+    if(_mpFecha) _mpFecha.textContent=cliente.created_at?fmtDate(cliente.created_at):'—';
+    const _mpHora=document.getElementById('mp-hora-visita');
+    const _mpHoraWrap=document.getElementById('mp-hora-wrap');
+    if(_mpHora) {
+      const _hv2=cliente.hora_visita||null;
+      _mpHora.textContent=_hv2?_hv2.slice(0,5):'—';
+      if(_mpHoraWrap) _mpHoraWrap.style.opacity=_hv2?'1':'.45';
     }
 
     // Próxima acción — fecha + tipo acción
@@ -2439,6 +2536,7 @@
   // V56: build single pendiente card HTML
   function _buildPendCard(r, isGestionado=false) {
     const fecha    = r.created_at ? fmtDate(r.created_at) : '—';
+    const fechaHora = r.created_at ? fmtDate(r.created_at,true) : '—';
     const marcaNom = getMarcaNombre(r.marca_id) || '—';
     const telClean = (r.telefono||'').replace(/\s/g,'');
     const telHtml  = telClean
@@ -2487,7 +2585,7 @@
       <div class="pend-card-row">
         <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
         <span class="pend-card-row-val" style="color:var(--txt)">${esc(marcaNom)}</span>
-        <span style="font-size:.65rem;color:var(--muted);margin-left:auto">${esc(fecha)}</span>
+        <span style="font-size:.63rem;color:var(--muted);margin-left:auto;white-space:nowrap" title="${esc(fechaHora)}">Entrada: ${esc(fecha)}</span>
       </div>
       ${(r.mensaje_web||r.comentario) ? `<div class="pend-card-msg">${esc(r.mensaje_web||r.comentario)}</div>` : ''}
       ${isGestionado ? `<div class="pend-gestionado-lbl"><svg style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Gestionado</div>` : ''}
@@ -3150,6 +3248,47 @@
   $('comment-input').addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key==='Enter') $('btn-send-comment').click(); });
 
   // ─── DOCUMENTOS ───────────────────────────────────────────────
+  // V57: File preview modal logic
+  function _openFilePreview(signedUrl, fileName) {
+    const ext=(fileName||'').split('.').pop().toLowerCase();
+    const imgExts=['jpg','jpeg','png','gif','webp'];
+    const officeExts=['docx','doc','xlsx','xls'];
+    const content=document.getElementById('file-preview-content');
+    const nameEl=document.getElementById('file-preview-name');
+    const dlBtn=document.getElementById('file-preview-dl');
+    if(!content) return;
+    nameEl.textContent=fileName;
+    dlBtn.dataset.url=signedUrl; dlBtn.dataset.fn=fileName;
+    if(imgExts.includes(ext)) {
+      content.innerHTML='<img src="'+signedUrl+'" alt="'+esc(fileName)+'" loading="lazy"/>';
+    } else if(ext==='pdf') {
+      content.innerHTML='<iframe src="'+signedUrl+'" title="'+esc(fileName)+'"></iframe>';
+    } else if(officeExts.includes(ext)) {
+      const enc=encodeURIComponent(signedUrl);
+      content.innerHTML='<iframe src="https://docs.google.com/gview?url='+enc+'&embedded=true" title="'+esc(fileName)+'"></iframe>';
+    } else {
+      content.innerHTML='<div style="text-align:center;padding:40px 20px"><p style="font-size:2rem;margin-bottom:16px">&#x1F4CE;</p><p style="font-size:.9rem;color:var(--muted);margin-bottom:22px">'+esc(fileName)+'</p><button class="file-preview-dl-btn" onclick="document.getElementById('file-preview-dl').click()"><svg viewBox='0 0 24 24'><path d='M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4'/><polyline points='7 10 12 15 17 10'/><line x1='12' y1='15' x2='12' y2='3'/></svg>Descargar Archivo</button></div>';
+    }
+    document.getElementById('file-preview-backdrop').classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+  function _closeFilePreview() {
+    const bd=document.getElementById('file-preview-backdrop');
+    if(bd) bd.classList.remove('open');
+    const ct=document.getElementById('file-preview-content');
+    if(ct) ct.innerHTML='<div class="spin"></div>';
+    document.body.style.overflow='';
+  }
+  document.getElementById('file-preview-close')?.addEventListener('click',_closeFilePreview);
+  document.getElementById('file-preview-backdrop')?.addEventListener('click',e=>{
+    if(e.target===document.getElementById('file-preview-backdrop')) _closeFilePreview();
+  });
+  document.getElementById('file-preview-dl')?.addEventListener('click',e=>{
+    const btn=e.currentTarget; const url=btn.dataset.url, fn=btn.dataset.fn; if(!url) return;
+    const a=document.createElement('a'); a.href=url; a.download=fn; a.target='_blank';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  });
+
   async function loadDocs(clienteId) {
     showEl('docs-loading','block'); hideEl('doc-list'); hideEl('docs-empty'); clearAlert('docs-err');
     const {data,error}=await sb.storage.from(BUCKET).list(clienteId,{sortBy:{column:'created_at',order:'desc'}});
@@ -3158,28 +3297,42 @@
     const files=(data||[]).filter(f=>f.name&&f.name!=='.emptyFolderPlaceholder');
     if(!files.length) { showEl('docs-empty','block'); return; }
     showEl('doc-list','flex'); $('doc-list').style.flexDirection='column';
-    // H-01: sin onclick inline — usamos data-attributes para evitar XSS via nombre de archivo
+    // V57: clic en tarjeta abre preview; botón ↓ fuerza descarga
     $('doc-list').innerHTML=files.map(f=>`
-      <div class="doc-item">
+      <div class="doc-item pv-item" data-cid="${esc(clienteId)}" data-fn="${esc(f.name)}" title="Clic para previsualizar">
         <span class="doc-icon">${docIcon(f.name)}</span>
         <span class="doc-name" title="${esc(f.name)}">${esc(f.name)}</span>
         <span class="doc-size">${f.metadata?.size?fmtBytes(f.metadata.size):''}</span>
-        <button class="btn-sm btn-sm-green dl-btn" data-cid="${esc(clienteId)}" data-fn="${esc(f.name)}">↓ Descargar</button>
+        <button class="btn-sm btn-sm-green dl-btn" data-cid="${esc(clienteId)}" data-fn="${esc(f.name)}" title="Descargar" onclick="event.stopPropagation()">&#x2193;</button>
       </div>`).join('');
   }
-  // H-01: delegación de eventos en doc-list — evita onclick inline con datos de DB
+  // H-01: delegación de eventos en doc-list
   $('doc-list').addEventListener('click', async e => {
-    const btn = e.target.closest('.dl-btn'); if(!btn) return;
-    const cId = btn.dataset.cid, fn = btn.dataset.fn;
-    if(!cId || !fn) return;
-    btn.textContent='…'; btn.disabled=true;
-    try {
-      const {data,error}=await sb.storage.from(BUCKET).createSignedUrl(`${cId}/${fn}`,60);
-      if(error) throw error;
-      const a=document.createElement('a'); a.href=data.signedUrl; a.download=fn; a.target='_blank';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    } catch(err) { toast('Error al generar enlace: '+(err.message||err),'err'); }
-    finally { btn.textContent='↓ Descargar'; btn.disabled=false; }
+    const dlBtn=e.target.closest('.dl-btn');
+    if(dlBtn) {
+      e.stopPropagation();
+      const cId=dlBtn.dataset.cid, fn=dlBtn.dataset.fn; if(!cId||!fn) return;
+      dlBtn.textContent='…'; dlBtn.disabled=true;
+      try {
+        const {data,error}=await sb.storage.from(BUCKET).createSignedUrl(`${cId}/${fn}`,300);
+        if(error) throw error;
+        const a=document.createElement('a'); a.href=data.signedUrl; a.download=fn; a.target='_blank';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      } catch(err) { toast('Error al generar enlace: '+(err.message||err),'err'); }
+      finally { dlBtn.textContent='&#x2193;'; dlBtn.disabled=false; }
+      return;
+    }
+    const item=e.target.closest('.pv-item');
+    if(item) {
+      const cId=item.dataset.cid, fn=item.dataset.fn; if(!cId||!fn) return;
+      item.style.opacity='.6';
+      try {
+        const {data,error}=await sb.storage.from(BUCKET).createSignedUrl(`${cId}/${fn}`,300);
+        if(error) throw error;
+        _openFilePreview(data.signedUrl, fn);
+      } catch(err) { toast('Error al previsualizar: '+(err.message||err),'err'); }
+      finally { item.style.opacity=''; }
+    }
   });
 
   const dz=$('drop-zone'), fi=$('file-input');
