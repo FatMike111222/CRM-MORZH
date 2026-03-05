@@ -1090,7 +1090,7 @@
 
         <div class="info-item" style="margin-bottom: 18px; background: rgba(255,255,255,.02);">
           <div class="info-item-lbl">📍 Dirección de obra</div>
-          <div class="info-item-val" id="info-val-direccion">—</div>
+          <input type="text" id="info-val-direccion" placeholder="Añadir dirección..." style="background:transparent; border:none; color:var(--hi); width:100%; font-family:'DM Sans', sans-serif; font-size:.9rem; outline:none; padding:0;" />
         </div>
 
         <!-- Panel edición datos cliente (solo gestor, toggle) -->
@@ -1480,7 +1480,11 @@
 
     // Dirección de obra visible fija en la ficha
     const _doVis = document.getElementById('info-val-direccion');
-    if(_doVis) _doVis.textContent = cliente.direccion_obra || '—';
+    if(_doVis) {
+      _doVis.value = cliente.direccion_obra || '';
+      _doVis.disabled = (rol !== 'gestor');
+      _doVis.addEventListener('input', markDirty, {once:true});
+    }
 
     // Poblar subservicio del modal
     const erSel=$('edit-reforma');
@@ -1674,6 +1678,10 @@
     // Capturar hora visita desde el input inline del header (siempre, independiente del panel edit)
     const horaInput = document.getElementById('modal-hora-visita-val')?.value;
     payload.hora_visita = horaInput || null;
+
+    // Capturar dirección de obra desde el input inline de la ficha (siempre visible)
+    const dirInput = document.getElementById('info-val-direccion')?.value;
+    if(dirInput !== undefined) payload.direccion_obra = dirInput;
 
     if(editOpen) {
       const n=$('edit-nombre').value.trim(), t=$('edit-tel').value.trim();
@@ -3089,7 +3097,7 @@
           ${empCell}
           <td class="td-marca">${marcaNom}</td>
           <td class="td-estado">${estadoCell}</td>
-          <td class="td-fecha"><span class="${fechaCls}" style="font-size:.78rem;white-space:nowrap">${esc(fechaTxt)}</span>${tipoLabel}</td>
+          <td class="td-fecha"><span class="${fechaCls}" style="font-size:.78rem;white-space:nowrap">${esc(fechaTxt)}</span>${tipoLabel}${c.hora_visita ? '<br><span style="font-size:0.75rem; color:#9ca3af; display:inline-flex; align-items:center; margin-top:2px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>' + esc(c.hora_visita.substring(0,5)) + '</span>' : ''}</td>
           <td class="td-notif">${notif}</td>
           <td class="td-del">${delBtn}</td>
         </tr>`);
