@@ -3285,13 +3285,11 @@
 
     data.forEach(c => {
       const esSistema = c.nombre_autor === 'Sistema';
+      const textoStr = c.texto || '';
+      const esArchivo = textoStr.includes('Ha subido un nuevo archivo:');
 
-      // ── Determinar categoría usando la columna `texto` (campo real de la tabla) ──
-      const accionStr = (c.texto || '').toLowerCase();
-      const esComentario = accionStr.startsWith('comentario:') ||
-                           accionStr.includes('estado')        ||
-                           accionStr.includes('fecha')         ||
-                           accionStr.includes('hora');
+      // Un comentario real es aquel que NO es del sistema y NO es un aviso automático de archivo.
+      const esComentario = !esSistema && !esArchivo;
 
       // ── Construir tarjeta HTML con las mismas clases actuales ─────
       const cardHTML = `<div class="comment-bubble${esSistema?' sistema':''}">
