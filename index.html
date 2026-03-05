@@ -1842,6 +1842,8 @@
     window.history.pushState(null, '', path);
     handleRouting();
   }
+  // Exponer en window para que los onclick inline del HTML (topbar móvil) puedan llamarla
+  window.navigate = navigate;
 
   let _routingInProgress = false;
   // Punto de entrada central — auth guard + despacho de vistas
