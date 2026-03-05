@@ -836,6 +836,22 @@
           <div id="gestionados-grid" class="pend-grid"></div>
         </div>
       </div>
+
+      <!-- ── v61: CLIENTES PENDIENTES DE ASIGNAR ── -->
+      <div class="pcard" style="width:100%;margin-top:18px">
+        <div class="pcard-head">
+          <div>
+            <div class="pcard-title">👥 Clientes Pendientes de Asignar</div>
+            <p style="font-size:.76rem;color:var(--muted);margin-top:3px">Clientes registrados que aún no tienen empresa asignada — haz clic en la tarjeta para abrir la ficha y asignarles una empresa</p>
+          </div>
+          <span id="cp-asignar-badge" style="font-size:.62rem;font-weight:700;background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.3);color:#f5a623;border-radius:99px;padding:3px 10px;display:none"></span>
+        </div>
+        <div id="cp-asignar-loading" style="padding:30px;text-align:center"><div class="spin"></div></div>
+        <div id="cp-asignar-empty" class="empty" style="display:none;padding:20px">✅ No hay clientes sin empresa asignada.</div>
+        <div id="cp-asignar-grid" class="pend-grid" style="display:none"></div>
+      </div>
+
+    </div>
     </div>
 
     <!-- ══ TAB 1: FORMULARIO (solo gestores) ══ -->
@@ -1153,6 +1169,7 @@
       <!-- ── Panel: Comentarios ── -->
       <div id="mp-comments" class="mpanel">
         <div id="comments-loading"><div class="spin"></div></div>
+        <div id="historial-list" style="display:none"></div>
         <div id="comments-list" style="display:none"></div>
         <div id="comments-empty" class="empty" style="display:none;padding:16px 0 20px">Aún no hay comentarios. ¡Sé el primero!</div>
         <hr style="border:none;border-top:1px solid var(--bd);margin:0 0 16px"/>
@@ -1165,8 +1182,9 @@
 
       <!-- ── Panel: Cambios (solo gestor) ── -->
       <div id="mp-cambios" class="mpanel">
-        <p style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:14px">🕐 Historial de cambios de estado</p>
-        <div id="timeline-body" class="timeline"><p class="tl-empty">Selecciona la pestaña para cargar el historial.</p></div>
+        <p style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:14px">🕐 Historial de cambios de datos del cliente</p>
+        <div id="cambios-list" class="space-y-4"></div>
+        <div id="timeline-body" class="timeline" style="margin-top:16px"><p class="tl-empty">Selecciona la pestaña para cargar el historial.</p></div>
       </div>
 
       <!-- ── Panel: Documentos ── -->
@@ -1403,7 +1421,11 @@
       $(btn.dataset.mpanel).classList.add('active');
       if(btn.dataset.mpanel==='mp-comments' && activeClienteId) loadComments(activeClienteId);
       if(btn.dataset.mpanel==='mp-docs'     && activeClienteId) loadDocs(activeClienteId);
-      if(btn.dataset.mpanel==='mp-cambios'  && activeClienteId) loadTimeline(activeClienteId);
+      // v61: pestaña Cambios carga timeline de estados + inyecta cambios-list desde loadComments
+      if(btn.dataset.mpanel==='mp-cambios'  && activeClienteId) {
+        loadTimeline(activeClienteId);
+        loadComments(activeClienteId); // rellena cambios-list con datos de datos del cliente
+      }
     });
   });
 
@@ -1728,6 +1750,11 @@
         await sb.from('leads_pendientes').delete().eq('id', _pendienteLeadId);
         _pendienteLeadId = null;
         loadPendientes();
+      }
+      // v61: refrescar bloque pendientes de asignar si se asignó empresa
+      if(payload.empresa_id !== undefined) {
+        renderClientesPendientes();
+        renderDashboard();
       }
       toast('Cambios guardados');
 
@@ -2508,10 +2535,11 @@
       // V56: actualizar badge nav con conteo de leads_pendientes (solo web)
       updateBadgePend((webLeads||[]).length);
 
-      if(!filas.length){ empty.style.display='block'; renderGestionados(); return; }
+      if(!filas.length){ empty.style.display='block'; renderGestionados(); renderClientesPendientes(); return; }
       wrap.style.display = 'block';
       renderPendientesCards(filas);
       renderGestionados();
+      renderClientesPendientes();
 
     } catch(err) {
       loading.style.display = 'none';
@@ -2612,6 +2640,102 @@
 
   // Mantener renderPendientesTable como alias vacío para no romper posibles referencias
   function renderPendientesTable(filas) { renderPendientesCards(filas); }
+
+  // ── v61: CLIENTES PENDIENTES DE ASIGNAR ──────────────────────
+  function renderClientesPendientes() {
+    const loading = document.getElementById('cp-asignar-loading');
+    const empty   = document.getElementById('cp-asignar-empty');
+    const grid    = document.getElementById('cp-asignar-grid');
+    const badge   = document.getElementById('cp-asignar-badge');
+    if(!grid) return;
+
+    // Filtrar de allLeads: clientes SIN empresa_id asignada, no borrados
+    const sinEmpresa = allLeads.filter(c =>
+      c.estado !== 'BORRADO' &&
+      (!c.empresa_id || String(c.empresa_id).trim() === '')
+    );
+
+    if(loading) loading.style.display = 'none';
+
+    if(!sinEmpresa.length) {
+      if(empty) empty.style.display = 'block';
+      grid.style.display = 'none';
+      if(badge) badge.style.display = 'none';
+      return;
+    }
+
+    if(empty) empty.style.display = 'none';
+    grid.style.display = 'grid';
+    if(badge) {
+      badge.textContent = sinEmpresa.length + ' sin asignar';
+      badge.style.display = '';
+    }
+
+    grid.innerHTML = sinEmpresa.map(c => {
+      // Fecha entrada formateada
+      let fechaEntrada = '—';
+      if(c.created_at) {
+        const d = new Date(c.created_at);
+        const dd = String(d.getDate()).padStart(2,'0');
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        const yyyy = d.getFullYear();
+        const hh = String(d.getHours()).padStart(2,'0');
+        const min = String(d.getMinutes()).padStart(2,'0');
+        fechaEntrada = `${dd}/${mm}/${yyyy} - ${hh}:${min}`;
+      }
+      const marcaNom = getMarcaNombre(c.marca_id) || '—';
+      const telClean = (c.telefono||'').replace(/\s/g,'');
+      const telHtml  = telClean
+        ? `<span class="tel-cell" onclick="event.stopPropagation();_openTelPopup(event,'${esc(telClean)}')" title="Llamar o WhatsApp">${esc(c.telefono)}</span>`
+        : '<span style="color:var(--muted)">—</span>';
+      const cls = ESTADO_CLS[c.estado] || 's-pendiente';
+      const safeId = String(c.id||'').replace(/'/g,"\\'");
+
+      return `<div class="pend-card tipo-manual" data-cpid="${esc(String(c.id||''))}"
+        style="cursor:pointer"
+        onclick="_abrirClientePendiente('${safeId}')">
+        <div class="pend-card-header">
+          <div class="pend-card-nombre">${esc(c.nombre_cliente||'Sin nombre')}</div>
+          <span class="pill ${cls}" style="font-size:.58rem;padding:3px 9px">${esc(c.estado||'—')}</span>
+        </div>
+        <!-- Fecha entrada -->
+        <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:7px;padding:6px 10px;">
+          <svg style="width:12px;height:12px;stroke:#f5a623;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Entrada:</span>
+          <span style="font-family:'DM Mono',monospace;font-size:.78rem;font-weight:600;color:#c5d5e8;letter-spacing:.02em">${esc(fechaEntrada)}</span>
+        </div>
+        <div class="pend-card-row">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.36 18 19.5 19.5 0 0 1 7 13.64a19.79 19.79 0 0 1-3.92-8.42A2 2 0 0 1 5.06 3h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L9.09 10a16 16 0 0 0 5 5l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span class="pend-card-row-val">${telHtml}</span>
+        </div>
+        ${c.poblacion ? `<div class="pend-card-row">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span class="pend-card-row-val">${esc(c.poblacion)}</span>
+        </div>` : ''}
+        <div class="pend-card-row">
+          <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          <span class="pend-card-row-val" style="color:var(--txt)">${esc(marcaNom)}</span>
+        </div>
+        <div class="pend-card-footer" style="justify-content:center">
+          <button class="pend-btn pend-btn-asignar" onclick="event.stopPropagation();_abrirClientePendiente('${safeId}')">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+            Abrir ficha y asignar empresa
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Abre la ficha del cliente pendiente de asignar
+  window._abrirClientePendiente = function(clienteId) {
+    const cliente = allLeads.find(c => c.id === clienteId);
+    if(cliente) { openModal(cliente); return; }
+    loadDashboard().then(() => {
+      const c2 = allLeads.find(c => c.id === clienteId);
+      if(c2) openModal(c2);
+      else toast('No se encontró el cliente. Recarga el panel.', 'err');
+    });
+  };
 
   // ── Validar lead web → autocompleta formulario ────────────────
   window._validarLeadWeb = async function(id, nombre, telefono, email, marcaId, msg) {
@@ -2840,6 +2964,8 @@
     return allLeads.filter(c=>{
       if(filtroPapelera) return c.estado==='BORRADO';
       if(c.estado==='BORRADO') return false;
+      // Ajuste v61: solo clientes con empresa asignada aparecen en el Dashboard
+      if(!filtroPapelera && !(c.empresa_id && String(c.empresa_id).trim() !== '')) return false;
       if(filtroEstado  && c.estado!==filtroEstado) return false;
       if(filtroEmpresas.size>0 && !filtroEmpresas.has(String(c.empresa_id))) return false;
       if(filtroMarcas.size>0   && !filtroMarcas.has(String(c.marca_id)))   return false;
@@ -3256,25 +3382,79 @@
 
   // ─── COMENTARIOS ──────────────────────────────────────────────
   async function loadComments(clienteId) {
-    showEl('comments-loading','block'); hideEl('comments-list'); hideEl('comments-empty');
+    showEl('comments-loading','block'); hideEl('comments-list'); hideEl('historial-list'); hideEl('comments-empty');
     // H-06: últimos 100 comentarios por lead (más que suficiente)  
     const {data,error}=await sb.from('comentarios_clientes').select('id,texto,nombre_autor,autor_id,created_at').eq('cliente_id',clienteId).order('created_at',{ascending:true}).limit(100);
     hideEl('comments-loading');
     if(error) { toast('Error al cargar comentarios: '+error.message,'err'); return; }
     if(!data||!data.length) { showEl('comments-empty','block'); return; }
-    showEl('comments-list','flex');
-    $('comments-list').style.flexDirection='column';
-    $('comments-list').innerHTML=data.map(c=>{
-      const esSistema=c.nombre_autor==='Sistema';
-      return `<div class="comment-bubble${esSistema?' sistema':''}">
+
+    // ── v61: Separación Comentarios / Cambios ────────────────────
+    const comentariosItems = [];
+    const cambiosItems     = [];
+
+    data.forEach(c=>{
+      const texto = c.accion ? c.accion.toLowerCase() : (c.texto||'').toLowerCase();
+      const esComentarioOEstado = texto.startsWith('comentario:') || texto.includes('estado') || texto.includes('fecha') || texto.includes('hora');
+      const esSistema = c.nombre_autor === 'Sistema';
+
+      const cardHtml = `<div class="comment-bubble${esSistema?' sistema':''}">
         <div class="comment-meta">
           <span class="comment-author${esSistema?' sistema':''}">${esc(c.nombre_autor||'Desconocido')}</span>
           <span class="comment-date">${fmtDate(c.created_at,true)}</span>
         </div>
         <div class="comment-text">${esc(c.texto)}</div>
       </div>`;
-    }).join('');
-    const list=$('comments-list'); list.scrollTop=list.scrollHeight;
+
+      if(esComentarioOEstado) {
+        comentariosItems.push(cardHtml);
+      } else {
+        cambiosItems.push(cardHtml);
+      }
+    });
+
+    // Renderizar en historial-list (pestaña Comentarios — estados, fechas, horas, comentarios directos)
+    if(comentariosItems.length) {
+      showEl('historial-list','flex');
+      $('historial-list').style.flexDirection='column';
+      $('historial-list').innerHTML=comentariosItems.join('');
+    }
+
+    // Renderizar comentarios del usuario (no sistema de cambios de datos) también en comments-list
+    const usuarioItems = data.filter(c => {
+      const texto = (c.texto||'').toLowerCase();
+      return !texto.startsWith('comentario:') && !texto.includes('estado') && !texto.includes('fecha') && !texto.includes('hora') && c.nombre_autor !== 'Sistema';
+    }).map(c => `<div class="comment-bubble">
+      <div class="comment-meta">
+        <span class="comment-author">${esc(c.nombre_autor||'Desconocido')}</span>
+        <span class="comment-date">${fmtDate(c.created_at,true)}</span>
+      </div>
+      <div class="comment-text">${esc(c.texto)}</div>
+    </div>`);
+
+    if(comentariosItems.length || usuarioItems.length) {
+      // Si solo hay items en historial, ya los mostramos ahí; comments-list para comentarios manuales de usuarios
+      if(usuarioItems.length) {
+        showEl('comments-list','flex');
+        $('comments-list').style.flexDirection='column';
+        $('comments-list').innerHTML=usuarioItems.join('');
+      }
+    } else {
+      showEl('comments-empty','block');
+    }
+
+    // ── Inyectar en panel Cambios (cambios-list) si existe ───────
+    const cambiosList = document.getElementById('cambios-list');
+    if(cambiosList) {
+      if(cambiosItems.length) {
+        cambiosList.innerHTML = `<p style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:10px">📋 Cambios de datos del cliente</p>` + cambiosItems.join('');
+      } else {
+        cambiosList.innerHTML = '<p style="font-size:.8rem;color:var(--muted);padding:12px 0">No se han registrado cambios de datos aún.</p>';
+      }
+    }
+
+    const list=$('historial-list') || $('comments-list');
+    if(list) list.scrollTop=list.scrollHeight;
   }
 
   $('btn-send-comment').addEventListener('click', async () => {
