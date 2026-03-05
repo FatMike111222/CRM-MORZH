@@ -1117,6 +1117,12 @@
               <label class="field-label" style="font-size:.6rem">Subservicio</label>
               <select id="edit-reforma" class="edit-field"><option value="">— Sin cambio —</option></select>
             </div>
+            <div id="edit-marca-wrap" style="display:none">
+              <label class="field-label" style="font-size:.6rem">Marca</label>
+              <select id="edit-marca-modal" class="edit-field">
+                <option value="">— Sin marca —</option>
+              </select>
+            </div>
             <div id="edit-empresa-wrap" style="display:none">
               <label class="field-label" style="font-size:.6rem">Empresa asignada</label>
               <select id="edit-empresa-modal" class="edit-field">
@@ -1499,24 +1505,39 @@
         allSubs.map(s=>`<option value="${esc(s)}"${s===cliente.tipo_reforma?' selected':''}>${esc(s)}</option>`).join('');
     }
 
-    // T6b: poblar select empresa (solo gestor, defensivo)
+    // T6b: poblar select marca (solo gestor)
+    const _eMrcWrap = document.getElementById('edit-marca-wrap');
+    const _eMrcSel  = document.getElementById('edit-marca-modal');
     const _eEmpWrap = document.getElementById('edit-empresa-wrap');
     const _eEmpSel  = document.getElementById('edit-empresa-modal');
-    if(_eEmpWrap && _eEmpSel) {
-      if(rol === 'gestor') {
-        _eEmpWrap.style.display = '';
-        // Poblar solo con IDs que sean UUIDs (longitud > 10, no claves normalizadas)
-        const _empOpts = Object.entries(empresasMap)
-          .filter(([k]) => typeof k === 'string' && k.length > 10)
-          .map(([id, nom]) => `<option value="${esc(id)}"${id===cliente.empresa_id?' selected':''}>${esc(nom)}</option>`)
+    if(rol === 'gestor') {
+      // -- Selector MARCA --
+      if(_eMrcWrap && _eMrcSel) {
+        _eMrcWrap.style.display = '';
+        // Filtrar solo las marcas permitidas para este gestor
+        const marcasOpts = Object.entries(marcasMap)
+          .filter(([k]) => typeof k === 'string' && k.length > 10) // solo UUIDs
+          .filter(([k]) => marcasPermitidasGestor.size === 0 || marcasPermitidasGestor.has(k))
+          .map(([id, nom]) => `<option value="${esc(id)}"${id===String(cliente.marca_id||'')?' selected':''}>${esc(nom)}</option>`)
           .join('');
-        _eEmpSel.innerHTML = '<option value="">— Sin empresa —</option>' + _empOpts;
-      } else {
-        _eEmpWrap.style.display = 'none';
+        _eMrcSel.innerHTML = '<option value="">— Sin marca —</option>' + marcasOpts;
+        // Listener: al cambiar Marca → recargar Empresas en el modal
+        _eMrcSel.onchange = function() {
+          __onMarcaSelectedModal(this.value);
+          markDirty();
+        };
       }
+      // -- Selector EMPRESA: carga inicial según la marca actual del cliente --
+      if(_eEmpWrap && _eEmpSel) {
+        _eEmpWrap.style.display = '';
+        __onMarcaSelectedModal(cliente.marca_id||null, cliente.empresa_id||null);
+      }
+    } else {
+      if(_eMrcWrap) _eMrcWrap.style.display = 'none';
+      if(_eEmpWrap) _eEmpWrap.style.display = 'none';
     }
 
-    const editFields=['edit-nombre','edit-tel','edit-email','edit-pobl','edit-reforma','edit-empresa-modal','edit-hora-visita','edit-tel-secundario','edit-direccion-obra'];
+    const editFields=['edit-nombre','edit-tel','edit-email','edit-pobl','edit-reforma','edit-marca-modal','edit-empresa-modal','edit-hora-visita','edit-tel-secundario','edit-direccion-obra'];
     if(rol==='gestor') {
       $('btn-modal-edit').style.display='';
       $('btn-modal-del').style.display='';
@@ -1700,6 +1721,9 @@
       // T6b: reasignar empresa (defensivo — solo si el elemento existe)
       const _eEmpVal = document.getElementById('edit-empresa-modal')?.value;
       if(typeof _eEmpVal !== 'undefined') payload.empresa_id = _eEmpVal || null;
+      // T6b: reasignar marca (defensivo — solo si el elemento existe)
+      const _eMrcVal = document.getElementById('edit-marca-modal')?.value;
+      if(typeof _eMrcVal !== 'undefined' && _eMrcVal) payload.marca_id = _eMrcVal;
       // Nuevos campos siempre incluidos (también cuando editOpen=false para actualizarlos desde Pendientes)
       const _tsVal = (document.getElementById('edit-tel-secundario')?.value||'').trim();
       payload.telefono_secundario = _tsVal || null;
@@ -2232,6 +2256,50 @@
     }
   };
 
+  // ─── DEPENDENCIA MARCA → EMPRESA (MODAL EDICIÓN) ─────────────
+  // Variante de __onMarcaSelected adaptada al modal de edición del cliente.
+  // Recarga #edit-empresa-modal filtrando por la marca seleccionada en #edit-marca-modal.
+  async function __onMarcaSelectedModal(marcaId, preselectedEmpresaId) {
+    const sel  = document.getElementById('edit-empresa-modal');
+    const wrap = document.getElementById('edit-empresa-wrap');
+    if(!sel || !wrap) return;
+    if(!marcaId) {
+      sel.innerHTML = '<option value="">— Selecciona una Marca primero —</option>';
+      sel.disabled  = true;
+      sel.style.opacity = '.5';
+      return;
+    }
+    sel.disabled = true;
+    sel.style.opacity = '.5';
+    sel.innerHTML = '<option value="">Cargando empresas…</option>';
+    try {
+      const { data, error } = await sb
+        .from('empresa_marcas')
+        .select('empresa_id, empresas(id, nombre_comercial)')
+        .eq('marca_id', marcaId);
+      if(error) throw error;
+      const rows = (data || []).filter(r => r.empresas?.id && r.empresas?.nombre_comercial);
+      if(!rows.length) {
+        sel.innerHTML = '<option value="">— Sin empresas para esta marca —</option>';
+        sel.disabled  = true;
+        sel.style.opacity = '.5';
+        return;
+      }
+      const pre = preselectedEmpresaId ? String(preselectedEmpresaId) : '';
+      sel.innerHTML = '<option value="">— Sin empresa —</option>' +
+        rows.map(r =>
+          `<option value="${esc(String(r.empresas.id))}"${String(r.empresas.id)===pre?' selected':''}>${esc(r.empresas.nombre_comercial)}</option>`
+        ).join('');
+      sel.disabled  = false;
+      sel.style.opacity = '';
+    } catch(err) {
+      console.error('Error cargando empresas en modal:', err);
+      sel.innerHTML = '<option value="">Error al cargar empresas</option>';
+      sel.disabled  = true;
+      sel.style.opacity = '.5';
+    }
+  }
+
   $('f-sector').addEventListener('change',function(){
     if(this.value) _poblarSubs(this.value);
     else { const r=$('f-reforma'); r.innerHTML='<option value="">— Elige un sector primero —</option>'; r.disabled=true; }
@@ -2396,6 +2464,40 @@
     }
     clearAlert('form-ok'); clearAlert('form-err');
     const btn=$('btn-lead-submit'); btn.textContent='Guardando…'; btn.disabled=true;
+
+    // ── Validación de campos obligatorios ──────────────────────
+    const _vNombre = ($('f-nombre')?.value||'').trim();
+    const _vTelRaw = ($('f-tel')?.value||'').trim();
+    const _vTel    = (_vTelRaw === '+34' || !_vTelRaw) ? '' : _vTelRaw;
+    const _vPobl   = ($('f-pobl')?.value||'').trim();
+    const _vSector = ($('f-sector')?.value||'').trim();
+    const _vReforma= ($('f-reforma')?.value||'').trim();
+    const _vMarca  = ($('f-marca')?.value||'').trim() || ($('f-marca-input')?.value||'').trim();
+
+    if(!_vNombre) {
+      setAlert('form-err','form-err-txt','El campo Nombre es obligatorio.');
+      btn.textContent='Registrar lead'; btn.disabled=false; return;
+    }
+    if(!_vTel) {
+      setAlert('form-err','form-err-txt','El campo Teléfono es obligatorio.');
+      btn.textContent='Registrar lead'; btn.disabled=false; return;
+    }
+    if(!_vPobl) {
+      setAlert('form-err','form-err-txt','El campo Población es obligatorio.');
+      btn.textContent='Registrar lead'; btn.disabled=false; return;
+    }
+    if(!_vSector) {
+      setAlert('form-err','form-err-txt','El campo Sector es obligatorio.');
+      btn.textContent='Registrar lead'; btn.disabled=false; return;
+    }
+    if(!_vReforma) {
+      setAlert('form-err','form-err-txt','El campo Subservicio es obligatorio.');
+      btn.textContent='Registrar lead'; btn.disabled=false; return;
+    }
+    if(!_vMarca) {
+      setAlert('form-err','form-err-txt','El campo Marca es obligatorio.');
+      btn.textContent='Registrar lead'; btn.disabled=false; return;
+    }
 
     // ── Validación de teléfono ──────────────────────────────────
     const telVal=($('f-tel').value||'').trim();
@@ -2845,6 +2947,8 @@
     return allLeads.filter(c=>{
       if(filtroPapelera) return c.estado==='BORRADO';
       if(c.estado==='BORRADO') return false;
+      // PENDIENTE DE ASIGNAR solo se muestra en la vista Pendientes, nunca en el dashboard
+      if(c.estado==='PENDIENTE DE ASIGNAR') return false;
       if(filtroEstado  && c.estado!==filtroEstado) return false;
       if(filtroEmpresas.size>0 && !filtroEmpresas.has(String(c.empresa_id))) return false;
       if(filtroMarcas.size>0   && !filtroMarcas.has(String(c.marca_id)))   return false;
