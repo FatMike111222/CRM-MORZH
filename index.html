@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Panel Unificado</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
@@ -162,7 +162,7 @@
     .main { width: 98%; max-width: 1920px; margin: 0 auto; padding: 28px 24px 52px; }
 
     /* ── Tabla desktop ── */
-    .tbl-wrap { overflow-x: auto; }
+    .tbl-wrap { overflow-x: auto; overflow-y: auto; -webkit-overflow-scrolling: touch; }
     table { width: 100%; border-collapse: collapse; min-width: 700px; }
     thead th { background: rgba(12,19,34,.98); color: var(--muted); font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; padding: 11px 16px; border-bottom: 1px solid var(--bd); text-align: left; white-space: nowrap; }
     /* (sortable CSS eliminado — orden fijo de embudo) */
@@ -692,6 +692,121 @@
     }
     .doc-item .prev-btn:hover { background: rgba(59,125,216,.24); }
 
+
+    /* ═══════════════════════════════════════════════════════════
+       PWA / ESQUELETO DE TITANIO — Solo móvil (≤768px)
+       Desktop: zero impacto garantizado.
+    ═══════════════════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+
+      /* 1. Congelar body — elimina scroll infinito y rebote iOS/Android */
+      html, body {
+        height: 100dvh;
+        overflow: hidden;
+        overscroll-behavior-y: none;
+      }
+
+      /* 2. Anti-zoom Safari/iOS — inputs con font-size < 16px disparan
+            un zoom automático al hacer focus. Forzamos 16px en todos. */
+      input, select, textarea {
+        font-size: 16px !important;
+      }
+
+      /* 3. La app tiene su propio scroll vertical interno.
+            El contenedor principal de cada vista es scrollable. */
+      #screen-app {
+        height: 100dvh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* El área de contenido (.main) ocupa el espacio restante y scrollea */
+      .main {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* inercia nativa iOS */
+        overscroll-behavior-y: contain;
+      }
+
+      /* Cada tab-panel que esté activo también debe poder scrollear */
+      .tab-panel.active {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+      }
+
+      /* 4. Modal: scroll interno con inercia — el backdrop está fixed,
+            el modal-box scrollea por dentro */
+      #modal-backdrop {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+        padding: 0;
+        align-items: flex-start;
+      }
+      #modal-box {
+        border-radius: 18px 18px 0 0;
+        margin-top: auto;
+        max-height: 93dvh;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 100%;
+      }
+      .modal-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+      }
+
+      /* 5. Preview backdrop: mismo tratamiento */
+      #preview-backdrop {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+      }
+
+      /* 6. Scroll interno de listas de comentarios e historial */
+      #comments-list,
+      #historial-list,
+      #doc-list,
+      #cambios-list {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+      }
+
+      /* 7. Grid de pendientes: scrollable internamente */
+      .pend-grid {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+        max-height: calc(100dvh - 120px);
+      }
+
+      /* 8. Tabla de leads en cards: scroll con inercia */
+      #cards-body {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+      }
+
+      /* 9. Toast: subir por encima del bottom-nav en móvil */
+      #toast {
+        bottom: 70px;
+        right: 14px;
+        left: 14px;
+        justify-content: center;
+      }
+
+      /* 10. Clase utilitaria reutilizable para cualquier scroll nativo */
+      .scroll-nativo {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+      }
+    }
   </style>
 </head>
 <body>
