@@ -249,28 +249,7 @@
       .topbar { display: none; }
       /* M-01: padding inferior para no tapar contenido con bottom nav */
       .main { padding-bottom: 80px; padding-top: 14px; }
-
-      /* M-02: FAB visible en móvil solo cuando JS añade clase .gestor-fab */
-      #fab-nuevo-lead.gestor-fab { display: flex; }
-      /* M-02: FAB oculto cuando estamos en la vista formulario */
-      #fab-nuevo-lead.gestor-fab.en-formulario { display: none; }
     }
-
-    /* T3: btn-volver-dash — flotante fixed, se activa con clase .visible (JS) */
-    #btn-volver-dash {
-      display: none;
-      position: fixed; top: 14px; left: 14px; z-index: 210;
-      align-items: center; gap: 7px;
-      background: rgba(6,9,17,.93); border: 1px solid var(--bd2);
-      border-radius: 99px; color: var(--hi);
-      font-family: 'DM Sans', sans-serif; font-size: .78rem; font-weight: 600;
-      padding: 8px 16px 8px 12px; cursor: pointer;
-      backdrop-filter: blur(14px);
-      box-shadow: 0 4px 18px rgba(0,0,0,.55);
-      transition: border-color .18s, transform .15s, opacity .18s;
-    }
-    #btn-volver-dash:hover { border-color: var(--blue); transform: translateX(-2px); }
-    @media (max-width: 767px) { #btn-volver-dash.visible { display: flex; } }
 
     /* M-01: Bottom Navigation Bar — solo móvil */
     #bottom-nav {
@@ -296,25 +275,8 @@
     .bnav-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none;
                     stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* M-02: FAB — Floating Action Button (solo móvil, solo gestor)
-       Base: siempre oculto. Media query + clase .gestor-fab lo activa. */
-    #fab-nuevo-lead {
-      display: none;
-      position: fixed; bottom: 70px; right: 18px; z-index: 190;
-      width: 52px; height: 52px; border-radius: 50%;
-      background: var(--blue); border: none; cursor: pointer;
-      align-items: center; justify-content: center;
-      box-shadow: 0 4px 18px rgba(59,125,216,.55);
-      transition: transform .18s, box-shadow .18s;
-      color: #fff; font-size: 1.5rem; font-weight: 300; line-height: 1;
-    }
-    #fab-nuevo-lead:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(59,125,216,.7); }
-    #fab-nuevo-lead:active { transform: scale(.95); }
-
-    /* M-01/M-02: visibilidad del bottom-nav y FAB
-       - .mob-hidden: oculta elementos dentro del nav (bnav-form si no es gestor)
-       - .gestor-fab: clase que JS añade al FAB cuando rol=gestor
-       La media query activa la visibilidad del FAB solo en móvil + gestor. */
+    /* M-01/M-02: visibilidad del bottom-nav
+       - .mob-hidden: oculta elementos dentro del nav (bnav-form si no es gestor) */
     .mob-hidden { display: none !important; }
 
     /* ── Select estado inline (empresa) ── */
@@ -1075,7 +1037,7 @@
         <div id="modal-hora-visita-wrap">
           <svg class="hora-visita-icon" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
           <span class="hora-visita-lbl">Hora visita</span>
-          <span id="modal-hora-visita-val" class="hora-visita-val">—</span>
+          <input type="time" id="modal-hora-visita-val" style="background:transparent; border:none; color:var(--hi); font-family:'DM Mono', monospace; font-size:.9rem; font-weight:700; cursor:pointer; outline:none; padding:0;" />
         </div>
       </div>
       <!-- Acciones gestor -->
@@ -1124,6 +1086,11 @@
             <span class="destaque-sub">euros</span>
             <input id="edit-importe" type="number" min="0" step="0.01" placeholder="0.00" class="info-item-input" style="margin-top:8px"/>
           </div>
+        </div>
+
+        <div class="info-item" style="margin-bottom: 18px; background: rgba(255,255,255,.02);">
+          <div class="info-item-lbl">📍 Dirección de obra</div>
+          <div class="info-item-val" id="info-val-direccion">—</div>
         </div>
 
         <!-- Panel edición datos cliente (solo gestor, toggle) -->
@@ -1233,14 +1200,6 @@
   <a id="tel-wa"   href="#" target="_blank" rel="noopener"><span>💬</span> WhatsApp</a>
 </div>
 
-<!-- T3: btn-volver-dash flotante — fixed, clase .visible añadida/quitada por syncBottomNav -->
-<button id="btn-volver-dash" aria-label="Volver al dashboard">
-  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"
-       stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-    <polyline points="15 18 9 12 15 6"/>
-  </svg>
-  Dashboard
-</button>
 
 <!-- M-01: Bottom Navigation Bar (móvil) — visible solo en <768px via CSS -->
 <nav id="bottom-nav" aria-label="Navegación principal">
@@ -1264,10 +1223,6 @@
   </button>
 </nav>
 
-<!-- M-02: FAB — Floating Action Button (solo móvil, solo gestor) -->
-<button id="fab-nuevo-lead" aria-label="Registrar nuevo lead" title="Registrar nuevo lead">
-  +
-</button>
 
 
 <!-- ════════════ F2: MODAL PREVISUALIZACIÓN ARCHIVOS ════════════ -->
@@ -1483,13 +1438,16 @@
     if(_feWrap && _feVal) {
       _feVal.textContent = cliente.created_at ? fmtDate(cliente.created_at, true) : '—';
     }
-    // V57: hora visita siempre visible en header del modal
+    // V57: hora visita siempre visible en header del modal (input inline editable)
     const _hvWrap=document.getElementById('modal-hora-visita-wrap');
     const _hvVal=document.getElementById('modal-hora-visita-val');
     if(_hvWrap && _hvVal) {
       const hv = cliente.hora_visita||null;
-      _hvVal.textContent = hv ? hv.slice(0,5) : '—';
-      _hvWrap.classList.toggle('visible', !!hv);
+      _hvVal.value = hv ? hv.slice(0,5) : '';
+    }
+    if(_hvVal) {
+      _hvVal.disabled = (rol !== 'gestor');
+      _hvVal.addEventListener('change', markDirty, {once:true});
     }
 
     // Próxima acción — fecha + tipo acción
@@ -1519,6 +1477,10 @@
     const _ehv=document.getElementById('edit-hora-visita'); if(_ehv) _ehv.value=cliente.hora_visita||'';
     const _ets=document.getElementById('edit-tel-secundario'); if(_ets) _ets.value=cliente.telefono_secundario||'';
     const _edo=document.getElementById('edit-direccion-obra'); if(_edo) _edo.value=cliente.direccion_obra||'';
+
+    // Dirección de obra visible fija en la ficha
+    const _doVis = document.getElementById('info-val-direccion');
+    if(_doVis) _doVis.textContent = cliente.direccion_obra || '—';
 
     // Poblar subservicio del modal
     const erSel=$('edit-reforma');
@@ -1708,6 +1670,11 @@
     // Payload: importe, fecha y datos de cliente — el estado ya lo gestiona autoSaveEstado
     const tipoAccVal=($('edit-tipo-accion')?.value)||null;
     const payload={ importe_presupuesto:importeVal, fecha_proxima_accion:fechaAccionVal, tipo_proxima_accion:tipoAccVal, ultimo_editor_id:_editorId1 };
+
+    // Capturar hora visita desde el input inline del header (siempre, independiente del panel edit)
+    const horaInput = document.getElementById('modal-hora-visita-val')?.value;
+    payload.hora_visita = horaInput || null;
+
     if(editOpen) {
       const n=$('edit-nombre').value.trim(), t=$('edit-tel').value.trim();
       const em=$('edit-email').value.trim(), p=$('edit-pobl').value.trim();
@@ -1721,8 +1688,6 @@
       const _eEmpVal = document.getElementById('edit-empresa-modal')?.value;
       if(typeof _eEmpVal !== 'undefined') payload.empresa_id = _eEmpVal || null;
       // Nuevos campos siempre incluidos (también cuando editOpen=false para actualizarlos desde Pendientes)
-      const _hvVal = (document.getElementById('edit-hora-visita')?.value)||null;
-      payload.hora_visita = _hvVal || null;
       const _tsVal = (document.getElementById('edit-tel-secundario')?.value||'').trim();
       payload.telefono_secundario = _tsVal || null;
       const _doVal = (document.getElementById('edit-direccion-obra')?.value||'').trim();
@@ -1832,6 +1797,7 @@
     if (!parts.length)               return { view: 'dashboard' };
     if (parts[0] === 'dashboard')    return { view: 'dashboard' };
     if (parts[0] === 'formulario')   return { view: 'formulario' };
+    if (parts[0] === 'pendientes')   return { view: 'pendientes' };
     if (parts[0] === 'cliente' && parts[1])
                                      return { view: 'cliente', clienteId: parts[1] };
     return { view: 'dashboard' };    // fallback seguro
@@ -3513,12 +3479,6 @@
       const tab={'mob-btn-dash':'tab-dash','mob-btn-pend':'tab-pendientes','mob-btn-form':'tab-form'}[id];
       el.classList.toggle('active', tab === tabId);
     });
-    // T3: mostrar btn-volver flotante solo cuando tab activa es formulario (móvil)
-    const volver = document.getElementById('btn-volver-dash');
-    if(volver) volver.classList.toggle('visible', tabId === 'tab-form');
-    // ocultar FAB cuando estamos en el formulario
-    const fab = $('fab-nuevo-lead');
-    if(fab) fab.classList.toggle('en-formulario', tabId === 'tab-form');
   }
   // Exponer para que activateAppTab() pueda sincronizarlo
   window.__syncBottomNav = syncBottomNav;
@@ -3531,27 +3491,12 @@
   // M-01: mostrar/ocultar botón "Nuevo Lead" en bottom nav según rol
   function applyBottomNavRole() {
     const isGestor = (rol === 'gestor');
-    // bnav-form: dentro del nav que ya es display:none en desktop, mob-hidden lo
-    // oculta en móvil si no es gestor.
     const bnavPend = $('bnav-pendientes');
     if(bnavPend) bnavPend.classList.toggle('mob-hidden', !isGestor);
     const bnavForm = $('bnav-form');
     if(bnavForm) bnavForm.classList.toggle('mob-hidden', !isGestor);
-    // FAB: clase .gestor-fab activa la visibilidad vía media query (sin !important conflicts)
-    const fab = $('fab-nuevo-lead');
-    if(fab) fab.classList.toggle('gestor-fab', isGestor);
   }
   window.__applyBottomNavRole = applyBottomNavRole;
-
-  // T1: Botón Volver al Dashboard (móvil)
-  $('btn-volver-dash')?.addEventListener('click', () => navigate('/dashboard'));
-
-  // M-02: FAB → navegar a formulario
-  $('fab-nuevo-lead')?.addEventListener('click', () => {
-    navigate('/formulario');
-    // Foco en primer campo tras transición
-    setTimeout(() => $('f-nombre')?.focus(), 200);
-  });
 
   // P-03: Atajo de teclado Ctrl+N / Cmd+N → nuevo lead ─────────
   document.addEventListener('keydown', e => {
