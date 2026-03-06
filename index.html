@@ -28,7 +28,7 @@
     }
     #screen-login, #screen-app { position: relative; z-index: 1; }
     #screen-login { display: flex; }
-    #screen-app   { display: none; flex-direction: column; min-height: 100vh; }
+    #screen-app   { display: none; flex-direction: column; min-height: 100vh; box-sizing: border-box; }
 
     .login-box { background: var(--s2); border: 1px solid var(--bd); border-radius: 18px; padding: 40px 36px; box-shadow: 0 40px 80px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.025) inset; }
     .accent-bar { height: 3px; background: linear-gradient(90deg, var(--blue), var(--blue2), transparent); border-radius: 18px 18px 0 0; }
@@ -735,15 +735,18 @@
     ═══════════════════════════════════════════════════════════ */
     @media (max-width: 768px) {
 
-      /* 1. Bloqueo del body — sin position:fixed que congela Android.
-            overflow:hidden en html+body + height:100% es suficiente
-            para impedir el scroll de página en todos los motores modernos. */
-      html, body {
+      /* 1. Cadena de altura real: html→body→#screen-app deben tener height
+            explícito (no min-height) para que flex:1 propague a los hijos.
+            Solo body bloquea overflow — html libre para que iOS calcule dvh. */
+      html {
         height: 100%;
         width: 100%;
-        overflow: hidden !important;
+      }
+      body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
         overscroll-behavior-y: none;
-        /* Sin position:fixed — causa freeze de scroll en Android Chrome */
       }
 
       /* 2. Anti-zoom Safari/iOS — font-size < 16px en un input dispara
@@ -752,12 +755,14 @@
         font-size: 16px !important;
       }
 
-      /* 3. Contenedor raíz de la app: flex column que ocupa toda la pantalla.
-            height:100% hereda del html/body fijado arriba. */
+      /* 3. Contenedor raíz de la app: altura explícita con dvh para iOS Safari.
+            height:100dvh respeta la barra de dirección retractable en móvil.
+            Sin dvh, el contenido queda oculto tras la barra del navegador. */
       #screen-app {
         display: flex;
         flex-direction: column;
-        height: 100%;
+        height: 100vh;
+        height: 100dvh;
         width: 100%;
         overflow: hidden;
       }
@@ -768,13 +773,11 @@
             Esto elimina el "touch trap": Android recibe el evento táctil solo
             en el hijo scrolleable, sin conflicto con el padre. */
       .main {
-        flex: 1 1 auto !important;
-        min-height: 0 !important;
-        overflow: hidden !important;        /* padre no scrollea — delega al tab-panel activo */
+        flex: 1 1 auto;
+        min-height: 0;           /* CRÍTICO para Chromium/Android */
+        overflow: hidden;        /* padre no scrollea — delega al tab-panel activo */
         display: flex;
         flex-direction: column;
-        -webkit-overflow-scrolling: touch !important;
-        overscroll-behavior-y: contain !important;
       }
 
       /* 5. El tab activo es el único que scrollea — recibe toda la cadena táctil */
