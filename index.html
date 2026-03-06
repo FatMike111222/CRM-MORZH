@@ -1144,10 +1144,6 @@
             style="display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:3px;flex-wrap:nowrap;align-items:center">
             <!-- JS rellena con botones de estado -->
           </div>
-          <div style="margin-top:6px">
-            <button id="filtro-papelera-btn" class="sf-btn papelera" style="display:none"
-              onclick="window.__fp()">🗑 Papelera<span id="filtro-papelera-n" style="opacity:.7;margin-left:3px"></span></button>
-          </div>
         </div>
 
         <!-- Fila 3: Empresa (JS la rellena, se oculta si vacía) -->
@@ -3456,7 +3452,6 @@
           ${marcaNomTxt?`<div class="lc-row"><span class="lc-lbl">Marca</span><span class="lc-val">${esc(marcaNomTxt)}</span></div>`:''}
           <div class="lc-row"><span class="lc-lbl">Estado</span>${cardEstado}</div>
           ${c.poblacion?`<div class="lc-row"><span class="lc-lbl">Lugar</span><span class="lc-val">${esc(c.poblacion)}</span></div>`:''}
-          ${c.email?`<div class="lc-row"><span class="lc-lbl">Email</span><a class="email-link lc-val" href="mailto:${esc(c.email)}" onclick="event.stopPropagation()">${esc(c.email)}</a></div>`:''}
           <div class="lc-footer" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
             <div style="flex:1;min-width:0">${telHtml}</div>
             <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
