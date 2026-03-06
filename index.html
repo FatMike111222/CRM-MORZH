@@ -719,16 +719,15 @@
     ═══════════════════════════════════════════════════════════ */
     @media (max-width: 768px) {
 
-      /* 1. Bloqueo nuclear del body — funciona en iOS Safari, Android Chrome
-            y navegadores legacy. position:fixed es la única técnica que
-            bloquea el scroll de forma fiable en todos los motores. */
+      /* 1. Bloqueo del body — sin position:fixed que congela Android.
+            overflow:hidden en html+body + height:100% es suficiente
+            para impedir el scroll de página en todos los motores modernos. */
       html, body {
-        height: 100vh;           /* fallback: navegadores sin soporte dvh */
-        height: 100dvh;          /* moderno: descuenta la barra de dirección */
+        height: 100%;
         width: 100%;
-        position: fixed;         /* bloqueo nuclear cross-browser */
-        overflow: hidden;
+        overflow: hidden !important;
         overscroll-behavior-y: none;
+        /* Sin position:fixed — causa freeze de scroll en Android Chrome */
       }
 
       /* 2. Anti-zoom Safari/iOS — font-size < 16px en un input dispara
@@ -750,13 +749,15 @@
       /* 4. LA BALA DE PLATA para Android Chrome/Chromium:
             min-height:0 es CRÍTICO — sin él, Flexbox en Chromium no
             recalcula correctamente el alto del hijo y el scroll no funciona.
-            flex:1 1 auto + min-height:0 = la única combinación fiable. */
+            flex:1 1 auto + min-height:0 = la única combinación fiable.
+            touch-action:pan-y obliga a Android a reconocer el gesto vertical. */
       .main {
         flex: 1 1 auto;
         min-height: 0;           /* CRÍTICO para Chromium/Android */
         overflow-y: auto;
         overscroll-behavior-y: contain;
         -webkit-overflow-scrolling: touch; /* inercia nativa iOS */
+        touch-action: pan-y;     /* CRÍTICO para Android — libera gesto vertical */
       }
 
       /* 5. Cada tab-panel activo hereda el mismo patrón de scroll */
@@ -765,6 +766,7 @@
         overflow-y: auto;
         overscroll-behavior-y: contain;
         -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
       }
 
       /* 6. Tabla de leads (desktop oculta, pero tbl-wrap existe en el DOM):
@@ -855,13 +857,26 @@
       }
 
       /* 13. Clase utilitaria reutilizable — aplícala a cualquier
-             contenedor que necesite scroll nativo en móvil */
+             contenedor que necesite scroll nativo en móvil.
+             touch-action: pan-x pan-y libera AMBOS ejes:
+             · pan-y → el scroll vertical del contenedor padre no se bloquea
+             · pan-x → el scroll horizontal propio funciona sin congelar Android */
       .scroll-nativo {
         min-height: 0;
         overflow-y: auto;
         overscroll-behavior-y: contain;
         -webkit-overflow-scrolling: touch;
-        touch-action: pan-y;
+        touch-action: pan-x pan-y; /* pan-x+pan-y = no bloquea ningún eje */
+      }
+
+      /* 14. Cintas de filtros horizontales: scroll solo en X.
+             pan-x permite que el dedo deslice horizontalmente sin capturar
+             el gesto vertical del scroll de página (fix del freeze Android). */
+      #filtro-estado-btns,
+      #filtros-emp-row,
+      #filtros-mrk-row {
+        touch-action: pan-x;
+        -webkit-overflow-scrolling: touch;
       }
     }
   </style>
