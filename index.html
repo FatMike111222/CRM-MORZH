@@ -694,105 +694,140 @@
 
 
     /* ═══════════════════════════════════════════════════════════
-       PWA / ESQUELETO DE TITANIO — Solo móvil (≤768px)
+       PWA / ESQUELETO DE TITANIO v2 — Solo móvil (≤768px)
+       Cross-browser: iOS Safari + Android Chrome/Chromium + legacy.
        Desktop: zero impacto garantizado.
     ═══════════════════════════════════════════════════════════ */
     @media (max-width: 768px) {
 
-      /* 1. Congelar body — elimina scroll infinito y rebote iOS/Android */
+      /* 1. Bloqueo nuclear del body — funciona en iOS Safari, Android Chrome
+            y navegadores legacy. position:fixed es la única técnica que
+            bloquea el scroll de forma fiable en todos los motores. */
       html, body {
-        height: 100dvh;
+        height: 100vh;           /* fallback: navegadores sin soporte dvh */
+        height: 100dvh;          /* moderno: descuenta la barra de dirección */
+        width: 100%;
+        position: fixed;         /* bloqueo nuclear cross-browser */
         overflow: hidden;
         overscroll-behavior-y: none;
       }
 
-      /* 2. Anti-zoom Safari/iOS — inputs con font-size < 16px disparan
-            un zoom automático al hacer focus. Forzamos 16px en todos. */
+      /* 2. Anti-zoom Safari/iOS — font-size < 16px en un input dispara
+            un zoom automático al hacer focus. Obligatorio 16px en todos. */
       input, select, textarea {
         font-size: 16px !important;
       }
 
-      /* 3. La app tiene su propio scroll vertical interno.
-            El contenedor principal de cada vista es scrollable. */
+      /* 3. Contenedor raíz de la app: flex column que ocupa toda la pantalla.
+            height:100% hereda del html/body fijado arriba. */
       #screen-app {
-        height: 100dvh;
-        overflow: hidden;
         display: flex;
         flex-direction: column;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
       }
 
-      /* El área de contenido (.main) ocupa el espacio restante y scrollea */
+      /* 4. LA BALA DE PLATA para Android Chrome/Chromium:
+            min-height:0 es CRÍTICO — sin él, Flexbox en Chromium no
+            recalcula correctamente el alto del hijo y el scroll no funciona.
+            flex:1 1 auto + min-height:0 = la única combinación fiable. */
       .main {
         flex: 1 1 auto;
+        min-height: 0;           /* CRÍTICO para Chromium/Android */
         overflow-y: auto;
+        overscroll-behavior-y: contain;
         -webkit-overflow-scrolling: touch; /* inercia nativa iOS */
-        overscroll-behavior-y: contain;
       }
 
-      /* Cada tab-panel que esté activo también debe poder scrollear */
+      /* 5. Cada tab-panel activo hereda el mismo patrón de scroll */
       .tab-panel.active {
+        min-height: 0;
         overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
         overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
       }
 
-      /* 4. Modal: scroll interno con inercia — el backdrop está fixed,
-            el modal-box scrollea por dentro */
+      /* 6. Tabla de leads (desktop oculta, pero tbl-wrap existe en el DOM):
+            touch-action:pan-y obliga a Chromium a reconocer el gesto
+            vertical incluso dentro de contenedores con overflow. */
+      .tbl-wrap {
+        touch-action: pan-y;
+        min-height: 0;
+      }
+
+      /* 7. Cards móvil: mismo patrón bala de plata */
+      #cards-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+      }
+
+      /* 8. Modal bottom-sheet: sube desde abajo, scroll interno robusto.
+            El backdrop es fixed, el modal-box es flex column con
+            max-height y su .modal-body es el hijo que scrollea. */
       #modal-backdrop {
         overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
         overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
         padding: 0;
         align-items: flex-start;
       }
       #modal-box {
         border-radius: 18px 18px 0 0;
         margin-top: auto;
+        height: 93vh;            /* fallback */
+        height: 93dvh;
+        max-height: 93vh;
         max-height: 93dvh;
         display: flex;
         flex-direction: column;
         width: 100%;
         max-width: 100%;
+        overflow: hidden;
       }
       .modal-body {
         flex: 1 1 auto;
+        min-height: 0;           /* CRÍTICO para Chromium/Android */
         overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
         overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
       }
 
-      /* 5. Preview backdrop: mismo tratamiento */
+      /* 9. Preview backdrop: mismo tratamiento */
       #preview-backdrop {
         overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
         overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
       }
 
-      /* 6. Scroll interno de listas de comentarios e historial */
+      /* 10. Listas internas: comentarios, historial, docs, cambios */
       #comments-list,
       #historial-list,
       #doc-list,
       #cambios-list {
-        -webkit-overflow-scrolling: touch;
+        min-height: 0;
         overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
       }
 
-      /* 7. Grid de pendientes: scrollable internamente */
+      /* 11. Grid de pendientes */
       .pend-grid {
         overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
+        min-height: 0;
         overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+        max-height: calc(100vh - 120px);
         max-height: calc(100dvh - 120px);
       }
 
-      /* 8. Tabla de leads en cards: scroll con inercia */
-      #cards-body {
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior-y: contain;
-      }
-
-      /* 9. Toast: subir por encima del bottom-nav en móvil */
+      /* 12. Toast: por encima del bottom-nav */
       #toast {
         bottom: 70px;
         right: 14px;
@@ -800,11 +835,14 @@
         justify-content: center;
       }
 
-      /* 10. Clase utilitaria reutilizable para cualquier scroll nativo */
+      /* 13. Clase utilitaria reutilizable — aplícala a cualquier
+             contenedor que necesite scroll nativo en móvil */
       .scroll-nativo {
+        min-height: 0;
         overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
         overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
       }
     }
   </style>
