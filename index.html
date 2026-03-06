@@ -357,11 +357,32 @@
     #modal-backdrop.open { display: flex; animation: fadein .22s ease both; }
     #modal-box { background: var(--s1); border: 1px solid var(--bd2); border-radius: 18px; width: 100%; max-width: 780px; box-shadow: 0 40px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.03) inset; overflow: hidden; flex-shrink: 0; animation: modalin .25s cubic-bezier(.16,1,.3,1) both; }
     @keyframes modalin { from { opacity:0; transform:scale(.97) translateY(12px); } to { opacity:1; transform:scale(1) translateY(0); } }
-    .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--bd); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .modal-header { padding: 16px 20px 14px; border-bottom: 1px solid var(--bd); display: flex; flex-direction: column; gap: 0; }
     @media (max-width: 767px) {
-      .modal-header { padding: 12px 14px 10px; }
+      .modal-header { padding: 10px 12px 10px; }
     }
-    .modal-close { background: rgba(255,255,255,.05); border: 1px solid var(--bd); color: var(--muted); border-radius: 7px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1rem; flex-shrink: 0; transition: color .15s, background .15s; }
+    /* Fila 1: nombre + botones */
+    .mh-row1 { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    /* Fila 2: estado inline */
+    .mh-row2 { display: flex; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+    /* Fila 3: empresa + gestor */
+    .mh-row3 { display: flex; align-items: center; gap: 4px; margin-top: 5px; flex-wrap: nowrap; min-width: 0; }
+    /* Fila 4: contacto */
+    .mh-row4 { display: flex; align-items: center; gap: 10px; margin-top: 5px; flex-wrap: nowrap; min-width: 0; }
+    /* Fila 5: fechas */
+    .mh-row5 { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; }
+    /* Botones acción compactos */
+    .btn-mh-icon { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: all .15s; }
+    .btn-mh-edit { background: rgba(59,125,216,.1); border: 1px solid rgba(59,125,216,.28); color: #7eb4f8; }
+    .btn-mh-edit:hover { background: rgba(59,125,216,.2); }
+    .btn-mh-del  { background: rgba(239,68,68,.09); border: 1px solid rgba(239,68,68,.22); color: #f87171; }
+    .btn-mh-del:hover  { background: rgba(239,68,68,.18); }
+    .btn-mh-close { background: rgba(255,255,255,.05); border: 1px solid var(--bd); color: var(--muted); }
+    .btn-mh-close:hover { background: rgba(248,113,113,.12); color: #f87171; border-color: rgba(248,113,113,.3); }
+    /* Tel clickable en cabecera */
+    .tel-cell-mh { color: var(--txt); cursor: pointer; font-family: 'DM Mono', monospace; font-size: .78rem; font-weight: 500; }
+    .tel-cell-mh:hover { color: var(--hi); }
+    .modal-close { background: rgba(255,255,255,.05); border: 1px solid var(--bd); color: var(--muted); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1rem; flex-shrink: 0; transition: color .15s, background .15s; }
     .modal-close:hover { background: rgba(248,113,113,.12); color: #f87171; border-color: rgba(248,113,113,.3); }
     .modal-body { padding: 0; }
     .modal-tabs { display: flex; border-bottom: 1px solid var(--bd); background: var(--s2); }
@@ -587,14 +608,9 @@
     .tab-badge-wrap { position: relative; display: inline-flex; }
 
     /* ─── V57: HORA VISITA visible en modal ──────────────────── */
-    #modal-hora-visita-wrap {
-      display: flex;
-      align-items: center; gap: 7px;
-      margin-top: 5px;
-    }
     .hora-visita-icon { color: var(--blue); }
     .hora-visita-val {
-      font-family: 'DM Mono', monospace; font-size: .9rem; font-weight: 700;
+      font-family: 'DM Mono', monospace; font-size: .78rem; font-weight: 700;
       color: #d1e8ff; letter-spacing: .04em;
     }
     .hora-visita-lbl {
@@ -1225,32 +1241,51 @@
 <div id="modal-backdrop">
   <div id="modal-box">
     <div class="modal-header">
-      <div style="flex:1;min-width:0">
-        <p class="mono" style="font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Ficha de cliente</p>
-        <h2 id="modal-client-name" style="font-size:1.1rem;font-weight:700;color:var(--hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</h2>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap">
-          <span id="modal-estado-pill" class="pill s-pendiente">—</span>
-          <span id="modal-empresa-lbl" style="font-size:.75rem;color:var(--muted)"></span>
-        </div>
-        <div id="modal-subline"></div>
-        <!-- V57: Fecha de entrada y Hora de visita destacadas -->
-        <div id="modal-fecha-entrada-wrap" style="display:flex;align-items:center;gap:7px;margin-top:6px;flex-wrap:wrap">
-          <svg style="width:13px;height:13px;stroke:#7eb4f8;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)">Entrada</span>
-          <span id="modal-fecha-entrada-val" style="font-family:'DM Mono',monospace;font-size:.82rem;font-weight:600;color:#c5d5e8;letter-spacing:.03em">—</span>
-        </div>
-        <!-- V57: hora visita — visible siempre si existe -->
-        <div id="modal-hora-visita-wrap">
-          <svg class="hora-visita-icon" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-          <span class="hora-visita-lbl">Hora visita</span>
-          <input type="time" id="modal-hora-visita-val" style="background:transparent; border:none; color:var(--hi); font-family:'DM Mono', monospace; font-size:.9rem; font-weight:700; cursor:pointer; outline:none; padding:0;" />
+      <!-- Fila 1: Nombre + Botones -->
+      <div class="mh-row1">
+        <h2 id="modal-client-name" style="flex:1;min-width:0;font-size:1.05rem;font-weight:700;color:var(--hi);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0">—</h2>
+        <div style="display:flex;gap:5px;align-items:center;flex-shrink:0;margin-left:6px">
+          <button id="btn-modal-edit" class="btn-mh-icon btn-mh-edit" style="display:none" title="Editar">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button id="btn-modal-del" class="btn-mh-icon btn-mh-del" style="display:none" title="Eliminar">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+          <button class="modal-close btn-mh-icon btn-mh-close" id="modal-close-btn" title="Cerrar">✕</button>
         </div>
       </div>
-      <!-- Acciones gestor -->
-      <div style="display:flex;gap:6px;align-items:flex-start;flex-shrink:0">
-        <button id="btn-modal-edit" class="btn-modal-edit" style="display:none">✎ Editar</button>
-        <button id="btn-modal-del"  class="btn-modal-del"  style="display:none">🗑</button>
-        <button class="modal-close" id="modal-close-btn">✕</button>
+      <!-- Fila 2: Estado -->
+      <div class="mh-row2">
+        <span id="modal-estado-pill" class="pill s-pendiente" style="padding:1px 8px;font-size:.68rem">—</span>
+        <span id="modal-empresa-lbl" style="font-size:.72rem;color:var(--muted)"></span>
+      </div>
+      <!-- Fila 3: Marca · Gestor -->
+      <div class="mh-row3">
+        <div id="modal-subline" style="font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:4px;min-width:0;flex-wrap:nowrap;overflow:hidden"></div>
+      </div>
+      <!-- Fila 4 + 5: Contacto + Fechas (in #modal-fecha-entrada-wrap for JS compat) -->
+      <div id="modal-fecha-entrada-wrap" style="display:flex;flex-direction:column;gap:4px;margin-top:5px">
+        <!-- Contacto: tel + email -->
+        <div class="mh-row4" id="mh-contact-row" style="display:none">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span id="mh-tel-1" class="tel-cell-mh"></span>
+          <span id="mh-tel-sep" style="color:var(--bd2);font-size:.7rem;display:none">|</span>
+          <span id="mh-tel-2" class="tel-cell-mh" style="display:none"></span>
+          <span id="mh-email-sep" style="color:var(--bd2);font-size:.7rem;display:none">|</span>
+          <svg id="mh-email-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;display:none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <a id="mh-email-val" class="email-link" href="#" onclick="event.stopPropagation()" style="display:none;font-size:.75rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px"></a>
+        </div>
+        <!-- Fecha entrada + Hora visita -->
+        <div class="mh-row5">
+          <div style="display:flex;align-items:center;gap:5px">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span id="modal-fecha-entrada-val" style="font-family:'DM Mono',monospace;font-size:.72rem;font-weight:600;color:var(--muted);letter-spacing:.02em">—</span>
+          </div>
+          <div id="modal-hora-visita-wrap" style="display:none;align-items:center;gap:5px">
+            <svg class="hora-visita-icon" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+            <input type="time" id="modal-hora-visita-val" style="background:transparent;border:none;color:var(--hi);font-family:'DM Mono',monospace;font-size:.78rem;font-weight:700;cursor:pointer;outline:none;padding:0;" />
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1636,19 +1671,55 @@
     $('modal-estado-pill').className   = 'pill '+(ESTADO_CLS[cliente.estado]||'s-pendiente');
     $('modal-empresa-lbl').textContent = '';
 
-    // Subline: Tel | Email | Población | Marca — con links interactivos
+    // Fila 3: Marca · Gestor en modal-subline
     const marcaNomModal = getMarcaNombre(cliente.marca_id);
     const _subParts = [];
-    if(cliente.telefono) {
-      const telC=(cliente.telefono||'').replace(/\s/g,'');
-      _subParts.push(`<span class="tel-cell" onclick="event.stopPropagation();_openTelPopup(event,'${esc(telC)}')" title="Llamar o WhatsApp">${esc(cliente.telefono)}</span>`);
+    if(marcaNomModal) _subParts.push(`<span style="color:var(--muted)">${esc(marcaNomModal)}</span>`);
+    // Gestor/empresa label
+    const _gestNom = cliente.gestor_nombre || cliente.gestor_id || '';
+    if(_gestNom) _subParts.push(`<span style="color:var(--muted)">${esc(_gestNom)}</span>`);
+    $('modal-subline').innerHTML = _subParts.map((v,i)=>(i>0?'<span style="color:var(--bd2);margin:0 3px">•</span>':'')+v).join('');
+
+    // Fila 4: Contacto compacto
+    const _contactRow = document.getElementById('mh-contact-row');
+    const _mhTel1 = document.getElementById('mh-tel-1');
+    const _mhTel2 = document.getElementById('mh-tel-2');
+    const _mhTelSep = document.getElementById('mh-tel-sep');
+    const _mhEmailSep = document.getElementById('mh-email-sep');
+    const _mhEmailIcon = document.getElementById('mh-email-icon');
+    const _mhEmailVal = document.getElementById('mh-email-val');
+    let _hasContact = false;
+    if(_mhTel1) {
+      if(cliente.telefono) {
+        const telC=(cliente.telefono||'').replace(/\s/g,'');
+        _mhTel1.textContent = cliente.telefono;
+        _mhTel1.style.display='';
+        _mhTel1.onclick = (e)=>{ e.stopPropagation(); _openTelPopup(e, telC); };
+        _hasContact = true;
+      } else { _mhTel1.style.display='none'; _mhTel1.textContent=''; }
     }
-    if(cliente.email) {
-      _subParts.push(`<a class="email-link" href="mailto:${esc(cliente.email)}" onclick="event.stopPropagation()" title="Enviar email">${esc(cliente.email)}</a>`);
+    if(_mhTel2 && _mhTelSep) {
+      const tel2 = cliente.telefono_secundario ? String(cliente.telefono_secundario) : '';
+      if(tel2) {
+        const telC2 = tel2.replace(/\s/g,'');
+        _mhTel2.textContent = tel2;
+        _mhTel2.style.display='';
+        _mhTelSep.style.display='';
+        _mhTel2.onclick = (e)=>{ e.stopPropagation(); _openTelPopup(e, telC2); };
+        _hasContact = true;
+      } else { _mhTel2.style.display='none'; _mhTelSep.style.display='none'; }
     }
-    if(cliente.poblacion) _subParts.push(esc(cliente.poblacion));
-    if(marcaNomModal)      _subParts.push(esc(marcaNomModal));
-    $('modal-subline').innerHTML=_subParts.map((v,i)=>(i>0?'<span class="sep">|</span>':'')+v).join('');
+    if(_mhEmailVal && _mhEmailSep && _mhEmailIcon) {
+      if(cliente.email) {
+        _mhEmailVal.textContent = cliente.email;
+        _mhEmailVal.href = `mailto:${esc(cliente.email)}`;
+        _mhEmailVal.style.display='';
+        _mhEmailSep.style.display = (cliente.telefono) ? '' : 'none';
+        _mhEmailIcon.style.display='';
+        _hasContact = true;
+      } else { _mhEmailVal.style.display='none'; _mhEmailSep.style.display='none'; _mhEmailIcon.style.display='none'; }
+    }
+    if(_contactRow) _contactRow.style.display = _hasContact ? '' : 'none';
     // V57: fecha de entrada visible en modal
     const _feWrap=document.getElementById('modal-fecha-entrada-wrap');
     const _feVal=document.getElementById('modal-fecha-entrada-val');
@@ -1661,6 +1732,7 @@
     if(_hvWrap && _hvVal) {
       const hv = cliente.hora_visita||null;
       _hvVal.value = hv ? hv.slice(0,5) : '';
+      _hvWrap.style.display = hv ? 'flex' : 'none';
     }
     if(_hvVal) {
       _hvVal.disabled = (rol !== 'gestor');
