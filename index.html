@@ -107,16 +107,12 @@
       display:flex; flex-wrap:wrap; gap:5px; align-items:center; min-height:0;
     }
     .filtros-emp-row:empty, .filtros-mrk-row:empty { display:none; }
-    /* En desktop: restaurar wrap natural (el inline style lo fuerza nowrap para móvil) */
+    /* En desktop: restaurar wrap natural */
     @media (min-width: 768px) {
       .filtros-emp-row, .filtros-mrk-row {
         flex-wrap:wrap !important;
         overflow-x:visible !important;
       }
-      /* En desktop: cajón siempre visible */
-      #cajon-filtros { display:flex !important; }
-      /* Botón toggle: solo móvil */
-      #btn-toggle-filtros { display:none !important; }
     }
     .sf-lbl { font-size:.6rem; font-weight:700; text-transform:uppercase;
       letter-spacing:.08em; color:var(--muted); margin-right:3px; white-space:nowrap; }
@@ -200,14 +196,8 @@
     /* ── Cards móvil (< 768px) ── */
     /* Desktop: mostrar tabla, ocultar cards */
     #cards-body { display: none; }
-    /* Sort bar — visible solo en móvil */
 
     @media (max-width: 767px) {
-      /* Cajón filtros: oculto por defecto en móvil */
-      #cajon-filtros { display:none; }
-      #cajon-filtros.abierto { display:flex; flex-direction:column; gap:8px; }
-      /* Botón toggle: visible en móvil */
-      #btn-toggle-filtros { display:inline-flex !important; }
       .main { padding: 16px 14px 52px; }
       .topbar-inner { padding: 0 14px; }
       .tbl-wrap { overflow-x: unset; }
@@ -368,6 +358,9 @@
     #modal-box { background: var(--s1); border: 1px solid var(--bd2); border-radius: 18px; width: 100%; max-width: 780px; box-shadow: 0 40px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.03) inset; overflow: hidden; flex-shrink: 0; animation: modalin .25s cubic-bezier(.16,1,.3,1) both; }
     @keyframes modalin { from { opacity:0; transform:scale(.97) translateY(12px); } to { opacity:1; transform:scale(1) translateY(0); } }
     .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--bd); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    @media (max-width: 767px) {
+      .modal-header { padding: 12px 14px 10px; }
+    }
     .modal-close { background: rgba(255,255,255,.05); border: 1px solid var(--bd); color: var(--muted); border-radius: 7px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1rem; flex-shrink: 0; transition: color .15s, background .15s; }
     .modal-close:hover { background: rgba(248,113,113,.12); color: #f87171; border-color: rgba(248,113,113,.3); }
     .modal-body { padding: 0; }
@@ -377,6 +370,9 @@
     .mtab.active { color: var(--hi); border-bottom-color: var(--blue); }
     .mpanel { display: none; padding: 22px 24px; }
     .mpanel.active { display: block; animation: fadein .2s ease both; }
+    @media (max-width: 767px) {
+      .mpanel { padding: 14px 14px; }
+    }
 
     .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
     @media(max-width:520px) { .info-grid { grid-template-columns: 1fr; } }
@@ -1126,35 +1122,48 @@
 
       <!-- stats-wrap eliminado — dashboard limpio (Fase 1) -->
 
-      <!-- T3: Filtros combinados AND — Estado (select) + Empresa (pills) + Marca (pills) -->
-      <div style="margin-bottom:14px;display:flex;flex-direction:column;gap:8px">
-        <!-- Fila principal: buscador (siempre visible) + botón filtros (solo móvil) -->
+      <!-- Filtros: siempre visibles, 4 filas ordenadas -->
+      <div style="margin-bottom:14px;display:flex;flex-direction:column;gap:10px">
+
+        <!-- Fila 1: Buscador + Botón limpiar filtros -->
         <div style="display:flex;gap:8px;align-items:center">
           <input id="search-lead" type="text" placeholder="Buscar: nombre, tel, población…"
-            style="flex:1;max-width:420px"/>
-          <button id="btn-toggle-filtros"
-            style="display:none;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:.63rem;font-weight:600;letter-spacing:.05em;padding:6px 12px;border-radius:99px;border:1px solid var(--bd);background:rgba(255,255,255,.03);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s"
-            onclick="window.__toggleFiltrosCajon()">Filtros 🎛️</button>
+            style="flex:1"/>
+          <button id="btn-clear-filters" title="Limpiar todos los filtros"
+            onclick="window.__clearAllFilters()"
+            style="width:34px;height:34px;border-radius:8px;border:1px solid var(--bd);background:rgba(255,255,255,.03);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem;transition:color .15s,border-color .15s"
+            onmouseenter="this.style.color='#f87171';this.style.borderColor='rgba(248,113,113,.35)'"
+            onmouseleave="this.style.color='var(--muted)';this.style.borderColor='var(--bd)'">🗑️</button>
         </div>
 
-        <!-- Cajón colapsable: visible siempre en desktop, oculto por defecto en móvil -->
-        <div id="cajon-filtros" style="display:flex;flex-direction:column;gap:8px">
-          <!-- Fila 1: estado (botones horizontales) + papelera -->
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <input type="hidden" id="filtro-estado-sel" value="">
-            <div id="filtro-estado-btns" class="scroll-nativo" style="display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:3px;flex-wrap:nowrap;align-items:center">
-              <!-- JS lo rellena con botones de estado -->
-            </div>
-            <div>
-              <button id="filtro-papelera-btn" class="sf-btn papelera" style="display:none"
-                onclick="window.__fp()">🗑 Papelera<span id="filtro-papelera-n" style="opacity:.7;margin-left:3px"></span></button>
-            </div>
+        <!-- Fila 2: Estados -->
+        <div>
+          <p style="font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:5px">Estado</p>
+          <input type="hidden" id="filtro-estado-sel" value="">
+          <div id="filtro-estado-btns" class="scroll-nativo"
+            style="display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:3px;flex-wrap:nowrap;align-items:center">
+            <!-- JS rellena con botones de estado -->
           </div>
-          <!-- Fila 2: pills empresa (solo gestor, JS la rellena) — scroll horizontal en móvil -->
-          <div id="filtros-emp-row" class="filtros-emp-row" style="flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px"></div>
-          <!-- Fila 3: pills marca (JS la rellena) — scroll horizontal en móvil -->
-          <div id="filtros-mrk-row" class="filtros-mrk-row" style="flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px"></div>
+          <div style="margin-top:6px">
+            <button id="filtro-papelera-btn" class="sf-btn papelera" style="display:none"
+              onclick="window.__fp()">🗑 Papelera<span id="filtro-papelera-n" style="opacity:.7;margin-left:3px"></span></button>
+          </div>
         </div>
+
+        <!-- Fila 3: Empresa (JS la rellena, se oculta si vacía) -->
+        <div id="filtros-emp-wrap" style="display:none">
+          <p style="font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:5px">Empresa</p>
+          <div id="filtros-emp-row" class="filtros-emp-row scroll-nativo"
+            style="flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px"></div>
+        </div>
+
+        <!-- Fila 4: Marca (JS la rellena, se oculta si vacía) -->
+        <div id="filtros-mrk-wrap" style="display:none">
+          <p style="font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:5px">Marca</p>
+          <div id="filtros-mrk-row" class="filtros-mrk-row scroll-nativo"
+            style="flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px"></div>
+        </div>
+
       </div>
 
       <div class="pcard">
@@ -1279,51 +1288,51 @@
 
         <!-- Panel edición datos cliente (solo gestor, toggle) -->
         <div id="edit-panel">
-          <p style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:10px">✎ Datos del cliente</p>
-          <div class="edit-grid">
+          <p style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:8px">✎ Datos del cliente</p>
+          <div class="edit-grid" style="gap:8px">
             <div>
-              <label class="field-label" style="font-size:.6rem">Nombre</label>
-              <input id="edit-nombre" type="text" class="edit-field" placeholder="Nombre cliente"/>
+              <label class="field-label" style="font-size:.58rem;font-weight:600;letter-spacing:.08em;color:var(--muted)">Nombre</label>
+              <input id="edit-nombre" type="text" class="edit-field" style="padding:6px 9px;font-size:.82rem" placeholder="Nombre cliente"/>
             </div>
             <div>
-              <label class="field-label" style="font-size:.6rem">Teléfono</label>
-              <input id="edit-tel" type="text" class="edit-field" placeholder="6XX XXX XXX"/>
+              <label class="field-label" style="font-size:.58rem;font-weight:600;letter-spacing:.08em;color:var(--muted)">Teléfono</label>
+              <input id="edit-tel" type="text" class="edit-field" style="padding:6px 9px;font-size:.82rem" placeholder="6XX XXX XXX"/>
             </div>
             <div>
-              <label class="field-label" style="font-size:.6rem">Email</label>
-              <input id="edit-email" type="email" class="edit-field" placeholder="email@ejemplo.com"/>
+              <label class="field-label" style="font-size:.58rem;font-weight:600;letter-spacing:.08em;color:var(--muted)">Email</label>
+              <input id="edit-email" type="email" class="edit-field" style="padding:6px 9px;font-size:.82rem" placeholder="email@ejemplo.com"/>
             </div>
             <div>
-              <label class="field-label" style="font-size:.6rem">Población</label>
-              <input id="edit-pobl" type="text" class="edit-field" placeholder="Ciudad"/>
+              <label class="field-label" style="font-size:.58rem;font-weight:600;letter-spacing:.08em;color:var(--muted)">Población</label>
+              <input id="edit-pobl" type="text" class="edit-field" style="padding:6px 9px;font-size:.82rem" placeholder="Ciudad"/>
             </div>
             <div>
-              <label class="field-label" style="font-size:.6rem">Subservicio</label>
-              <select id="edit-reforma" class="edit-field"><option value="">— Sin cambio —</option></select>
+              <label class="field-label" style="font-size:.58rem;font-weight:600;letter-spacing:.08em;color:var(--muted)">Subservicio</label>
+              <select id="edit-reforma" class="edit-field" style="padding:6px 9px;font-size:.82rem"><option value="">— Sin cambio —</option></select>
             </div>
             <div id="edit-marca-wrap" style="display:none">
-              <label class="field-label" style="font-size:.6rem">Marca</label>
-              <select id="edit-marca-modal" class="edit-field">
+              <label class="field-label" style="font-size:.58rem;font-weight:600;letter-spacing:.08em;color:var(--muted)">Marca</label>
+              <select id="edit-marca-modal" class="edit-field" style="padding:6px 9px;font-size:.82rem">
                 <option value="">— Sin marca —</option>
               </select>
             </div>
             <div id="edit-empresa-wrap" style="display:none">
-              <label class="field-label" style="font-size:.6rem">Empresa asignada</label>
-              <select id="edit-empresa-modal" class="edit-field">
+              <label class="field-label" style="font-size:.58rem;font-weight:600;letter-spacing:.08em;color:var(--muted)">Empresa asignada</label>
+              <select id="edit-empresa-modal" class="edit-field" style="padding:6px 9px;font-size:.82rem">
                 <option value="">— Sin empresa —</option>
               </select>
             </div>
             <div>
-              <label class="field-label" style="font-size:.6rem">Hora de visita</label>
-              <input id="edit-hora-visita" type="time" class="edit-field"/>
+              <label class="field-label" style="font-size:.58rem;font-weight:600;letter-spacing:.08em;color:var(--muted)">Hora de visita</label>
+              <input id="edit-hora-visita" type="time" class="edit-field" style="padding:6px 9px;font-size:.82rem"/>
             </div>
             <div>
-              <label class="field-label" style="font-size:.6rem">Tel&#xe9;fono secundario</label>
-              <input id="edit-tel-secundario" type="text" class="edit-field" placeholder="6XX XXX XXX"/>
+              <label class="field-label" style="font-size:.58rem;font-weight:600;letter-spacing:.08em;color:var(--muted)">Teléfono secundario</label>
+              <input id="edit-tel-secundario" type="text" class="edit-field" style="padding:6px 9px;font-size:.82rem" placeholder="6XX XXX XXX"/>
             </div>
             <div style="grid-column:1/-1">
-              <label class="field-label" style="font-size:.6rem">Direcci&#xf3;n de obra</label>
-              <input id="edit-direccion-obra" type="text" class="edit-field" placeholder="Calle, número…"/>
+              <label class="field-label" style="font-size:.58rem;font-weight:600;letter-spacing:.08em;color:var(--muted)">Dirección de obra</label>
+              <input id="edit-direccion-obra" type="text" class="edit-field" style="padding:6px 9px;font-size:.82rem" placeholder="Calle, número…"/>
             </div>
           </div>
         </div>
@@ -1762,7 +1771,7 @@
       })
       .subscribe(s=>{
         if(s==='SUBSCRIBED') {
-          $('modal-empresa-lbl').innerHTML=(cliente.empresa_id?esc(empresasMap[cliente.empresa_id]||'')+' &nbsp;':'')+'<span class="rt-live">EN VIVO</span>';
+          $('modal-empresa-lbl').textContent=(cliente.empresa_id?esc(empresasMap[cliente.empresa_id]||''):'');
         }
       });
 
@@ -3215,9 +3224,11 @@
 
     // ── T3: Pills Empresa (solo gestor, multi-select defensivo) ───
     const rowEmp = document.getElementById('filtros-emp-row');
+    const wrapEmp = document.getElementById('filtros-emp-wrap');
     if(rowEmp) {
       if(rol !== 'gestor') {
         rowEmp.innerHTML = '';
+        if(wrapEmp) wrapEmp.style.display = 'none';
       } else {
         const empSet = new Map();
         allLeads.filter(c => c.estado !== 'BORRADO').forEach(c => {
@@ -3234,10 +3245,11 @@
         });
         if(empSet.size === 0) {
           rowEmp.innerHTML = '';
+          if(wrapEmp) wrapEmp.style.display = 'none';
         } else {
+          if(wrapEmp) wrapEmp.style.display = '';
           const todosAct = filtroEmpresas.size === 0 ? ' active' : '';
-          let hE = `<span class="sf-lbl">Empresa:</span>`;
-          hE += `<button class="sf-btn${todosAct}" onclick="window.__feEmp(null)">Todas</button>`;
+          let hE = `<button class="sf-btn${todosAct}" onclick="window.__feEmp(null)">Todas</button>`;
           empSet.forEach((nom, id) => {
             const sid = String(id);
             const isActive = filtroEmpresas.has(sid) ? ' sel-multi' : '';
@@ -3251,6 +3263,7 @@
 
     // ── T3: Pills Marca (multi-select defensivo) ────────────────
     const rowMrk = document.getElementById('filtros-mrk-row');
+    const wrapMrk = document.getElementById('filtros-mrk-wrap');
     if(rowMrk) {
       const marcaSet = new Map();
       allLeads.filter(c => c.estado !== 'BORRADO').forEach(c => {
@@ -3264,10 +3277,11 @@
       });
       if(marcaSet.size === 0) {
         rowMrk.innerHTML = '';
+        if(wrapMrk) wrapMrk.style.display = 'none';
       } else {
+        if(wrapMrk) wrapMrk.style.display = '';
         const todosActM = filtroMarcas.size === 0 ? ' active' : '';
-        let hM = `<span class="sf-lbl">Marca:</span>`;
-        hM += `<button class="sf-btn${todosActM}" onclick="window.__feMrk(null)">Todas</button>`;
+        let hM = `<button class="sf-btn${todosActM}" onclick="window.__feMrk(null)">Todas</button>`;
         marcaSet.forEach((nom, id) => {
           const sid = String(id);
           const isActive = filtroMarcas.has(sid) ? ' sel-multi' : '';
@@ -3296,17 +3310,14 @@
 
     window.__fp = () => { filtroPapelera=!filtroPapelera; filtroEstado=null; renderDashboard(); };
 
-  // ─── CAJÓN FILTROS MÓVIL ─────────────────────────────────────
-  window.__toggleFiltrosCajon = function() {
-    const cajon = document.getElementById('cajon-filtros');
-    const btn   = document.getElementById('btn-toggle-filtros');
-    if(!cajon) return;
-    const abierto = cajon.classList.toggle('abierto');
-    if(btn) {
-      btn.textContent = abierto ? 'Cerrar ✕' : 'Filtros 🎛️';
-      btn.style.color = abierto ? 'var(--hi)' : '';
-      btn.style.borderColor = abierto ? 'var(--bd2)' : '';
-    }
+  // ─── LIMPIAR TODOS LOS FILTROS ───────────────────────────────
+  window.__clearAllFilters = function() {
+    filtroEstado = null; filtroPapelera = false;
+    filtroEmpresas.clear(); filtroMarcas.clear();
+    filtroBusqueda = '';
+    const sl = document.getElementById('search-lead');
+    if(sl) sl.value = '';
+    renderDashboard();
   };
 
   $('search-lead').addEventListener('input', function(){ filtroBusqueda=this.value; renderKPIs(leadsVisibles()); renderTable(leadsVisibles()); });
