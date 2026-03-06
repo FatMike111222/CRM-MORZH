@@ -768,11 +768,13 @@
             Esto elimina el "touch trap": Android recibe el evento táctil solo
             en el hijo scrolleable, sin conflicto con el padre. */
       .main {
-        flex: 1 1 auto;
-        min-height: 0;           /* CRÍTICO para Chromium/Android */
-        overflow: hidden;        /* padre no scrollea — delega al tab-panel activo */
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        overflow: hidden !important;        /* padre no scrollea — delega al tab-panel activo */
         display: flex;
         flex-direction: column;
+        -webkit-overflow-scrolling: touch !important;
+        overscroll-behavior-y: contain !important;
       }
 
       /* 5. El tab activo es el único que scrollea — recibe toda la cadena táctil */
