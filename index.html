@@ -746,23 +746,25 @@
         overflow: hidden;
       }
 
-      /* 4. LA BALA DE PLATA para Android Chrome/Chromium:
-            min-height:0 es CRÍTICO — sin él, Flexbox en Chromium no
-            recalcula correctamente el alto del hijo y el scroll no funciona.
-            flex:1 1 auto + min-height:0 = la única combinación fiable.
-            touch-action:pan-y obliga a Android a reconocer el gesto vertical. */
+      /* 4. ANDROID SCROLL FIX — patrón padre/hijo correcto para esta estructura:
+            .main = contenedor padre → overflow:hidden (no scrollea él mismo)
+            .tab-panel.active = hijo que scrollea → overflow-y:auto + min-height:0
+            Esto elimina el "touch trap": Android recibe el evento táctil solo
+            en el hijo scrolleable, sin conflicto con el padre. */
       .main {
         flex: 1 1 auto;
         min-height: 0;           /* CRÍTICO para Chromium/Android */
-        overflow-y: auto;
-        overscroll-behavior-y: contain;
-        -webkit-overflow-scrolling: touch; /* inercia nativa iOS */
-        touch-action: pan-y;     /* CRÍTICO para Android — libera gesto vertical */
+        overflow: hidden;        /* padre no scrollea — delega al tab-panel activo */
+        display: flex;
+        flex-direction: column;
       }
 
-      /* 5. Cada tab-panel activo hereda el mismo patrón de scroll */
+      /* 5. El tab activo es el único que scrollea — recibe toda la cadena táctil */
       .tab-panel.active {
-        min-height: 0;
+        display: flex !important; /* override del display:block global — necesario para flex:1 */
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;           /* CRÍTICO para Chromium/Android */
         overflow-y: auto;
         overscroll-behavior-y: contain;
         -webkit-overflow-scrolling: touch;
