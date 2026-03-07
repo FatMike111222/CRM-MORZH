@@ -737,13 +737,16 @@
       }
 
       /* 3. Contenedor raíz de la app: flex column que ocupa toda la pantalla.
-            height:100% hereda del html/body fijado arriba. */
+            height:100% hereda del html/body fijado arriba.
+            min-height:0 anula el min-height:100vh global — sin esto Chromium
+            expande el contenedor más allá del viewport y el scroll se bloquea. */
       #screen-app {
         display: flex;
         flex-direction: column;
         height: 100%;
         width: 100%;
         overflow: hidden;
+        min-height: 0;           /* CRÍTICO Android: anula min-height:100vh global */
       }
 
       /* 4. LA BALA DE PLATA para Android Chrome/Chromium:
@@ -760,8 +763,14 @@
         touch-action: pan-y;     /* CRÍTICO para Android — libera gesto vertical */
       }
 
-      /* 5. Cada tab-panel activo hereda el mismo patrón de scroll */
+      /* 5. Cada tab-panel activo: display:flex (no block) para que Chromium/Android
+            propague correctamente la restricción de altura desde el padre flex.
+            Con display:block, Chromium expande el panel a su contenido natural
+            ignorando el min-height:0 del padre, bloqueando el scroll. */
       .tab-panel.active {
+        display: flex;           /* CRÍTICO Android: block no hereda altura acotada en Chromium */
+        flex-direction: column;
+        flex: 1 1 auto;
         min-height: 0;
         overflow-y: auto;
         overscroll-behavior-y: contain;
@@ -769,7 +778,18 @@
         touch-action: pan-y;
       }
 
-      /* 6. Tabla de leads (desktop oculta, pero tbl-wrap existe en el DOM):
+      /* 6. Hijos directos del tab-panel activo (pcards, wrappers):
+            flex-shrink:0 impide que Chromium los comprima al calcular el layout.
+            overflow:visible en .pcard anula el overflow:hidden global para que
+            el scroll del tab-panel padre pueda recorrer el contenido completo. */
+      .tab-panel.active > * {
+        flex-shrink: 0;
+      }
+      .tab-panel.active > .pcard {
+        overflow: visible;        /* CRÍTICO: permite al tab-panel padre scrollear el pcard */
+      }
+
+      /* 6b. Tabla de leads (desktop oculta, pero tbl-wrap existe en el DOM):
             touch-action:pan-y obliga a Chromium a reconocer el gesto
             vertical incluso dentro de contenedores con overflow. */
       .tbl-wrap {
