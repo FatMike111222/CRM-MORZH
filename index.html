@@ -726,7 +726,6 @@
         height: 100%;
         width: 100%;
         overflow: hidden !important;
-        overscroll-behavior-y: none;
         /* Sin position:fixed — causa freeze de scroll en Android Chrome */
       }
 
@@ -737,82 +736,34 @@
       }
 
       /* 3. Contenedor raíz de la app: flex column que ocupa toda la pantalla.
-            height:100% hereda del html/body fijado arriba.
-            min-height:0 anula el min-height:100vh global — sin esto Chromium
-            expande el contenedor más allá del viewport y el scroll se bloquea. */
+            height:100% hereda del html/body fijado arriba. */
       #screen-app {
         display: flex;
         flex-direction: column;
         height: 100%;
         width: 100%;
         overflow: hidden;
-        min-height: 0;           /* CRÍTICO Android: anula min-height:100vh global */
       }
 
       /* 4. LA BALA DE PLATA para Android Chrome/Chromium:
             min-height:0 es CRÍTICO — sin él, Flexbox en Chromium no
             recalcula correctamente el alto del hijo y el scroll no funciona.
             flex:1 1 auto + min-height:0 = la única combinación fiable.
-            touch-action:pan-y obliga a Android a reconocer el gesto vertical. */
+            Delegamos todo el scroll a este único contenedor padre. */
       .main {
         flex: 1 1 auto;
         min-height: 0;           /* CRÍTICO para Chromium/Android */
         overflow-y: auto;
-        overscroll-behavior-y: contain;
         -webkit-overflow-scrolling: touch; /* inercia nativa iOS */
-        touch-action: pan-y;     /* CRÍTICO para Android — libera gesto vertical */
       }
 
-      /* 5. Cada tab-panel activo: display:flex (no block) para que Chromium/Android
-            propague correctamente la restricción de altura desde el padre flex.
-            Con display:block, Chromium expande el panel a su contenido natural
-            ignorando el min-height:0 del padre, bloqueando el scroll. */
-      .tab-panel.active {
-        display: flex;           /* CRÍTICO Android: block no hereda altura acotada en Chromium */
-        flex-direction: column;
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow-y: auto;
-        overscroll-behavior-y: contain;
-        -webkit-overflow-scrolling: touch;
-        touch-action: pan-y;
-      }
-
-      /* 6. Hijos directos del tab-panel activo (pcards, wrappers):
-            flex-shrink:0 impide que Chromium los comprima al calcular el layout.
-            overflow:visible en .pcard anula el overflow:hidden global para que
-            el scroll del tab-panel padre pueda recorrer el contenido completo. */
-      .tab-panel.active > * {
-        flex-shrink: 0;
-      }
-      .tab-panel.active > .pcard {
-        overflow: visible;        /* CRÍTICO: permite al tab-panel padre scrollear el pcard */
-      }
-
-      /* 6b. Tabla de leads (desktop oculta, pero tbl-wrap existe en el DOM):
-            touch-action:pan-y obliga a Chromium a reconocer el gesto
-            vertical incluso dentro de contenedores con overflow. */
-      .tbl-wrap {
-        touch-action: pan-y;
-        min-height: 0;
-      }
-
-      /* 7. Cards móvil: mismo patrón bala de plata */
-      #cards-body {
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow-y: auto;
-        overscroll-behavior-y: contain;
-        -webkit-overflow-scrolling: touch;
-        touch-action: pan-y;
-      }
+      /* 5-7. Scroll trap eliminados — .main es el único scrollable */
 
       /* 8. Modal bottom-sheet: sube desde abajo, scroll interno robusto.
             El backdrop es fixed, el modal-box es flex column con
             max-height y su .modal-body es el hijo que scrollea. */
       #modal-backdrop {
         overflow-y: auto;
-        overscroll-behavior-y: contain;
         -webkit-overflow-scrolling: touch;
         padding: 0;
         align-items: flex-start;
@@ -834,9 +785,7 @@
         flex: 1 1 auto;
         min-height: 0;           /* CRÍTICO para Chromium/Android */
         overflow-y: auto;
-        overscroll-behavior-y: contain;
         -webkit-overflow-scrolling: touch;
-        touch-action: pan-y;
       }
 
       /* 9. Preview backdrop: mismo tratamiento */
@@ -846,27 +795,9 @@
         -webkit-overflow-scrolling: touch;
       }
 
-      /* 10. Listas internas: comentarios, historial, docs, cambios */
-      #comments-list,
-      #historial-list,
-      #doc-list,
-      #cambios-list {
-        min-height: 0;
-        overscroll-behavior-y: contain;
-        -webkit-overflow-scrolling: touch;
-        touch-action: pan-y;
-      }
+      /* 10. Listas internas: scroll trap eliminado — heredan del padre .main */
 
-      /* 11. Grid de pendientes */
-      .pend-grid {
-        overflow-y: auto;
-        min-height: 0;
-        overscroll-behavior-y: contain;
-        -webkit-overflow-scrolling: touch;
-        touch-action: pan-y;
-        max-height: calc(100vh - 120px);
-        max-height: calc(100dvh - 120px);
-      }
+      /* 11. Grid de pendientes: scroll trap eliminado — hereda del padre .main */
 
       /* 12. Toast: por encima del bottom-nav */
       #toast {
@@ -876,18 +807,7 @@
         justify-content: center;
       }
 
-      /* 13. Clase utilitaria reutilizable — aplícala a cualquier
-             contenedor que necesite scroll nativo en móvil.
-             touch-action: pan-x pan-y libera AMBOS ejes:
-             · pan-y → el scroll vertical del contenedor padre no se bloquea
-             · pan-x → el scroll horizontal propio funciona sin congelar Android */
-      .scroll-nativo {
-        min-height: 0;
-        overflow-y: auto;
-        overscroll-behavior-y: contain;
-        -webkit-overflow-scrolling: touch;
-        touch-action: pan-x pan-y; /* pan-x+pan-y = no bloquea ningún eje */
-      }
+      /* 13. .scroll-nativo eliminado — ya no se necesita con scroll único en .main */
 
       /* 14. Cintas de filtros horizontales: scroll solo en X.
              pan-x permite que el dedo deslice horizontalmente sin capturar
