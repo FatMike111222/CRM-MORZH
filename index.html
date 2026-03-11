@@ -2142,11 +2142,11 @@
     finally { btn.textContent='Iniciar sesión'; btn.disabled=false; }
   });
 
-// ─── DETECCIÓN DE ROL (Versión Ultra-Estable) ──────────────────
+// ─── DETECCIÓN DE ROL (Versión Escala Empleados-Empresa) ──────────────────
   async function enterApp(user) {
     authUserId = user.id; 
     
-    // 1. Intentamos buscar en GESTORES (usando maybeSingle para evitar error 406)
+    // 1. Intentamos buscar en GESTORES
     const { data: gestor, error: gErr } = await sb.from('gestores')
       .select('id, nombre, servicios')
       .eq('auth_user_id', user.id)
@@ -2158,7 +2158,7 @@
       userName = gestor.nombre || user.email.split('@')[0];
       servicios = Array.isArray(gestor.servicios) ? gestor.servicios.map(String) : [];
     } else {
-      // 2. Si no es gestor, probamos en EMPRESAS
+      // 2. Si no es gestor, probamos en EMPRESAS (Dueño Principal)
       const { data: empresa, error: eErr } = await sb.from('empresas')
         .select('id, nombre_comercial, servicios')
         .eq('auth_user_id', user.id)
@@ -2170,17 +2170,38 @@
         userName = empresa.nombre_comercial || user.email.split('@')[0];
         servicios = Array.isArray(empresa.servicios) ? empresa.servicios.map(String) : [];
       } else {
-        // 3. Plan de emergencia: Si no aparece en ninguna tabla
-        hideEl('screen-login');
-        document.body.innerHTML = `
-          <div style="min-height:100vh;display:flex;items-center;justify-content:center;background:#060911;color:#c5d5e8;text-align:center;padding:40px;font-family:sans-serif">
-            <div>
-              <p style="font-size:1.2rem">⚠️ Perfil no encontrado para: <b>${user.email}</b></p>
-              <p style="color:#3d5a78;margin-bottom:20px">Contacta con soporte para que vinculen tu usuario.</p>
-              <button onclick="location.reload()" style="background:#172034;border:1px solid #27415f;color:#fff;padding:10px 20px;border-radius:8px;cursor:pointer">🔄 Reintentar</button>
-            </div>
-          </div>`;
-        return;
+        // 3. NUEVO: Probamos en EMPLEADOS de una Empresa
+        const { data: empleado, error: empErr } = await sb.from('empleados_empresa')
+          .select('empresa_id, nombre')
+          .eq('auth_user_id', user.id)
+          .maybeSingle();
+
+        if (empleado) {
+          // Entra asumiendo el rol y el ID de la empresa madre para ver los leads correctos
+          rol = 'empresa'; 
+          userId = empleado.empresa_id; 
+          userName = empleado.nombre || user.email.split('@')[0];
+          
+          // Heredamos los permisos/servicios de la empresa principal
+          const { data: empresaMadre } = await sb.from('empresas')
+            .select('servicios')
+            .eq('id', empleado.empresa_id)
+            .maybeSingle();
+            
+          servicios = empresaMadre && Array.isArray(empresaMadre.servicios) ? empresaMadre.servicios.map(String) : [];
+        } else {
+          // 4. Plan de emergencia: Si no aparece en ninguna tabla
+          hideEl('screen-login');
+          document.body.innerHTML = `
+            <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#060911;color:#c5d5e8;text-align:center;padding:40px;font-family:sans-serif">
+              <div>
+                <p style="font-size:1.2rem">⚠️ Perfil no encontrado para: <b>${user.email}</b></p>
+                <p style="color:#3d5a78;margin-bottom:20px">Contacta con soporte para que vinculen tu usuario a una cuenta.</p>
+                <button onclick="location.reload()" style="background:#172034;border:1px solid #27415f;color:#fff;padding:10px 20px;border-radius:8px;cursor:pointer">🔄 Reintentar</button>
+              </div>
+            </div>`;
+          return;
+        }
       }
     }
 
