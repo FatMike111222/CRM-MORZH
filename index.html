@@ -3589,6 +3589,9 @@
 
     hideEl('comments-loading');
     if(error) { toast('Error al cargar comentarios: '+error.message,'err'); return; }
+    // FIX CONCURRENCIA: Volver a vaciar justo antes de pintar por si el Realtime y el click manual chocaron
+    if(historialList) historialList.innerHTML = '';
+    if(cambiosList)   cambiosList.innerHTML   = '';
     if(!data||!data.length) { showEl('comments-empty','block'); return; }
 
     let hayComentarios = false;
